@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://connext-testnet.coinhippo.io/sitemap.xml
+Sitemap: https://connext.coinhippo.io/sitemap.xml

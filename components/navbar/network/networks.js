@@ -12,7 +12,11 @@ export default function Networks({ handleDropdownClick }) {
               title="Not available yet"
               className="dropdown-item w-1/2 cursor-not-allowed flex items-center justify-start space-x-1.5 p-2"
             >
-              {item.icon}
+              <img
+                src={item.icon}
+                alt=""
+                className="w-6 h-6 rounded-full"
+              />
               <span className="text-xs">{item.title}</span>
             </div>
             :
@@ -22,7 +26,11 @@ export default function Networks({ handleDropdownClick }) {
               onClick={handleDropdownClick}
               className="dropdown-item w-1/2 flex items-center justify-start space-x-1.5 p-2"
             >
-              {item.icon}
+              <img
+                src={item.icon}
+                alt=""
+                className="w-6 h-6 rounded-full"
+              />
               <span className="text-xs">{item.title}</span>
             </a>
         ))}
