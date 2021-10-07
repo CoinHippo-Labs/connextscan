@@ -7,15 +7,18 @@ import Footer from '../../components/footer'
 import ChainMeta from '../../components/chain-meta'
 
 import meta from '../../lib/meta'
+import { networks } from '../../lib/menus'
 
 export default function Layout({ children }) {
   const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
   const { theme } = { ...preferences }
 
   const router = useRouter()
-  const { asPath } = { ...router }
+  const { pathname, query, asPath } = { ...router }
+  const { chain_id } = { ...query }
+  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
-  const headMeta = meta(asPath)
+  const headMeta = meta(asPath, pathname.split('/').length < 3 && network)
 
   return (
     <>

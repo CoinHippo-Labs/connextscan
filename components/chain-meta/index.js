@@ -2,6 +2,9 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
+import _ from 'lodash'
+import { IoRadioButtonOnOutline } from 'react-icons/io5'
+import { RiGasStationFill } from 'react-icons/ri'
 import { TiArrowRight } from 'react-icons/ti'
 
 import { graphql } from '../../lib/api/subgraph'
@@ -38,6 +41,17 @@ export default function ChainMeta() {
         chainData = { ...chainData, coin: { ...response } }
       }
 
+      if (network?.gas?.url) {
+        const res = await fetch(network.gas.url)
+        response = await res.json()
+
+        chainData = { ...chainData, gas: { ...(response?.data || response) } }
+
+        if (chainData.gas) {
+          chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
+        }
+      }
+
       if (chainData) {
         dispatch({
           type: CHAIN_DATA,
@@ -47,6 +61,11 @@ export default function ChainMeta() {
     }
 
     if (network) {
+      dispatch({
+        type: CHAIN_DATA,
+        value: null
+      })
+
       getData()
     }
 
@@ -56,8 +75,15 @@ export default function ChainMeta() {
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-800 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
-      <span className="min-w-max flex items-center space-x-1" style={{ fontSize: '.65rem' }}>
-        <span className="text-gray-600 dark:text-gray-400">Synced Block:</span>
+      <span className="min-w-max flex items-center space-x-1 mr-3" style={{ fontSize: '.65rem' }}>
+        {network?.explorer && (!chain_data || chain_data?.block) && (
+          <span className="flex items-center text-gray-600 dark:text-gray-400 space-x-0.5">
+            {typeof chain_data?.block?.number === 'number' && (
+              <IoRadioButtonOnOutline size={10} className="text-green-500" />
+            )}
+            <span>Synced Block:</span>
+          </span>
+        )}
         {typeof chain_data?.block?.number === 'number' ?
           network?.explorer ?
             <a
@@ -71,12 +97,29 @@ export default function ChainMeta() {
             :
             <span className="font-medium">{numberFormat(chain_data?.block?.number, '0,0')}</span>
           :
-          chain_data?.block ?
-            <span className="font-medium">-</span>
+          network?.explorer ?
+            chain_data ?
+              <span className="font-medium">-</span>
+              :
+              <div className="skeleton w-12 h-4 rounded" />
             :
-            <div className="skeleton w-12 h-4 rounded" />
+            null
         }
       </span>
+      {chain_data?.gas && (
+        <span className="min-w-max flex items-center text-gray-400 dark:text-gray-300 space-x-2 pl-1" style={{ fontSize: '.65rem' }}>
+          <span className="flex flex-col items-center">
+            <RiGasStationFill size={18} style={{ marginTop: '-.4rem' }} />
+            <span className="h-1" style={{ fontSize: '.5rem', marginTop: '-.25rem' }}>Gwei</span>
+          </span>
+          {_.orderBy(Object.entries(chain_data.gas), 1).map(([key, value], i) => (
+            <span key={i} className="flex flex-col items-center space-y-0.5">
+              <span className="h-3.5 text-gray-900 dark:text-gray-100 font-medium">{numberFormat(value, '0,0')}</span>
+              <span className="h-2.5 capitalize" style={{ fontSize: '.5rem' }}>{key}</span>
+            </span>
+          ))}
+        </span>
+      )}
       <span className="ml-3 md:ml-auto" />
       <div className="flex flex-row space-x-4">
         {chain_data?.coin && (

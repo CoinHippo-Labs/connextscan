@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 import { networks } from '../../../lib/menus'
 
 export default function Networks({ handleDropdownClick }) {
@@ -20,19 +22,19 @@ export default function Networks({ handleDropdownClick }) {
               <span className="text-xs">{item.title}</span>
             </div>
             :
-            <a
-              key={i}
-              href={item.url}
-              onClick={handleDropdownClick}
-              className="dropdown-item w-1/2 flex items-center justify-start space-x-1.5 p-2"
-            >
-              <img
-                src={item.icon}
-                alt=""
-                className="w-6 h-6 rounded-full"
-              />
-              <span className="text-xs">{item.title}</span>
-            </a>
+            <Link key={i} href={item.url}>
+              <a
+                onClick={handleDropdownClick}
+                className="dropdown-item w-1/2 flex items-center justify-start space-x-1.5 p-2"
+              >
+                <img
+                  src={item.icon}
+                  alt=""
+                  className="w-6 h-6 rounded-full"
+                />
+                <span className="text-xs">{item.title}</span>
+              </a>
+            </Link>
         ))}
       </div>
     </>
