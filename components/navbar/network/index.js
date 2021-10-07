@@ -7,9 +7,9 @@ import { networks } from '../../../lib/menus'
 
 export default function DropdownNetwork() {
   const router = useRouter()
-  const { query } = { ...router }
+  const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)] || networks[0]
+  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
   const [hidden, setHidden] = useState(true)
 
@@ -41,11 +41,13 @@ export default function DropdownNetwork() {
         onClick={handleDropdownClick}
         className="w-6 sm:w-12 h-16 flex items-center justify-center"
       >
-        <img
-          src={network.icon}
-          alt=""
-          className="w-6 h-6 rounded-full"
-        />
+        {network && (
+          <img
+            src={network.icon}
+            alt=""
+            className="w-6 h-6 rounded-full"
+          />
+        )}
       </button>
       <div
         ref={dropdownRef} 

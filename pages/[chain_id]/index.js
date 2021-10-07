@@ -9,7 +9,7 @@ export default function Index() {
   const router = useRouter()
   const { query } = { ...router }
   const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)] || networks[0]
+  const network = networks[networks.findIndex(network => network.id === chain_id)]
 
   return (
     <>
@@ -17,11 +17,11 @@ export default function Index() {
         title="Dashboard"
         subtitle={<div className="flex items-center space-x-2 my-1">
           <img
-            src={network.icon}
+            src={network?.icon}
             alt=""
             className="w-8 h-8 rounded-full"
           />
-          <span>{network.title}</span>
+          <span>{network?.title}</span>
         </div>}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
