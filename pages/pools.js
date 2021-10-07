@@ -5,7 +5,7 @@ import SectionTitle from '../components/section-title'
 
 import { networks } from '../lib/menus'
 
-export default function Pools() {
+export default function PoolsIndex() {
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { chain_id } = { ...query }

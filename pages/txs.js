@@ -5,7 +5,7 @@ import SectionTitle from '../components/section-title'
 
 import { networks } from '../lib/menus'
 
-export default function Transactions() {
+export default function TransactionsIndex() {
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
@@ -14,7 +14,7 @@ export default function Transactions() {
   return (
     <>
       <SectionTitle
-        title="Transactions"
+        title="Latest Transactions"
         subtitle={<div className="flex items-center space-x-2 my-1">
           <img
             src={network?.icon}

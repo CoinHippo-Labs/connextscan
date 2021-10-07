@@ -121,7 +121,7 @@ export default function Datatable({ columns, data, rowSelectEnable = false, noPa
             disabled={loading}
             value={pageSize}
             onChange={event => setPageSize(Number(event.target.value))}
-            className="form-select dark:bg-gray-800 outline-none dark:border-gray-800 shadow-none focus:shadow-none text-xs"
+            className="form-select dark:bg-gray-800 outline-none border-gray-200 dark:border-gray-800 shadow-none focus:shadow-none text-xs"
           >
             {[10, 25, 50, 100].map(pageSize => (
               <option key={pageSize} value={pageSize}>

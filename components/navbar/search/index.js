@@ -9,8 +9,6 @@ import { networks } from '../../../lib/menus'
 
 export default function Search() {
   const router = useRouter()
-  const { query } = { ...router }
-  const { chain_id } = { ...query }
 
   const [inputSearch, setInputSearch] = useState('')
 
@@ -18,7 +16,7 @@ export default function Search() {
 
   const onSubmit = () => {
     if (type(inputSearch)) {
-      router.push(`${networks.findIndex(network => network.id === chain_id) > -1 ? `/${chain_id}` : ''}/${type(inputSearch)}/${inputSearch}`)
+      router.push(`/${type(inputSearch)}/${inputSearch}`)
 
       setInputSearch('')
     }

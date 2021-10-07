@@ -18,7 +18,7 @@ export default function Layout({ children }) {
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
-  const headMeta = meta(asPath, pathname.split('/').length < 3 && network)
+  const headMeta = meta(asPath, network?.id && network)
 
   return (
     <>

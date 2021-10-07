@@ -10,7 +10,7 @@ import { TiArrowRight } from 'react-icons/ti'
 import { graphql } from '../../lib/api/subgraph'
 import { coin } from '../../lib/api/coingecko'
 import { networks } from '../../lib/menus'
-import { numberFormat, ellipseAddress } from '../../lib/utils'
+import { numberFormat } from '../../lib/utils'
 
 import { CHAIN_DATA } from '../../reducers/types'
 
@@ -29,41 +29,43 @@ export default function ChainMeta() {
 
   useEffect(() => {
     const getData = async () => {
-      let chainData
+      if (network) {
+        let chainData
 
-      let response = await graphql({ chain_id: network.id, query: '{ _meta { block { hash, number } } }' })
+        let response = await graphql({ chain_id: network.id, query: '{ _meta { block { hash, number } } }' })
 
-      chainData = { ...chainData, ...response?.data?._meta }
+        chainData = { ...chainData, ...response?.data?._meta }
 
-      if (network?.currency?.coingecko_id) {
-        response = await coin(network.currency.coingecko_id)
+        if (network?.currency?.coingecko_id) {
+          response = await coin(network.currency.coingecko_id)
 
-        chainData = { ...chainData, coin: { ...response } }
-      }
-
-      if (network?.gas?.url) {
-        const res = await fetch(network.gas.url)
-        response = await res.json()
-
-        chainData = { ...chainData, gas: { ...(response?.data || response) } }
-
-        if (chainData.gas) {
-          chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
+          chainData = { ...chainData, coin: { ...response } }
         }
-      }
 
-      if (chainData) {
-        dispatch({
-          type: CHAIN_DATA,
-          value: chainData
-        })
+        if (network?.gas?.url) {
+          const res = await fetch(network.gas.url)
+          response = await res.json()
+
+          chainData = { ...chainData, gas: { ...(response?.data || response) } }
+
+          if (chainData.gas) {
+            chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
+          }
+        }
+
+        if (chainData) {
+          dispatch({
+            type: CHAIN_DATA,
+            value: chainData
+          })
+        }
       }
     }
 
     if (network) {
       dispatch({
         type: CHAIN_DATA,
-        value: null
+        value: null,
       })
 
       getData()
@@ -101,7 +103,7 @@ export default function ChainMeta() {
             chain_data ?
               <span className="font-medium">-</span>
               :
-              <div className="skeleton w-12 h-4 rounded" />
+              <div className="skeleton w-12 h-4" />
             :
             null
         }

@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import { FiMenu, FiMoon, FiSun } from 'react-icons/fi'
@@ -8,6 +9,8 @@ import Search from './search'
 import Navigation from './navigation'
 import Network from './network'
 
+import { networks } from '../../lib/menus'
+
 import { THEME } from '../../reducers/types'
 
 export default function Navbar() {
@@ -15,12 +18,17 @@ export default function Navbar() {
   const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
   const { theme } = { ...preferences }
 
+  const router = useRouter()
+  const { pathname, query } = { ...router }
+  const { chain_id } = { ...query }
+  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+
   return (
     <div className="navbar border-b">
       <div className="navbar-inner w-full flex items-center">
         <Logo />
-        <DropdownNavigation />
-        <Navigation />
+        {network?.id === '' && (<DropdownNavigation />)}
+        {network?.id === '' && (<Navigation />)}
         <div className="flex items-center ml-auto">
           <Search />
           <Network />
