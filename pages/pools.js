@@ -1,24 +1,20 @@
 import { useRouter } from 'next/router'
 
-import Dashboard from '../../components/dashboard'
-import SectionTitle from '../../components/section-title'
+import Dashboard from '../components/dashboard'
+import SectionTitle from '../components/section-title'
 
-import { networks } from '../../lib/menus'
+import { networks } from '../lib/menus'
 
-export default function Chain() {
+export default function Pools() {
   const router = useRouter()
-  const { query } = { ...router }
+  const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)]
-
-  if (typeof window !== 'undefined' && !network) {
-    router.push('/')
-  }
+  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
   return (
     <>
       <SectionTitle
-        title="Dashboard"
+        title="Pools"
         subtitle={<div className="flex items-center space-x-2 my-1">
           <img
             src={network?.icon}

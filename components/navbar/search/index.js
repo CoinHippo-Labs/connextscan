@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { FiSearch } from 'react-icons/fi'
 
 import { type } from '../../../lib/object/id'
+import { networks } from '../../../lib/menus'
 
 export default function Search() {
   const router = useRouter()
@@ -17,7 +18,7 @@ export default function Search() {
 
   const onSubmit = () => {
     if (type(inputSearch)) {
-      router.push(`${chain_id ? `/${chain_id}` : ''}/${type(inputSearch)}/${inputSearch}`)
+      router.push(`${networks.findIndex(network => network.id === chain_id) > -1 ? `/${chain_id}` : ''}/${type(inputSearch)}/${inputSearch}`)
 
       setInputSearch('')
     }

@@ -5,7 +5,7 @@ import SectionTitle from '../../components/section-title'
 
 import { networks } from '../../lib/menus'
 
-export default function Chain() {
+export default function Accounts() {
   const router = useRouter()
   const { query } = { ...router }
   const { chain_id } = { ...query }
@@ -18,7 +18,7 @@ export default function Chain() {
   return (
     <>
       <SectionTitle
-        title="Dashboard"
+        title="Accounts"
         subtitle={<div className="flex items-center space-x-2 my-1">
           <img
             src={network?.icon}
