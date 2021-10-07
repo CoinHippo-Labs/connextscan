@@ -4,6 +4,7 @@ import { useSelector, shallowEqual } from 'react-redux'
 
 import Navbar from '../../components/navbar'
 import Footer from '../../components/footer'
+import ChainMeta from '../../components/chain-meta'
 
 import meta from '../../lib/meta'
 
@@ -52,6 +53,7 @@ export default function Layout({ children }) {
         <div className="wrapper">
           <div className="main w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
             <Navbar />
+            <ChainMeta />
             <div className="w-full min-h-screen p-4">
               {children}
             </div>
