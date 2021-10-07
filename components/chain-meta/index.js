@@ -76,7 +76,7 @@ export default function ChainMeta() {
   }, [network])
 
   return (
-    <div className="w-full bg-gray-100 dark:bg-gray-800 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
+    <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
       <span className="min-w-max flex items-center space-x-1 mr-3" style={{ fontSize: '.65rem' }}>
         {network?.explorer && (!chain_data || chain_data?.block) && (
           <span className="flex items-center text-gray-600 dark:text-gray-400 space-x-0.5">

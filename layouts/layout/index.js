@@ -54,7 +54,7 @@ export default function Layout({ children }) {
         className={`antialiased disable-scrollbars font-sans text-sm ${theme}`}
       >
         <div className="wrapper">
-          <div className="main w-full bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white">
+          <div className="main w-full bg-gray-50 dark:bg-black text-gray-900 dark:text-white">
             <Navbar />
             <ChainMeta />
             <div className="w-full min-h-screen p-4">

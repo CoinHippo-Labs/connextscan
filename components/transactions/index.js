@@ -27,7 +27,7 @@ export default function Transactions({ className = '' }) {
         const response = await getTransactions({ chain_id: network.id })
 
         if (response) {
-          setTransactions({ data: response.data || [] })
+          setTransactions({ data: response.data || [], chain_id })
         }
       }
     }
@@ -57,17 +57,17 @@ export default function Transactions({ className = '' }) {
                     </Link>
                     <Copy text={props.value} />
                   </div>
-                  {(props.row.original.fulfillTransactionHash || props.row.original.prepareTransactionHash || props.row.original.cancelTransactionHash) && network?.explorer?.url && (
+                  {props.row.original.chainTx && network?.explorer?.url && (
                     <div className="flex items-center space-x-1 mt-1">
                       <Copy
                         size={12}
-                        text={(props.row.original.fulfillTransactionHash || props.row.original.prepareTransactionHash || props.row.original.cancelTransactionHash)}
+                        text={props.row.original.chainTx}
                         copyTitle={<span className="text-xs text-gray-400 dark:text-gray-600 font-light">
-                          {ellipseAddress((props.row.original.fulfillTransactionHash || props.row.original.prepareTransactionHash || props.row.original.cancelTransactionHash), 6)}
+                          {ellipseAddress(props.row.original.chainTx, 6)}
                         </span>}
                       />
                       <a
-                        href={`${network.explorer.url}${network.explorer.transaction_path?.replace('{tx}', (props.row.original.fulfillTransactionHash || props.row.original.prepareTransactionHash || props.row.original.cancelTransactionHash))}`}
+                        href={`${network.explorer.url}${network.explorer.transaction_path?.replace('{tx}', props.row.original.chainTx)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-indigo-600 dark:text-white"
@@ -98,11 +98,11 @@ export default function Transactions({ className = '' }) {
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className={`max-w-min bg-gray-100 dark:bg-${props.value === 'success' ? 'green-600' : props.value === 'pending' ? 'indigo-300' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
-                  {props.value === 'success' ?
+                <div className={`max-w-min bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'indigo-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                  {props.value === 'Fulfilled' ?
                     <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                     :
-                    props.value === 'pending' ?
+                    props.value === 'Prepared' ?
                       <FaClock size={14} className="text-gray-300 dark:text-white" />
                       :
                       <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
@@ -114,62 +114,148 @@ export default function Transactions({ className = '' }) {
             ),
           },
           {
-            Header: 'From',
-            accessor: 'user.id',
-            disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                <Link href={`/blocks/${props.value}`}>
-                  <a className="text-blue-600 dark:text-blue-400">
-                    {props.value}
-                  </a>
-                </Link>
-                :
-                <div className="skeleton w-16 h-4" />
-            ),
-          },
-          {
-            Header: 'To',
-            accessor: 'receivingChainTxManagerAddress',
+            Header: 'Caller',
+            accessor: 'sendingAddress',
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <span className="bg-gray-100 dark:bg-gray-800 rounded capitalize text-gray-900 dark:text-gray-100 font-semibold px-2 py-1">
-                    {getName(props.value)}
-                  </span>
+                  <>
+                    <div className="flex items-center space-x-1">
+                      <Copy
+                        text={props.value}
+                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                          {ellipseAddress(props.value, 6)}
+                        </span>}
+                      />
+                      {props.row.original.sendingChain?.explorer?.url && (
+                        <a
+                          href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.address_path?.replace('{address}', props.value)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-600 dark:text-white"
+                        >
+                          {props.row.original.sendingChain?.explorer?.icon ?
+                            <img
+                              src={props.row.original.sendingChain.explorer.icon}
+                              alt=""
+                              className="w-4 h-4 rounded-full"
+                            />
+                            :
+                            <TiArrowRight size={16} className="transform -rotate-45" />
+                          }
+                        </a>
+                      )}
+                    </div>
+                    {props.row.original.sendingChain && (
+                      <div className="flex items-center space-x-1.5 mt-1">
+                        {props.row.original.sendingChain.icon && (
+                          <img
+                            src={props.row.original.sendingChain.icon}
+                            alt=""
+                            className="w-4 h-4 rounded-full"
+                          />
+                        )}
+                        <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.sendingChain.short_name || props.row.original.sendingChain.title}</span>
+                      </div>
+                    )}
+                  </>
                   :
-                  '-'
+                  <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
-                <div className="skeleton w-12 h-4" />
+                <>
+                  <div className="skeleton w-24 h-4" />
+                  <div className="skeleton w-16 h-3 mt-3" />
+                </>
             ),
           },
           {
-            Header: 'Amount',
+            Header: 'Receiver',
+            accessor: 'receivingAddress',
+            disableSortBy: true,
+            Cell: props => (
+              !props.row.original.skeleton ?
+                props.value ?
+                  <>
+                    <div className="flex items-center space-x-1">
+                      <Copy
+                        text={props.value}
+                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                          {ellipseAddress(props.value, 6)}
+                        </span>}
+                      />
+                      {props.row.original.receivingChain?.explorer?.url && (
+                        <a
+                          href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.address_path?.replace('{address}', props.value)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-600 dark:text-white"
+                        >
+                          {props.row.original.receivingChain?.explorer?.icon ?
+                            <img
+                              src={props.row.original.receivingChain.explorer.icon}
+                              alt=""
+                              className="w-4 h-4 rounded-full"
+                            />
+                            :
+                            <TiArrowRight size={16} className="transform -rotate-45" />
+                          }
+                        </a>
+                      )}
+                    </div>
+                    {props.row.original.receivingChain && (
+                      <div className="flex items-center space-x-1.5 mt-1">
+                        {props.row.original.receivingChain.icon && (
+                          <img
+                            src={props.row.original.receivingChain.icon}
+                            alt=""
+                            className="w-4 h-4 rounded-full"
+                          />
+                        )}
+                        <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.receivingChain.short_name || props.row.original.receivingChain.title}</span>
+                      </div>
+                    )}
+                  </>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
+                :
+                <>
+                  <div className="skeleton w-24 h-4" />
+                  <div className="skeleton w-16 h-3 mt-3" />
+                </>
+            ),
+          },
+          {
+            Header: 'Asset',
             accessor: 'amount',
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className="text-right">
-                  {typeof props.value === 'number' ?
-                    <span className="flex items-center justify-end space-x-1">
-                      <span>{numberFormat(props.value, '0,0.00000000')}</span>
-                      <span className="uppercase font-medium">{props.row.original.symbol}</span>
-                    </span>
-                    :
-                    props.row.original.activities && props.row.original.activities.findIndex(activity => activity.amount && activity.symbol) > -1 ?
-                      props.row.original.activities.map((activity, i) => (
-                        <div key={i} className="flex items-center justify-end space-x-1">
-                          <span>{numberFormat(activity.amount, '0,0.00000000')}</span>
-                          <span className="uppercase font-medium">{ellipseAddress(activity.symbol || activity.denom, 6)}</span>
-                        </div>
-                      ))
+                <>
+                  <div className="text-right">
+                    {props.value ?
+                      <span className="flex items-center justify-end space-x-1">
+                        <span>{numberFormat(props.value, '0,0.00000000')}</span>
+                        <span className="uppercase font-medium">{props.row.original.symbol}</span>
+                      </span>
                       :
-                      '-'
-                  }
-                </div>
+                      props.row.original.activities && props.row.original.activities.findIndex(activity => activity.amount && activity.symbol) > -1 ?
+                        props.row.original.activities.map((activity, i) => (
+                          <div key={i} className="flex items-center justify-end space-x-1">
+                            <span>{numberFormat(activity.amount, '0,0.00000000')}</span>
+                            <span className="uppercase font-medium">{ellipseAddress(activity.symbol || activity.denom, 6)}</span>
+                          </div>
+                        ))
+                        :
+                        <span className="text-gray-400 dark:text-gray-600 font-light">-</span>
+                    }
+                  </div>
+                </>
                 :
-                <div className="skeleton w-16 h-4 ml-auto" />
+                <>
+                  <div className="skeleton w-32 h-4 ml-auto" />
+                  <div className="skeleton w-24 h-3 mt-3 ml-auto" />
+                </>
             ),
             headerClassName: 'justify-end text-right',
           },
@@ -194,8 +280,8 @@ export default function Transactions({ className = '' }) {
             headerClassName: 'justify-end text-right',
           },
         ]}
-        data={transactions ?
-          transactions.data && transactions.data.map((transaction, i) => { return { ...transaction, i } })
+        data={transactions?.chain_id === chain_id ?
+          (transactions?.data || []).map((transaction, i) => { return { ...transaction, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }

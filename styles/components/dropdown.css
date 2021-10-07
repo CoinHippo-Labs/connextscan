@@ -107,14 +107,14 @@
 [data-background="dark"] {
   .dropdown {
     .dropdown-title {
-      @apply bg-gray-800 text-white;
+      @apply bg-gray-900 text-white;
     }
     .dropdown-content {
-      @apply bg-gray-800 text-white;
+      @apply bg-gray-900 text-white;
       .dropdown-item {
-        @apply bg-gray-800 text-white;
+        @apply bg-gray-900 text-white;
         &:hover {
-          @apply bg-gray-700 text-white;
+          @apply bg-gray-800 text-white;
         }
       }
     }

@@ -24,7 +24,7 @@ export default function Navbar() {
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
   return (
-    <div className="navbar border-b">
+    <div className="navbar dark:bg-gray-900 border-b">
       <div className="navbar-inner w-full flex items-center">
         <Logo />
         {network?.id === '' && (<DropdownNavigation />)}
