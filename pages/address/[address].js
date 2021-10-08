@@ -9,7 +9,7 @@ import { ellipseAddress } from '../../lib/utils'
 
 export default function CrosschainAddress() {
   const router = useRouter()
-  const { pathname, query } = { ...router }
+  const { query } = { ...router }
   const { address } = { ...query }
 
   return (
