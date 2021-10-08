@@ -1,95 +1,132 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
-import moment from 'moment'
 import { Img } from 'react-image'
+import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
-import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
 
-import Datatable from '../datatable'
 import Copy from '../copy'
 
-import { transactions as getTransactions } from '../../lib/api/subgraph'
-import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
-import { CONTRACTS_DATA } from '../../reducers/types'
-
-export default function Transactions({ className = '' }) {
-  const dispatch = useDispatch()
-  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
-  const { contracts_data } = { ...contracts }
-
+export default function Assets({ data, className = '' }) {
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
-  const [transactions, setTransactions] = useState(null)
-
-  useEffect(() => {
-    const getData = async () => {
-      if (network) {
-        const response = await getTransactions({ chain_id: network.id }, contracts_data)
-
-        if (response) {
-          let data = response.data || []
-
-          const _contracts = _.groupBy(_.uniqBy(data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.id && contract.data) > -1)), 'id'), 'chain_id')
-
-          let new_contracts
-
-          for (let i = 0; i < Object.entries(_contracts).length; i++) {
-            const contract = Object.entries(_contracts)[i]
-            const key = contract?.[0], value = contract?.[1]
-
-            const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
-
-            if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
-            }
-          }
-
-          new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
-
-          data = data.map(tx => {
-            return {
-              ...tx,
-              sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id === tx.sendingAssetId && contract.data)?.data,
-              receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id === tx.receivingAssetId && contract.data)?.data,
-            }
-          }).map(tx => {
-            return {
-              ...tx,
-              normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
-            }
-          })
-
-          setTransactions({ data, chain_id })
-
-          if (new_contracts) {
-            dispatch({
-              type: CONTRACTS_DATA,
-              value: new_contracts,
-            })
-          }
-        }
-      }
-    }
-
-    getData()
-
-    const interval = setInterval(() => getData(), 15 * 1000)
-    return () => clearInterval(interval)
-  }, [network])
-
   return (
     <>
-      <Datatable
+      <div className={`space-y-8 ${className}`}>
+        {(data?.chain_id === chain_id ?
+          (data?.data || []).map((router, i) => { return { ...router, i } })
+          :
+          [...Array(1).keys()].map(i => { return { i, skeleton: true } })
+        ).map((router, i) => (
+          <div key={i} className="space-y-4">
+            {!router.skeleton ?
+              <div className="flex items-center space-x-1">
+                <MdOutlineRouter size={20} className="mb-0.5" />
+                <span className="font-medium">Router:</span>
+                <Copy
+                  text={router.id}
+                  copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                    {ellipseAddress(router.id, 6)}
+                  </span>}
+                />
+                {network?.explorer?.url && (
+                  <a
+                    href={`${network.explorer.url}${network.explorer.address_path?.replace('{address}', router.id)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-indigo-600 dark:text-white"
+                  >
+                    {network.explorer.icon ?
+                      <img
+                        src={network.explorer.icon}
+                        alt=""
+                        className="w-4 h-4 rounded-full"
+                      />
+                      :
+                      <TiArrowRight size={16} className="transform -rotate-45" />
+                    }
+                  </a>
+                )}
+              </div>
+              :
+              <div className="skeleton w-40 h-5" />
+            }
+            <div className="w-full grid grid-flow-row grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-8">
+              {!router.skeleton ?
+                router.assetBalances?.map((assetBalance, j) => (
+                  <div key={j} className="h-40 bg-white dark:bg-gray-900 shadow-sm rounded-2xl p-4">
+                    <div className="space-y-2">
+                      {assetBalance?.data && (
+                        <div className="flex items-center space-x-1.5">
+                          {assetBalance.data.logo_url && (
+                            <Img
+                              src={assetBalance.data.logo_url}
+                              alt=""
+                              className="w-8 h-8 rounded-full"
+                            />
+                          )}
+                          <div>
+                            <div className="text-sm font-semibold">{assetBalance.data.contract_name}</div>
+                            <div className="text-gray-600 dark:text-gray-400 text-xs font-normal">{assetBalance.data.contract_ticker_symbol}</div>
+                          </div>
+                        </div>
+                      )}
+                      {assetBalance?.id && (
+                        <div className="flex items-center space-x-1">
+                          <Copy
+                            text={assetBalance.id.replace(`-${router.id}`, '')}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium">
+                              {ellipseAddress(assetBalance.id.replace(`-${router.id}`, ''), 6)}
+                            </span>}
+                          />
+                          {network?.explorer?.url && (
+                            <a
+                              href={`${network.explorer.url}${network.explorer.contract_path?.replace('{address}', assetBalance.id.replace(`-${router.id}`, ''))}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 dark:text-white"
+                            >
+                              {network.explorer.icon ?
+                                <img
+                                  src={network.explorer.icon}
+                                  alt=""
+                                  className="w-4 h-4 rounded-full"
+                                />
+                                :
+                                <TiArrowRight size={16} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="mt-4">
+                      <div className="uppercase text-gray-400 dark:text-gray-500 font-light" style={{ fontSize: '.65rem' }}>Liquidity</div>
+                      <div>
+                        <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.normalize_amount ? numberFormat(assetBalance.normalize_amount, '0,0') : assetBalance?.amount && !(assetBalance?.data) ? numberFormat(assetBalance.amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+                :
+                [...Array(3).keys()].map(j => (
+                  <div key={j} className="skeleton h-40" style={{ borderRadius: '1rem' }} />
+                ))
+              }
+            </div>
+          </div>
+        ))}
+      </div>
+      {/*<Datatable
         columns={[
           {
             Header: 'Tx Hash',
@@ -421,17 +458,17 @@ export default function Transactions({ className = '' }) {
           },
         ]}
         data={transactions?.chain_id === chain_id ?
-          (transactions?.data || []).map((transaction, i) => { return { ...transaction, i } })
+          (transactions.data || []).map((transaction, i) => { return { ...transaction, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
         noPagination={!transactions || transactions?.data?.length <= 10 ? true : false}
         defaultPageSize={10}
         className={`min-h-full ${className}`}
-      />
-      {transactions && transactions.chain_id === chain_id && !(transactions.data?.length > 0) && (
-        <div className="bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 py-2">
-          No Transactions
+      />*/}
+      {data && data.chain_id === chain_id && !(data.data?.length > 0) && (
+        <div className="bg-transparent border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700 text-gray-300 dark:text-gray-700 text-base font-medium italic text-center py-16">
+          No Assets
         </div>
       )}
     </>
