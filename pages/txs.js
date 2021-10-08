@@ -15,14 +15,7 @@ export default function TransactionsIndex() {
     <>
       <SectionTitle
         title="Latest Transactions"
-        subtitle={<div className="flex items-center space-x-2 my-1">
-          <img
-            src={network?.icon}
-            alt=""
-            className="w-8 h-8 rounded-full"
-          />
-          <span>{network?.title}</span>
-        </div>}
+        subtitle={network?.title}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <Dashboard />

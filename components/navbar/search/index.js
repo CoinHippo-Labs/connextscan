@@ -23,14 +23,14 @@ export default function Search() {
   }
 
   return (
-    <div className="navbar-search mr-1.5 sm:mx-3">
+    <div className="navbar-search mr-1.5 sm:mx-3 xl:mr-16">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="relative">
           <input
             value={inputSearch}
             onChange={event => setInputSearch(event.target.value)}
             type="search"
-            placeholder="Search by Address / TxHash"
+            placeholder="Search by Address / Txn Hash"
             className="w-60 sm:w-72 xl:w-96 h-8 sm:h-10 appearance-none rounded text-xs pl-2 sm:pl-8 pr-0 sm:pr-3 focus:outline-none"
           />
           <div className="hidden sm:block absolute top-0 left-0 mt-3 ml-2.5">
