@@ -18,7 +18,7 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../../reducers/types'
 
-export default function Transactions({ className = '' }) {
+export default function Transactions({ useData, className = '' }) {
   const dispatch = useDispatch()
   const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
   const { contracts_data } = { ...contracts }
@@ -27,59 +27,61 @@ export default function Transactions({ className = '' }) {
 
   useEffect(() => {
     const getData = async () => {
-      let data, _contracts_data = _.cloneDeep(contracts_data)
+      if (!useData) {
+        let data, _contracts_data = _.cloneDeep(contracts_data)
 
-      for (let i = 0; i < networks.length; i++) {
-        const network = networks[i]
+        for (let i = 0; i < networks.length; i++) {
+          const network = networks[i]
 
-        if (network) {
-          const response = await getTransactions({ chain_id: network.id }, _contracts_data)
+          if (network && network.id) {
+            const response = await getTransactions({ chain_id: network.id }, _contracts_data)
 
-          if (response) {
-            let _data = response.data || []
+            if (response) {
+              let _data = response.data || []
 
-            const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id === asset.id && contract.data) > -1)), 'id'), 'chain_id')
+              const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id === asset.id && contract.data) > -1)), 'id'), 'chain_id')
 
-            let new_contracts
+              let new_contracts
 
-            for (let i = 0; i < Object.entries(_contracts).length; i++) {
-              const contract = Object.entries(_contracts)[i]
-              const key = contract?.[0], value = contract?.[1]
+              for (let i = 0; i < Object.entries(_contracts).length; i++) {
+                const contract = Object.entries(_contracts)[i]
+                const key = contract?.[0], value = contract?.[1]
 
-              const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
-              if (resContracts?.data) {
-                new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+                if (resContracts?.data) {
+                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+                }
               }
+
+              new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
+
+              data = _.orderBy(_.concat((data || []), _data.map(tx => {
+                return {
+                  ...tx,
+                  sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id === tx.sendingAssetId && contract.data)?.data,
+                  receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id === tx.receivingAssetId && contract.data)?.data,
+                }
+              }).map(tx => {
+                return {
+                  ...tx,
+                  normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
+                }
+              })), ['preparedTimestamp'], ['desc'])
+
+              _contracts_data = new_contracts
             }
-
-            new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
-
-            data = _.orderBy(_.concat((data || []), _data.map(tx => {
-              return {
-                ...tx,
-                sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id === tx.sendingAssetId && contract.data)?.data,
-                receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id === tx.receivingAssetId && contract.data)?.data,
-              }
-            }).map(tx => {
-              return {
-                ...tx,
-                normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
-              }
-            })), ['preparedTimestamp'], ['desc'])
-
-            _contracts_data = new_contracts
           }
         }
-      }
 
-      setTransactions({ data })
+        setTransactions({ data })
 
-      if (_contracts_data) {
-        dispatch({
-          type: CONTRACTS_DATA,
-          value: _contracts_data,
-        })
+        if (_contracts_data) {
+          dispatch({
+            type: CONTRACTS_DATA,
+            value: _contracts_data,
+          })
+        }
       }
     }
 
@@ -88,6 +90,12 @@ export default function Transactions({ className = '' }) {
     const interval = setInterval(() => getData(), 30 * 1000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (useData?.address) {
+      setTransactions(useData)
+    }
+  }, [useData])
 
   return (
     <>
