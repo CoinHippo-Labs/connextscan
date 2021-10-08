@@ -30,8 +30,8 @@ export default function Chain() {
         </div>}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-      <div className="my-4 mx-auto pb-2">
-        <div className="max-w-6xl bg-white dark:bg-gray-900 rounded-lg mt-8 md:mt-4 mx-auto py-6 px-4">
+      <div className="max-w-6xl my-4 mx-auto pb-2">
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 md:mt-4 py-6 px-4">
           <span className="text-gray-900 dark:text-white text-lg font-semibold mx-3">Latest Transactions</span>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">
