@@ -2,6 +2,8 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
+import _ from 'lodash'
+
 import Assets from '../../components/assets'
 import Transactions from '../../components/transactions'
 import SectionTitle from '../../components/section-title'
@@ -10,6 +12,8 @@ import Widget from '../../components/widget'
 import { routers as getRouters } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
+import { currency_symbol } from '../../lib/object/currency'
+import { numberFormat } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
 
@@ -63,6 +67,11 @@ export default function Chain() {
                   ...assetBalance,
                   normalize_amount: assetBalance?.data?.contract_decimals && (assetBalance.amount / Math.pow(10, assetBalance.data.contract_decimals)),
                 }
+              }).map(assetBalance => {
+                return {
+                  ...assetBalance,
+                  value: typeof assetBalance?.normalize_amount === 'number' && typeof assetBalance?.data?.prices?.[0].price === 'number' && (assetBalance?.normalize_amount * assetBalance?.data?.prices?.[0].price),
+                }
               }),
             }
           })
@@ -104,8 +113,25 @@ export default function Chain() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
-        <div className="mt-6">
-          <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold">Assets</span>
+        <div>
+          <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
+            <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Assets</span>
+            <span className="sm:text-right mb-auto ml-0 sm:ml-auto">
+              <div className="h-full uppercase text-gray-400 dark:text-gray-500">Liquidity Available</div>
+              {chain_id && routers?.chain_id === chain_id ?
+                <div className="font-mono text-xl font-semibold">
+                  {currency_symbol}
+                  {routers?.data?.findIndex(router => router?.assetBalances?.findIndex(assetBalance => typeof assetBalance?.value === 'number') > -1) > -1 ?
+                    numberFormat(_.sum(routers.data.flatMap(router => router?.assetBalances?.map(assetBalance => assetBalance?.value) || [])), '0,0')
+                    :
+                    '-'
+                  }
+                </div>
+                :
+                <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
+              }
+            </span>
+          </div>
           <Assets data={routers} className="mt-4" />
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">

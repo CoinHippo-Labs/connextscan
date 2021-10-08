@@ -10,12 +10,10 @@ import { TiArrowRight } from 'react-icons/ti'
 import { graphql } from '../../lib/api/subgraph'
 import { coin } from '../../lib/api/coingecko'
 import { networks } from '../../lib/menus'
+import { currency, currency_symbol } from '../../lib/object/currency'
 import { numberFormat } from '../../lib/utils'
 
 import { CHAIN_DATA } from '../../reducers/types'
-
-const CURRENCY = 'usd'
-const CURRENCY_SYMBOL = '$'
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
@@ -135,25 +133,25 @@ export default function ChainMeta() {
               <span className="uppercase font-medium">{chain_data.coin.symbol || network?.currency?.symbol}</span>
             </div>
             <div className="flex items-center space-x-1">
-              {typeof chain_data.coin.market_data?.current_price?.[CURRENCY] === 'number' && (
-                <span>{CURRENCY_SYMBOL}{numberFormat(chain_data.coin.market_data.current_price[CURRENCY], '0,0.000000')}</span>
+              {typeof chain_data.coin.market_data?.current_price?.[currency] === 'number' && (
+                <span>{currency_symbol}{numberFormat(chain_data.coin.market_data.current_price[currency], '0,0.000000')}</span>
               )}
-              {typeof chain_data.coin.market_data?.price_change_percentage_24h_in_currency?.[CURRENCY] === 'number' && (
-                <span className={`text-${chain_data.coin.market_data.price_change_percentage_24h_in_currency[CURRENCY] < 0 ? 'red' : 'green'}-500 font-medium`}>{numberFormat(chain_data.coin.market_data.price_change_percentage_24h_in_currency[CURRENCY], '+0,0.000')}%</span>
+              {typeof chain_data.coin.market_data?.price_change_percentage_24h_in_currency?.[currency] === 'number' && (
+                <span className={`text-${chain_data.coin.market_data.price_change_percentage_24h_in_currency[currency] < 0 ? 'red' : 'green'}-500 font-medium`}>{numberFormat(chain_data.coin.market_data.price_change_percentage_24h_in_currency[currency], '+0,0.000')}%</span>
               )}
             </div>
             <div className="flex items-center space-x-1">
               <span className="text-gray-400 dark:text-gray-500 font-medium">MCap:</span>
-              {typeof chain_data.coin.market_data?.market_cap?.[CURRENCY] === 'number' ?
-                <span>{CURRENCY_SYMBOL}{numberFormat(chain_data.coin.market_data.market_cap[CURRENCY], '0,0')}</span>
+              {typeof chain_data.coin.market_data?.market_cap?.[currency] === 'number' ?
+                <span>{currency_symbol}{numberFormat(chain_data.coin.market_data.market_cap[currency], '0,0')}</span>
                 :
                 <span>-</span>
               }
             </div>
             <div className="flex items-center space-x-1">
               <span className="text-gray-400 dark:text-gray-500 font-medium">24 Vol:</span>
-              {typeof chain_data.coin.market_data?.total_volume?.[CURRENCY] === 'number' ?
-                <span className="uppercase">{CURRENCY_SYMBOL}{numberFormat(chain_data.coin.market_data.total_volume[CURRENCY], '0,0.00a')}</span>
+              {typeof chain_data.coin.market_data?.total_volume?.[currency] === 'number' ?
+                <span className="uppercase">{currency_symbol}{numberFormat(chain_data.coin.market_data.total_volume[currency], '0,0.00a')}</span>
                 :
                 <span>-</span>
               }
