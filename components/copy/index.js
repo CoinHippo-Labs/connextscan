@@ -40,7 +40,7 @@ const Copy = ({ text, copyTitle, size = 16, onCopy, className = '' }) => {
 
 Copy.propTypes = {
   text: PropTypes.string,
-  copyTitle: PropTypes.string,
+  copyTitle: PropTypes.any,
   size: PropTypes.number,
   className:PropTypes.string,
 }

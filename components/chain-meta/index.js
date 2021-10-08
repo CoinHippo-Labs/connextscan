@@ -56,7 +56,7 @@ export default function ChainMeta() {
         if (chainData) {
           dispatch({
             type: CHAIN_DATA,
-            value: chainData
+            value: chainData,
           })
         }
       }
