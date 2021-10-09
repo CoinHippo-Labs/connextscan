@@ -13,7 +13,7 @@ export default function PoolsIndex() {
   return (
     <>
       <SectionTitle
-        title="Pools"
+        title="Bridges"
         subtitle={network?.title}
         className="flex-col sm:flex-row items-start sm:items-center"
       />

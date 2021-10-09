@@ -44,7 +44,7 @@ export default function Transactions({ useData, className = '' }) {
             const response = await getTransactions({ chain_id: network.id }, _contracts_data)
 
             if (response) {
-              let _data = response.data || []
+              const _data = response.data || []
 
               const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id === asset.id && contract.data) > -1)), 'id'), 'chain_id')
 
