@@ -34,7 +34,7 @@ export default function Assets({ data, className = '' }) {
                 <span className="font-medium">Router:</span>
                 <Copy
                   text={router.id}
-                  copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                  copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
                     {ellipseAddress(router.id, 6)}
                   </span>}
                 />

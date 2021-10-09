@@ -56,7 +56,7 @@ export default function Transactions({ useData, className = '' }) {
 
               new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
 
-              data = _.orderBy(_.concat((data || []), _data.map(tx => {
+              data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat((data || []), _data.map(tx => {
                 return {
                   ...tx,
                   sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id === tx.sendingAssetId && contract.data)?.data,
@@ -67,7 +67,7 @@ export default function Transactions({ useData, className = '' }) {
                   ...tx,
                   normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
                 }
-              })), ['preparedTimestamp'], ['desc'])
+              })), ['preparedTimestamp'], ['desc']), 'id')).map(([key, value]) => { return { txs: _.orderBy(value, ['preparedTimestamp'], ['asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId } }), ...(_.maxBy(value, 'preparedTimestamp')) } }), ['preparedTimestamp'], ['desc'])
 
               _contracts_data = new_contracts
             }
@@ -107,16 +107,48 @@ export default function Transactions({ useData, className = '' }) {
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className="flex items-center space-x-1">
-                  <Link href={`/tx/${props.value}`}>
-                    <a className="uppercase text-indigo-600 dark:text-white font-medium">
-                      {ellipseAddress(props.value, 6)}
-                    </a>
-                  </Link>
-                  <Copy text={props.value} />
-                </div>
+                <>
+                  <div className="flex items-center space-x-1 mb-1">
+                    <Link href={`/tx/${props.value}`}>
+                      <a className="uppercase text-indigo-600 dark:text-white font-medium">
+                        {ellipseAddress(props.value, 6)}
+                      </a>
+                    </Link>
+                    <Copy text={props.value} />
+                  </div>
+                  {props.row.original.txs?.filter(tx => tx.id && networks.find(network => network?.network_id === tx.chain_id && network?.explorer?.url)).map((tx, i) => (
+                    <div key={i} className="flex items-center space-x-1">
+                      <Copy
+                        size={12}
+                        text={tx.id}
+                        copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-light">
+                          {ellipseAddress(tx.id, 6)}
+                        </span>}
+                      />
+                      <a
+                        href={`${networks.find(network => network.network_id === tx.chain_id).explorer.url}${networks.find(network => network.network_id === tx.chain_id).explorer.transaction_path?.replace('{tx}', tx.id)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-indigo-600 dark:text-white"
+                      >
+                        {networks.find(network => network.network_id === tx.chain_id).explorer.icon ?
+                          <img
+                            src={networks.find(network => network.network_id === tx.chain_id).explorer.icon}
+                            alt=""
+                            className="w-4 h-4 rounded-full"
+                          />
+                          :
+                          <TiArrowRight size={16} className="transform -rotate-45" />
+                        }
+                      </a>
+                    </div>
+                  ))}
+                </>
                 :
-                <div className="skeleton w-32 h-4" />
+                <>
+                  <div className="skeleton w-32 h-4" />
+                  <div className="skeleton w-24 h-3 mt-3" />
+                </>
             ),
           },
           {
@@ -134,14 +166,14 @@ export default function Transactions({ useData, className = '' }) {
                       :
                       <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                   }
-                  <div className="uppercase text-xs text-gray-900 dark:text-white font-semibold">{props.value}</div>
+                  <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
                 </div>
                 :
                 <div className="skeleton w-16 h-4" />
             ),
           },
           {
-            Header: 'Caller',
+            Header: 'Initiator',
             accessor: 'sendingAddress',
             disableSortBy: true,
             Cell: props => (
@@ -149,12 +181,12 @@ export default function Transactions({ useData, className = '' }) {
                 props.value ?
                   <>
                     <div className="flex items-center space-x-1">
-                      <Copy
-                        text={props.value}
-                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                      <Link href={`/address/${props.value}`}>
+                        <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
                           {ellipseAddress(props.value, 6)}
-                        </span>}
-                      />
+                        </a>
+                      </Link>
+                      <Copy text={props.value} />
                       {props.row.original.sendingChain?.explorer?.url && (
                         <a
                           href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.address_path?.replace('{address}', props.value)}`}
@@ -205,12 +237,12 @@ export default function Transactions({ useData, className = '' }) {
                 props.value ?
                   <>
                     <div className="flex items-center space-x-1">
-                      <Copy
-                        text={props.value}
-                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                      <Link href={`/address/${props.value}`}>
+                        <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
                           {ellipseAddress(props.value, 6)}
-                        </span>}
-                      />
+                        </a>
+                      </Link>
+                      <Copy text={props.value} />
                       {props.row.original.receivingChain?.explorer?.url && (
                         <a
                           href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.address_path?.replace('{address}', props.value)}`}

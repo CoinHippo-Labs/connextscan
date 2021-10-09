@@ -111,7 +111,7 @@ export default function Transactions({ className = '' }) {
                       <Copy
                         size={12}
                         text={props.row.original.chainTx}
-                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-600 font-light">
+                        copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-light">
                           {ellipseAddress(props.row.original.chainTx, 6)}
                         </span>}
                       />
@@ -156,14 +156,14 @@ export default function Transactions({ className = '' }) {
                       :
                       <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                   }
-                  <div className="uppercase text-xs text-gray-900 dark:text-white font-semibold">{props.value}</div>
+                  <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
                 </div>
                 :
                 <div className="skeleton w-16 h-4" />
             ),
           },
           {
-            Header: 'Caller',
+            Header: 'Initiator',
             accessor: 'sendingAddress',
             disableSortBy: true,
             Cell: props => (
@@ -173,7 +173,7 @@ export default function Transactions({ className = '' }) {
                     <div className="flex items-center space-x-1">
                       <Copy
                         text={props.value}
-                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
                           {ellipseAddress(props.value, 6)}
                         </span>}
                       />
@@ -229,7 +229,7 @@ export default function Transactions({ className = '' }) {
                     <div className="flex items-center space-x-1">
                       <Copy
                         text={props.value}
-                        copyTitle={<span className="text-xs text-gray-400 dark:text-gray-200 font-medium">
+                        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
                           {ellipseAddress(props.value, 6)}
                         </span>}
                       />

@@ -4,8 +4,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { FiSearch } from 'react-icons/fi'
 
-import { type } from '../../../lib/object/id'
 import { networks } from '../../../lib/menus'
+import { type } from '../../../lib/object/id'
 
 export default function Search() {
   const router = useRouter()
