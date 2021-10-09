@@ -2,6 +2,8 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
+import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
+
 import SectionTitle from '../../components/section-title'
 import Copy from '../../components/copy'
 
@@ -139,20 +141,45 @@ export default function CrosschainTx() {
     return () => clearInterval(interval)
   }, [tx])
 
+  const status = transaction?.data && _.head(_.orderBy(Object.values(transaction.data), ['preparedTimestamp'], ['desc']))?.status
+
   return (
     <>
       <SectionTitle
-        title="Transaction"
+        title="Txn Hash"
         subtitle={tx && (
           <Copy
             size={24}
             text={tx}
-            copyTitle={<span className="uppercase text-gray-900 dark:text-gray-100 font-medium mr-1">
-              {ellipseAddress(tx, 16)}
-            </span>}
+            copyTitle={<>
+              <span className="block md:hidden uppercase text-gray-900 dark:text-gray-100 text-sm font-medium">
+                {ellipseAddress(tx, 16)}
+              </span>
+              <span className="hidden md:block uppercase text-gray-900 dark:text-gray-100 md:text-sm xl:text-xl font-medium mr-1">
+                {ellipseAddress(tx, 24)}
+              </span>
+            </>}
           />
         )}
-        className="flex-col sm:flex-row items-start sm:items-center"
+        right={<div className="sm:text-right mt-1 sm:mt-0">
+          <div className="uppercase text-gray-400 dark:text-gray-600 text-xs mb-1">Status</div>
+          {status ?
+            <div className={`max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'indigo-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+              {status === 'Fulfilled' ?
+                <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
+                :
+                status === 'Prepared' ?
+                  <FaClock size={14} className="text-gray-300 dark:text-white" />
+                  :
+                  <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+              }
+              <div className="uppercase text-gray-900 dark:text-white font-semibold">{status}</div>
+            </div>
+            :
+            <div className="skeleton w-20 h-6" />
+          }
+        </div>}
+        className="flex-col sm:flex-row items-start sm:items-center lg:my-4 lg:mx-16"
       />
 
     </>

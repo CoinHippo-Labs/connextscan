@@ -105,7 +105,6 @@ export default function ChainMeta() {
           type: ASSETS_DATA,
           value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
         })
-console.log(assetsData.map(asset=>{return{chain: asset.chain_data.id, id: asset.id,router: asset.router.id}}))
       }
     }
 

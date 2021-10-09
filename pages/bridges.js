@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router'
 
+import Bridges from '../components/bridges'
 import SectionTitle from '../components/section-title'
 
 import { networks } from '../lib/menus'
@@ -17,7 +18,7 @@ export default function PoolsIndex() {
         subtitle={network?.title}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-
+      <Bridges />
     </>
   )
 }
