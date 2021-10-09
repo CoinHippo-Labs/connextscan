@@ -76,25 +76,35 @@ export default function ChainMeta() {
 
   useEffect(() => {
     const getData = async () => {
-      if (!(pathname.startsWith('/[chain_id]'))) {
-        let assetsData
+      let assetsData
+      let assetsSet = false
 
-        for (let i = 0; i < networks.length; i++) {
-          const network = networks[i]
+      for (let i = 0; i < networks.length; i++) {
+        const network = networks[i]
 
-          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-            const response = await assetBalances({ chain_id: network.id })
+        if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+          const response = await assetBalances({ chain_id: network.id })
 
-            assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+          assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+        
+          if (!(assets_data?.[network.id]) && !assetsSet) {
+            assetsSet = true
+
+            if (assetsData) {
+              dispatch({
+                type: ASSETS_DATA,
+                value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+              })
+            }
           }
         }
+      }
 
-        if (assetsData) {
-          dispatch({
-            type: ASSETS_DATA,
-            value: assetsData,
-          })
-        }
+      if (assetsData) {
+        dispatch({
+          type: ASSETS_DATA,
+          value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+        })
       }
     }
 
@@ -102,7 +112,7 @@ export default function ChainMeta() {
 
     const interval = setInterval(() => getData(), 60 * 1000)
     return () => clearInterval(interval)
-  }, [pathname])
+  }, [])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">

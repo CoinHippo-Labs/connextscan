@@ -84,8 +84,8 @@ export default function Balances({ data, className = '' }) {
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
                 <>
-                  <div className="skeleton w-24 h-4" />
-                  <div className="skeleton w-16 h-3 mt-3" />
+                  <div className="skeleton w-32 h-4" />
+                  <div className="skeleton w-24 h-3 mt-3" />
                 </>
             ),
           },
@@ -183,7 +183,7 @@ export default function Balances({ data, className = '' }) {
         className={`min-h-full ${className}`}
       />
       {data && data.address === address && !(data.data?.length > 0) && (
-        <div className="bg-white dark:bg-gray-900 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700 text-gray-300 dark:text-gray-700 text-base font-medium italic text-center py-16">
+        <div className="bg-white dark:bg-gray-900 border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-700 text-gray-300 dark:text-gray-700 text-base font-medium italic text-center mt-3 py-16">
           No Balances
         </div>
       )}

@@ -176,20 +176,20 @@ export default function CrosschainAddress() {
               {address && balances?.address === address && assets_data ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}
-                  {balances?.data?.filter(balance => assets_data.findIndex(asset => asset.contract_address === balance.contract_address) > -1).findIndex(balance => balance?.quote > 0) > -1 ?
-                    numberFormat(_.sumBy(balances.data.filter(balance => assets_data.findIndex(asset => asset.contract_address === balance.contract_address) > -1), 'quote'), '0,0')
+                  {balances?.data?.filter(balance => Object.entries(assets_data).findIndex(([key, value]) => value.findIndex(asset => asset.contract_address === balance.contract_address) > -1) > -1).findIndex(balance => balance?.quote > 0) > -1 ?
+                    numberFormat(_.sumBy(balances.data.filter(balance => Object.entries(assets_data).findIndex(([key, value]) => value.findIndex(asset => asset.contract_address === balance.contract_address) > -1) > -1), 'quote'), '0,0')
                     :
                     '-'
                   }
                 </div>
                 :
-                <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
+                <div className="skeleton w-20 h-6 mt-1 sm:ml-auto" />
               }
             </span>
           </div>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">
-            <Balances data={assets_data && balances && { ...balances, data: balances.data?.filter(balance => assets_data.findIndex(asset => asset.contract_address === balance.contract_address) > -1) }} />
+            <Balances data={assets_data && balances && { ...balances, data: balances.data?.filter(balance => Object.entries(assets_data).findIndex(([key, value]) => value.findIndex(asset => asset.contract_address === balance.contract_address) > -1) > -1) }} />
           </Widget>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">

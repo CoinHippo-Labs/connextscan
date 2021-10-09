@@ -5,7 +5,7 @@ import { networks } from '../../../lib/menus'
 export default function Networks({ handleDropdownClick }) {
   return (
     <>
-      <div className="dropdown-title">Change Network</div>
+      <div className="dropdown-title">Select Network</div>
       <div className="flex flex-wrap pb-1">
         {networks.map((item, i) => (
           item.disabled ?
