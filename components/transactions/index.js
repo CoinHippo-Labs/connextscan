@@ -169,7 +169,7 @@ export default function Transactions({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <>
+                  <div className="min-w-max">
                     <div className="flex items-center space-x-1">
                       <Copy
                         text={props.value}
@@ -208,7 +208,7 @@ export default function Transactions({ className = '' }) {
                         <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.sendingChain.short_name || props.row.original.sendingChain.title}</span>
                       </div>
                     )}
-                  </>
+                  </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
@@ -225,7 +225,7 @@ export default function Transactions({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <>
+                  <div className="min-w-max">
                     <div className="flex items-center space-x-1">
                       <Copy
                         text={props.value}
@@ -264,7 +264,7 @@ export default function Transactions({ className = '' }) {
                         <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.receivingChain.short_name || props.row.original.receivingChain.title}</span>
                       </div>
                     )}
-                  </>
+                  </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
@@ -298,7 +298,7 @@ export default function Transactions({ className = '' }) {
                                 className="w-5 h-5 rounded-full"
                               />
                             )}
-                            <span className="text-xs font-medium">{props.row.original.sendingAsset.contract_ticker_symbol || props.row.original.sendingAsset.contract_name}</span>
+                            <span className="h-5 text-xs font-medium">{props.row.original.sendingAsset.contract_ticker_symbol || props.row.original.sendingAsset.contract_name}</span>
                           </a>
                         )}
                         <div className="flex items-center space-x-1">
@@ -349,7 +349,7 @@ export default function Transactions({ className = '' }) {
                                 className="w-5 h-5 rounded-full"
                               />
                             )}
-                            <span className="text-xs font-medium">{props.row.original.receivingAsset.contract_ticker_symbol || props.row.original.receivingAsset.contract_name}</span>
+                            <span className="h-5 text-xs font-medium">{props.row.original.receivingAsset.contract_ticker_symbol || props.row.original.receivingAsset.contract_name}</span>
                           </a>
                         )}
                         <div className="flex items-center space-x-1">
@@ -415,7 +415,7 @@ export default function Transactions({ className = '' }) {
                   </span>
                 </div>
                 :
-                <div className="skeleton w-18 h-4 ml-auto" />
+                <div className="skeleton w-20 h-4 ml-auto" />
             ),
             headerClassName: 'justify-end text-right',
           },
@@ -425,7 +425,7 @@ export default function Transactions({ className = '' }) {
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
-        noPagination={!transactions || transactions?.data?.length <= 10 ? true : false}
+        noPagination={!transactions || transactions.data?.length <= 10 ? true : false}
         defaultPageSize={10}
         className={`min-h-full ${className}`}
       />

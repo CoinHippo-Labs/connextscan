@@ -3,30 +3,87 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
+import { BiWallet } from 'react-icons/bi'
 
+import Balances from '../../components/crosschain/balances'
 import Transactions from '../../components/crosschain/transactions'
 import SectionTitle from '../../components/section-title'
 import Copy from '../../components/copy'
 import Widget from '../../components/widget'
 
 import { user } from '../../lib/api/subgraph'
-import { contracts as getContracts } from '../../lib/api/covalent'
+import { balances as getBalances, contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
-import { ellipseAddress } from '../../lib/utils'
+import { numberFormat, ellipseAddress } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
 
 export default function CrosschainAddress() {
   const dispatch = useDispatch()
-  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
+  const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
   const { contracts_data } = { ...contracts }
+  const { assets_data } = { ...assets }
 
   const router = useRouter()
   const { query } = { ...router }
   const { address } = { ...query }
 
+  const [balances, setBalances] = useState(null)
   const [transactions, setTransactions] = useState(null)
+
+  useEffect(() => {
+    const getData = async () => {
+      if (address) {
+        let data
+
+        for (let i = 0; i < networks.length; i++) {
+          const network = networks[i]
+
+          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+            let page = 0
+            let hasMore = true
+
+            while (hasMore) {
+              const response = await getBalances(network.network_id, address, { 'page-number': page })
+
+              if (response?.data) {
+                data = (
+                  _.orderBy(
+                    _.uniqBy(_.concat(data || [], response.data.items || []), 'contract_address')
+                    .map(balance => {
+                      return {
+                        ...balance,
+                        balance: typeof balance.balance === 'string' ? Number(balance.balance) : typeof balance.balance === 'number' ? balance.balance : -1,
+                        quote_rate: typeof balance.quote_rate === 'string' ? Number(balance.quote_rate) : typeof balance.quote_rate === 'number' ? balance.quote_rate : -1,
+                        quote: typeof balance.quote === 'string' ? Number(balance.quote) : typeof balance.quote === 'number' ? balance.quote : -1,
+                        chain_data: balance.chain_data || network,
+                      }
+                    }),
+                    ['quote'], ['desc']
+                  )
+                )
+
+                hasMore = response.data.pagination?.has_more
+              }
+              else {
+                hasMore = false
+              }
+
+              page++
+            }
+          }
+        }
+
+        setBalances({ data, address })
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 30 * 1000)
+    return () => clearInterval(interval)
+  }, [address])
 
   useEffect(() => {
     const getData = async () => {
@@ -36,7 +93,7 @@ export default function CrosschainAddress() {
         for (let i = 0; i < networks.length; i++) {
           const network = networks[i]
 
-          if (network && network.id) {
+          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
             const response = await user(address, { chain_id: network.id }, _contracts_data)
 
             if (response) {
@@ -108,26 +165,32 @@ export default function CrosschainAddress() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
-        <div>
-          <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
-            <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Balances</span>
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 pt-3 pb-6 px-4">
+          <div className="flex flex-col sm:flex-row sm:items-start space-y-3 mx-3">
+            <span className="flex items-center uppercase text-gray-900 dark:text-white text-lg font-semibold space-x-1.5 mt-3">
+              <BiWallet size={24} />
+              <span>Balances</span>
+            </span>
             <span className="sm:text-right mb-auto ml-0 sm:ml-auto">
               <div className="h-full uppercase text-gray-400 dark:text-gray-500">Total</div>
-              {/*address && routers?.address === address ?
+              {address && balances?.address === address && assets_data ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}
-                  {routers?.data?.findIndex(router => router?.assetBalances?.findIndex(assetBalance => typeof assetBalance?.value === 'number') > -1) > -1 ?
-                    numberFormat(_.sum(routers.data.flatMap(router => router?.assetBalances?.map(assetBalance => assetBalance?.value) || [])), '0,0')
+                  {balances?.data?.filter(balance => assets_data.findIndex(asset => asset.contract_address === balance.contract_address) > -1).findIndex(balance => balance?.quote > 0) > -1 ?
+                    numberFormat(_.sumBy(balances.data.filter(balance => assets_data.findIndex(asset => asset.contract_address === balance.contract_address) > -1), 'quote'), '0,0')
                     :
                     '-'
                   }
                 </div>
                 :
                 <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
-              */}
+              }
             </span>
           </div>
-          {/*<Assets data={routers} className="mt-4" />*/}
+          <div className="h-3" />
+          <Widget className="min-h-full contents p-0">
+            <Balances data={assets_data && balances && { ...balances, data: balances.data?.filter(balance => assets_data.findIndex(asset => asset.contract_address === balance.contract_address) > -1) }} />
+          </Widget>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light mx-3">Latest Transactions</span>

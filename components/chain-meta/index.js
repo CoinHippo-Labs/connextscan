@@ -7,18 +7,19 @@ import { IoRadioButtonOnOutline } from 'react-icons/io5'
 import { RiGasStationFill } from 'react-icons/ri'
 import { TiArrowRight } from 'react-icons/ti'
 
-import { graphql } from '../../lib/api/subgraph'
+import { graphql, assetBalances } from '../../lib/api/subgraph'
 import { coin } from '../../lib/api/coingecko'
 import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA } from '../../reducers/types'
+import { CHAIN_DATA, ASSETS_DATA } from '../../reducers/types'
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
-  const { data } = useSelector(state => ({ data: state.data }), shallowEqual)
+  const { data, assets } = useSelector(state => ({ data: state.data, assets: state.assets }), shallowEqual)
   const { chain_data } = { ...data }
+  const { assets_data } = { ...assets }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
@@ -30,7 +31,7 @@ export default function ChainMeta() {
       if (network) {
         let chainData
 
-        let response = await graphql({ chain_id: network.id, query: '{ _meta { block { hash, number } } }' })
+        let response = network.id && typeof network.network_id === 'number' && !network.disabled && await graphql({ chain_id: network.id, query: '{ _meta { block { hash, number } } }' })
 
         chainData = { ...chainData, ...response?.data?._meta }
 
@@ -72,6 +73,36 @@ export default function ChainMeta() {
     const interval = setInterval(() => getData(), 15 * 1000)
     return () => clearInterval(interval)
   }, [network])
+
+  useEffect(() => {
+    const getData = async () => {
+      if (!(pathname.startsWith('/[chain_id]'))) {
+        let assetsData
+
+        for (let i = 0; i < networks.length; i++) {
+          const network = networks[i]
+
+          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+            const response = await assetBalances({ chain_id: network.id })
+
+            assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+          }
+        }
+
+        if (assetsData) {
+          dispatch({
+            type: ASSETS_DATA,
+            value: assetsData,
+          })
+        }
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 60 * 1000)
+    return () => clearInterval(interval)
+  }, [pathname])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">

@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
@@ -23,17 +24,23 @@ export default function Transactions({ useData, className = '' }) {
   const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
   const { contracts_data } = { ...contracts }
 
+  const router = useRouter()
+  const { query } = { ...router }
+  const { address } = { ...query }
+
   const [transactions, setTransactions] = useState(null)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     const getData = async () => {
       if (!useData) {
         let data, _contracts_data = _.cloneDeep(contracts_data)
+        let txsSet = false
 
         for (let i = 0; i < networks.length; i++) {
           const network = networks[i]
 
-          if (network && network.id) {
+          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
             const response = await getTransactions({ chain_id: network.id }, _contracts_data)
 
             if (response) {
@@ -70,8 +77,18 @@ export default function Transactions({ useData, className = '' }) {
               })), ['preparedTimestamp'], ['desc']), 'id')).map(([key, value]) => { return { txs: _.orderBy(value, ['preparedTimestamp'], ['asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId } }), ...(_.maxBy(value, 'preparedTimestamp')) } }), ['preparedTimestamp'], ['desc'])
 
               _contracts_data = new_contracts
+            
+              if (!transactions && !loaded && !txsSet) {
+                txsSet = true
+
+                setTransactions({ data })
+              }
             }
           }
+        }
+
+        if (!loaded && txsSet) {
+          setLoaded(true)
         }
 
         setTransactions({ data })
@@ -87,9 +104,9 @@ export default function Transactions({ useData, className = '' }) {
 
     getData()
 
-    const interval = setInterval(() => getData(), 30 * 1000)
+    const interval = setInterval(() => getData(), (loaded ? 1 : 1.5) * 30 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [loaded])
 
   useEffect(() => {
     if (useData?.address) {
@@ -179,7 +196,7 @@ export default function Transactions({ useData, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <>
+                  <div className="min-w-max">
                     <div className="flex items-center space-x-1">
                       <Link href={`/address/${props.value}`}>
                         <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
@@ -218,7 +235,7 @@ export default function Transactions({ useData, className = '' }) {
                         <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.sendingChain.short_name || props.row.original.sendingChain.title}</span>
                       </div>
                     )}
-                  </>
+                  </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
@@ -235,7 +252,7 @@ export default function Transactions({ useData, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <>
+                  <div className="min-w-max">
                     <div className="flex items-center space-x-1">
                       <Link href={`/address/${props.value}`}>
                         <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
@@ -274,7 +291,7 @@ export default function Transactions({ useData, className = '' }) {
                         <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.receivingChain.short_name || props.row.original.receivingChain.title}</span>
                       </div>
                     )}
-                  </>
+                  </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
@@ -425,22 +442,22 @@ export default function Transactions({ useData, className = '' }) {
                   </span>
                 </div>
                 :
-                <div className="skeleton w-18 h-4 ml-auto" />
+                <div className="skeleton w-20 h-4 ml-auto" />
             ),
             headerClassName: 'justify-end text-right',
           },
         ]}
-        data={transactions ?
+        data={transactions && !(useData && transactions.address !== address) ?
           (transactions.data || []).map((transaction, i) => { return { ...transaction, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
-        noPagination={!transactions || transactions?.data?.length <= 10 ? true : false}
+        noPagination={!transactions || (useData && transactions.address !== address) || transactions.data?.length <= 10 ? true : false}
         defaultPageSize={100}
         className={`min-h-full ${className}`}
       />
       {transactions && !(transactions.data?.length > 0) && (
-        <div className="bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 py-2">
+        <div className="bg-white dark:bg-gray-900 text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 py-2">
           No Transactions
         </div>
       )}
