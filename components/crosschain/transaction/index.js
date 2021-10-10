@@ -452,7 +452,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
                 <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Txn Hash:</span>
                 {data ?
-                  transaction.chainTx ?
+                  transaction?.chainTx ?
                     <div className="flex items-center">
                       {transaction.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
                         <a
@@ -477,7 +477,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
                 <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Block:</span>
                 {data ?
-                  transaction.preparedBlockNumber ?
+                  transaction?.preparedBlockNumber ?
                     transaction.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
                       <a
                         href={`${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.block_path?.replace('{block}', transaction.preparedBlockNumber)}`}
@@ -532,7 +532,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
                 <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Time:</span>
                 {data ?
-                  transaction.preparedTimestamp ?
+                  transaction?.preparedTimestamp ?
                     <span className="text-xs lg:text-base">
                       <span className="text-gray-400 dark:text-gray-500 mr-1">{moment(transaction.preparedTimestamp).fromNow()}</span>
                       <span>({moment(transaction.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')})</span>
@@ -546,7 +546,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
                 <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Expiry:</span>
                 {data ?
-                  transaction.expiry ?
+                  transaction?.expiry ?
                     <span className="text-xs lg:text-base">
                       <span className="text-gray-400 dark:text-gray-500 mr-1">{moment(transaction.expiry).fromNow()}</span>
                       <span>({moment(transaction.expiry).format('MMM D, YYYY h:mm:ss A')})</span>
