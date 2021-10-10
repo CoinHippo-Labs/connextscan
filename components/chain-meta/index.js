@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
@@ -8,23 +8,27 @@ import { RiGasStationFill } from 'react-icons/ri'
 import { TiArrowRight } from 'react-icons/ti'
 
 import { graphql, assetBalances } from '../../lib/api/subgraph'
+import { contracts as getContracts } from '../../lib/api/covalent'
 import { coin } from '../../lib/api/coingecko'
 import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA, ASSETS_DATA } from '../../reducers/types'
+import { CHAIN_DATA, CONTRACTS_DATA, ASSETS_DATA } from '../../reducers/types'
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
-  const { data, assets } = useSelector(state => ({ data: state.data, assets: state.assets }), shallowEqual)
+  const { data, contracts, assets } = useSelector(state => ({ data: state.data, contracts: state.contracts, assets: state.assets }), shallowEqual)
   const { chain_data } = { ...data }
+  const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+
+  const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   useEffect(() => {
     const getData = async () => {
@@ -87,10 +91,10 @@ export default function ChainMeta() {
 
           assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
         
-          if (!(assets_data?.[network.id]) && !assetsSet) {
-            assetsSet = true
-
+          if (!(assets_data?.[network.id]) && !assetsLoaded && !assetsSet) {
             if (assetsData) {
+              assetsSet = true
+
               dispatch({
                 type: ASSETS_DATA,
                 value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
@@ -101,10 +105,38 @@ export default function ChainMeta() {
       }
 
       if (assetsData) {
+        if (!assetsLoaded && assetsSet) {
+          setAssetsLoaded(true)
+        }
+
         dispatch({
           type: ASSETS_DATA,
           value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
         })
+
+        const _contracts = _.groupBy(_.uniqBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(asset => asset).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'contract_address'), 'chain_data.id')
+
+        let new_contracts
+
+        for (let i = 0; i < Object.entries(_contracts).length; i++) {
+          const contract = Object.entries(_contracts)[i]
+          const key = contract?.[0], value = contract?.[1]
+
+          const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value?.map(_contract => _contract.contract_address).join(','))
+
+          if (resContracts?.data) {
+            new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+          }
+        }
+
+        new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
+
+        if (new_contracts) {
+          dispatch({
+            type: CONTRACTS_DATA,
+            value: new_contracts,
+          })
+        }
       }
     }
 
@@ -112,7 +144,7 @@ export default function ChainMeta() {
 
     const interval = setInterval(() => getData(), 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [assetsLoaded])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
