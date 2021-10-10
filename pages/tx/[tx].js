@@ -4,6 +4,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
 
+import Transaction from '../../components/crosschain/transaction'
 import SectionTitle from '../../components/section-title'
 import Copy from '../../components/copy'
 
@@ -169,7 +170,7 @@ export default function CrosschainTx() {
                 <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                 :
                 status === 'Prepared' ?
-                  <FaClock size={14} className="text-gray-300 dark:text-white" />
+                  <FaClock size={14} className="text-gray-400 dark:text-white" />
                   :
                   <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
               }
@@ -179,9 +180,11 @@ export default function CrosschainTx() {
             <div className="skeleton w-20 h-6" />
           }
         </div>}
-        className="flex-col sm:flex-row items-start sm:items-center lg:my-4 lg:mx-16"
+        className="xl:max-w-7xl flex-col sm:flex-row items-start sm:items-center xl:my-4 mx-auto"
       />
-
+      <div className="xl:max-w-7xl lg:my-4 xl:my-6 mx-auto">
+        <Transaction data={transaction?.tx === tx && transaction} />
+      </div>
     </>
   )
 }
