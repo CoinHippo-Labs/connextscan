@@ -91,7 +91,7 @@ export default function ChainMeta() {
 
           assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
         
-          if (!(assets_data?.[network.id]) && !assetsLoaded && !assetsSet) {
+          if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/bridges'].includes(pathname))) {
             if (assetsData) {
               assetsSet = true
 
@@ -114,7 +114,7 @@ export default function ChainMeta() {
           value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
         })
 
-        const _contracts = _.groupBy(_.uniqBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(asset => asset).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'contract_address'), 'chain_data.id')
+        const _contracts = _.groupBy(_.uniqBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(assets => assets).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'contract_address'), 'chain_data.id')
 
         let new_contracts
 

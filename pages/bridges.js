@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router'
 
-import Bridges from '../components/bridges'
+import Bridges from '../components/crosschain/bridges'
 import SectionTitle from '../components/section-title'
 
 import { networks } from '../lib/menus'
