@@ -75,7 +75,7 @@ export default function Bridges() {
         {bridge?.assets && Object.values(bridge.assets).flatMap(assets => assets).map((asset, j) => (
           <div key={j}>
             {asset?.data ?
-              <div className={`${asset?.chain_data?.color?.background} bg-opacity-90 shadow-sm text-white p-3`}>
+              <div className={`${asset?.chain_data?.color?.background} bg-opacity-90 rounded text-white p-3`}>
                 <div className="space-y-0.5">
                   {asset?.data && (
                     <div className="flex">
@@ -147,7 +147,7 @@ export default function Bridges() {
                 </div>
               </div>
               :
-              <div className="skeleton w-full h-32" />
+              <div className="skeleton w-full h-36" />
             }
           </div>
         ))}
