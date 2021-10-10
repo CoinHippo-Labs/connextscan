@@ -1,7 +1,9 @@
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 import moment from 'moment'
 import { Img } from 'react-image'
+import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
 
@@ -19,13 +21,13 @@ export default function Transaction({ data, className = '' }) {
 
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
-console.log(data)
+
   return (
     <>
       <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0">
         <Widget
           title={<div className="uppercase text-gray-600 dark:text-gray-400 text-base font-semibold mb-2">Asset</div>}
-          className="max-wax sm:max-w-min mr-4 px-5"
+          className="max-wax sm:max-w-min mr-4 px-5 lg:px-3 xl:px-5"
         >
           {data ?
             <>
@@ -148,7 +150,7 @@ console.log(data)
         </Widget>
         <Widget
           title={<div className="uppercase text-gray-600 dark:text-gray-400 text-base font-semibold mb-2">Token Transfers</div>}
-          className="ml-auto px-5"
+          className="ml-auto px-5 lg:px-3 xl:px-5"
         >
           <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 mt-0 lg:mt-2">
             {data ?
@@ -208,19 +210,16 @@ console.log(data)
             <div className="ml-0 sm:mx-auto">
               {data ?
                 <>
-                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender ? sender.status === 'Fulfilled' ? 'green-600' : sender.status === 'Prepared' ? 'indigo-500' : 'red-700' : 'gray-700'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
-                    {sender ?
-                      sender.status === 'Fulfilled' ?
+                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled', 'Prepared'].includes(sender.status) ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    {sender?.status ?
+                      ['Fulfilled', 'Prepared'].includes(sender.status) ?
                         <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                         :
-                        sender.status === 'Prepared' ?
-                          <FaClock size={14} className="text-gray-300 dark:text-white" />
-                          :
-                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                       :
-                      <FaClock size={14} className="text-gray-300 dark:text-gray-500" />
+                      <FaClock size={14} className="text-gray-300 dark:text-white" />
                     }
-                    <div className={`uppercase ${sender ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'} text-xs font-semibold`}>{sender?.status || 'Preparing'}</div>
+                    <div className={`uppercase ${sender?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sender?.status ? ['Fulfilled', 'Prepared'] ? 'Prepared' : sender.status : 'Preparing'}</div>
                   </div>
                   {sender?.chainTx && sender?.sendingChain?.explorer?.url && (
                     <div className="flex items-center space-x-1 mt-0.5">
@@ -296,6 +295,23 @@ console.log(data)
                   <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
                 }
               </div>
+              {general?.router?.id && (
+                <>
+                  <div className="flex items-center space-x-1 mt-1">
+                    <Copy
+                      size={12}
+                      text={general.router.id}
+                      copyTitle={<span className="text-gray-500 dark:text-gray-400 text-xs font-light">
+                        {ellipseAddress(general.router.id, 6)}
+                      </span>}
+                    />
+                  </div>
+                  <div className="flex items-center text-xs justify-center font-medium space-x-1">
+                    <MdOutlineRouter size={16} className="mb-0.5" />
+                    <span>Router</span>
+                  </div>
+                </>
+              )}
             </div>
             <div className="ml-0 sm:mx-auto">
               <TiArrowRight size={24} className="transform rotate-90 sm:rotate-0 text-gray-600 dark:text-gray-400" />
@@ -303,22 +319,19 @@ console.log(data)
             <div className="ml-0 sm:mx-auto">
               {data ?
                 <>
-                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${receiver ? receiver.status === 'Fulfilled' ? 'green-600' : receiver.status === 'Prepared' ? 'indigo-500' : 'red-700' : 'gray-700'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
-                    {receiver ?
+                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status && receiver.status !== 'Prepared' ? receiver.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    {receiver?.status && receiver.status !== 'Prepared' ?
                       receiver.status === 'Fulfilled' ?
                         <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                         :
-                        receiver.status === 'Prepared' ?
-                          <FaClock size={14} className="text-gray-300 dark:text-white" />
-                          :
-                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                       :
                       sender?.status === 'Cancelled' ?
-                        <FaTimesCircle size={14} className="text-gray-300 dark:text-gray-500" />
+                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
-                        <FaClock size={14} className="text-gray-300 dark:text-gray-500" />
+                        <FaClock size={14} className="text-gray-300 dark:text-white" />
                     }
-                    <div className={`uppercase ${receiver ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'} text-xs font-semibold`}>{receiver?.status || (sender?.status === 'Cancelled' ? 'Ignored' : 'Waiting')}</div>
+                    <div className={`uppercase ${receiver?.status && receiver.status !== 'Prepared' ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receiver?.status && receiver.status !== 'Prepared' ? receiver.status : sender?.status === 'Cancelled' ? 'Ignored' : 'Pending'}</div>
                   </div>
                   {receiver?.chainTx && receiver?.receivingChain?.explorer?.url && (
                     <div className="flex items-center space-x-1 mt-0.5">
@@ -419,7 +432,187 @@ console.log(data)
           </div>
         </Widget>
       </div>
-      
+      <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 gap-4 mt-4 lg:mt-8">
+        {[sender, receiver].map((transaction, i) => (
+          <Widget
+            key={i}
+            title={<div className="flex items-center space-x-2 mb-4">
+              {transaction?.[i === 0 ? 'sendingChain' : 'receivingChain']?.icon && (
+                <Img
+                  src={transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].icon}
+                  alt=""
+                  className="w-6 h-6 rounded-full"
+                />
+              )}
+              <span className="uppercase text-gray-600 dark:text-gray-400 text-sm font-semibold">Transaction Details</span>
+            </div>}
+            className="p-5 lg:px-3 xl:px-5"
+          >
+            <div className="w-full flex flex-col space-y-4">
+              <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Txn Hash:</span>
+                {data ?
+                  transaction.chainTx ?
+                    <div className="flex items-center">
+                      {transaction.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
+                        <a
+                          href={`${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', transaction.chainTx)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="uppercase text-indigo-600 dark:text-white text-xs lg:text-base font-medium mr-1"
+                        >
+                          {ellipseAddress(transaction.chainTx, 16)}
+                        </a>
+                        :
+                        <span className="text-xs lg:text-base mr-1">{ellipseAddress(transaction.chainTx, 16)}</span>
+                      }
+                      <Copy size={18} text={transaction.chainTx} />
+                    </div>
+                    :
+                    <span className="text-xs lg:text-base">-</span>
+                  :
+                  <div className="skeleton w-72 h-4 lg:h-6 mt-1" />
+                }
+              </div>
+              <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Block:</span>
+                {data ?
+                  transaction.preparedBlockNumber ?
+                    transaction.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
+                      <a
+                        href={`${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.block_path?.replace('{block}', transaction.preparedBlockNumber)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs lg:text-base"
+                      >
+                        {numberFormat(transaction.preparedBlockNumber, '0,0')}
+                      </a>
+                      :
+                      <span className="text-xs lg:text-base">{numberFormat(transaction.preparedBlockNumber, '0,0')}</span>
+                    :
+                    <span className="text-xs lg:text-base">-</span>
+                  :
+                  <div className="skeleton w-24 h-4 lg:h-6 mt-1" />
+                }
+              </div>
+              <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Status:</span>
+                {data ?
+                  i === 0 ?
+                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled', 'Prepared'].includes(transaction.status) ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      {transaction?.status ?
+                        ['Fulfilled', 'Prepared'].includes(transaction.status) ?
+                          <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
+                          :
+                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                        :
+                        <FaClock size={14} className="text-gray-300 dark:text-white" />
+                      }
+                      <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status ? ['Fulfilled', 'Prepared'] ? 'Success' : 'Failed' : 'Pending'}</div>
+                    </div>
+                    :
+                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status && transaction.status !== 'Prepared' ? transaction.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      {transaction?.status && transaction.status !== 'Prepared' ?
+                        transaction.status === 'Fulfilled' ?
+                          <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
+                          :
+                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                        :
+                        sender?.status === 'Cancelled' ?
+                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                          :
+                          <FaClock size={14} className="text-gray-300 dark:text-white" />
+                      }
+                      <div className={`uppercase ${transaction?.status && transaction.status !== 'Prepared' ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status && transaction.status !== 'Prepared' ? transaction.status === 'Fulfilled' ? 'Success' : 'Failed' : sender?.status === 'Cancelled' ? 'Cancelled' : 'Pending'}</div>
+                    </div>
+                  :
+                  <div className="skeleton w-24 h-5 lg:h-7 mt-1" />
+                }
+              </div>
+              <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Time:</span>
+                {data ?
+                  transaction.preparedTimestamp ?
+                    <span className="text-xs lg:text-base">
+                      <span className="text-gray-400 dark:text-gray-500 mr-1">{moment(transaction.preparedTimestamp).fromNow()}</span>
+                      <span>({moment(transaction.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')})</span>
+                    </span>
+                    :
+                    <span className="text-xs lg:text-base">-</span>
+                  :
+                  <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
+                }
+              </div>
+              <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Expiry:</span>
+                {data ?
+                  transaction.expiry ?
+                    <span className="text-xs lg:text-base">
+                      <span className="text-gray-400 dark:text-gray-500 mr-1">{moment(transaction.expiry).fromNow()}</span>
+                      <span>({moment(transaction.expiry).format('MMM D, YYYY h:mm:ss A')})</span>
+                    </span>
+                    :
+                    <span className="text-xs lg:text-base">-</span>
+                  :
+                  <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
+                }
+              </div>
+            </div>
+          </Widget>
+        ))}
+      </div>
+      <div className="mt-4 lg:mt-8">
+        <Widget className="p-5 lg:px-3 xl:px-5">
+          <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="flex flex-col space-y-2">
+              <span className="text-xs lg:text-base font-semibold">Signature:</span>
+              {data ?
+                general?.signature ?
+                  <div className="flex items-start">
+                    <span className="break-all text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-1">{general.signature}</span>
+                    <Copy size={20} text={general.signature} />
+                  </div>
+                  :
+                  <span className="text-xs lg:text-base">-</span>
+                :
+                <div className="skeleton w-96 h-4 lg:h-6 mt-1" />
+              }
+            </div>
+            <div className="flex flex-col space-y-2">
+              <span className="text-xs lg:text-base font-semibold">Bid Signature:</span>
+              {data ?
+                general?.bidSignature ?
+                  <div className="flex items-start">
+                    <span className="break-all text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-1">{general.bidSignature}</span>
+                    <Copy size={20} text={general.bidSignature} />
+                  </div>
+                  :
+                  <span className="text-xs lg:text-base">-</span>
+                :
+                <div className="skeleton w-96 h-4 lg:h-6 mt-1" />
+              }
+            </div>
+          </div>
+          <div className="flex flex-col space-y-2 mt-4">
+            <span className="text-xs lg:text-base font-semibold">Encoded Bid:</span>
+            {data ?
+              general?.encodedBid ?
+                <div className="flex items-start">
+                  <div className="bg-gray-100 dark:bg-gray-800 break-all rounded-xl text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-2 p-4">{general.encodedBid}</div>
+                  <Copy size={20} text={general.encodedBid} className="mt-4" />
+                </div>
+                :
+                <span className="text-xs lg:text-base">-</span>
+              :
+              <div className="flex flex-col space-y-3">
+                {[...Array(8).keys()].map(i => (
+                  <div key={i} className="skeleton w-full h-4 lg:h-6" />
+                ))}
+              </div>
+            }
+          </div>
+        </Widget>
+      </div>
     </>
   )
 }
