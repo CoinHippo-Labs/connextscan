@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
@@ -120,12 +121,18 @@ export default function Bridges() {
                         )}
                       </div>
                       {asset?.chain_data?.icon && (
-                        <img
-                          src={asset.chain_data.icon}
-                          alt=""
-                          className="bg-white ring w-5 h-5 rounded relative ml-auto"
-                          style={{ top: '-.25rem', right: '-.3rem' }}
-                        />
+                        <Link href={`/${asset.chain_data.id}`}>
+                          <a
+                            className="bg-white ring w-5 h-5 rounded relative ml-auto"
+                            style={{ top: '-.25rem', right: '-.3rem' }}
+                          >
+                            <img
+                              src={asset.chain_data.icon}
+                              alt=""
+                              className="w-5 h-5"
+                            />
+                          </a>
+                        </Link>
                       )}
                     </div>
                   )}
