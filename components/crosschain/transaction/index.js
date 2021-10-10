@@ -565,12 +565,12 @@ export default function Transaction({ data, className = '' }) {
         <Widget className="p-5 lg:px-3 xl:px-5">
           <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex flex-col space-y-2">
-              <span className="text-xs lg:text-base font-semibold">Signature:</span>
+              <span className="text-xs lg:text-base font-semibold">Bid Signature:</span>
               {data ?
-                general?.signature ?
+                general?.bidSignature ?
                   <div className="flex items-start">
-                    <span className="break-all text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-1">{general.signature}</span>
-                    <Copy size={20} text={general.signature} />
+                    <span className="break-all text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-1">{general.bidSignature}</span>
+                    <Copy size={20} text={general.bidSignature} />
                   </div>
                   :
                   <span className="text-xs lg:text-base">-</span>
@@ -579,12 +579,12 @@ export default function Transaction({ data, className = '' }) {
               }
             </div>
             <div className="flex flex-col space-y-2">
-              <span className="text-xs lg:text-base font-semibold">Bid Signature:</span>
+              <span className="text-xs lg:text-base font-semibold">Signature:</span>
               {data ?
-                general?.bidSignature ?
+                general?.signature ?
                   <div className="flex items-start">
-                    <span className="break-all text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-1">{general.bidSignature}</span>
-                    <Copy size={20} text={general.bidSignature} />
+                    <span className="break-all text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-1">{general.signature}</span>
+                    <Copy size={20} text={general.signature} />
                   </div>
                   :
                   <span className="text-xs lg:text-base">-</span>
