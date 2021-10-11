@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router'
 
+import SupportedNetworks from '../components/overview/supported-networks'
 import SectionTitle from '../components/section-title'
 
 import { isMatchRoute } from '../lib/routes'
@@ -29,7 +30,7 @@ export default function Index() {
         subtitle={network?.title}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-
+      <SupportedNetworks />
     </>
   )
 }
