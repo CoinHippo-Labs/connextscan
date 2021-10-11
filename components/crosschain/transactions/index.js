@@ -25,7 +25,7 @@ export default function Transactions({ useData, n, className = '' }) {
   const { contracts_data } = { ...contracts }
 
   const router = useRouter()
-  const { query } = { ...router }
+  const { pathname, query } = { ...router }
   const { address } = { ...query }
 
   const [transactions, setTransactions] = useState(null)
@@ -93,7 +93,7 @@ export default function Transactions({ useData, n, className = '' }) {
 
         setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
 
-        if (_contracts_data) {
+        if (_contracts_data && !(['/'].includes(pathname))) {
           dispatch({
             type: CONTRACTS_DATA,
             value: _contracts_data,
@@ -152,7 +152,7 @@ export default function Transactions({ useData, n, className = '' }) {
                           <img
                             src={networks.find(network => network.network_id === tx.chain_id).explorer.icon}
                             alt=""
-                            className="w-4 h-4 rounded-full"
+                            className="w-4 h-4 rounded-full opacity-50"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -215,7 +215,7 @@ export default function Transactions({ useData, n, className = '' }) {
                             <img
                               src={props.row.original.sendingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full"
+                              className="w-4 h-4 rounded-full opacity-50"
                             />
                             :
                             <TiArrowRight size={16} className="transform -rotate-45" />
@@ -271,7 +271,7 @@ export default function Transactions({ useData, n, className = '' }) {
                             <img
                               src={props.row.original.receivingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full"
+                              className="w-4 h-4 rounded-full opacity-50"
                             />
                             :
                             <TiArrowRight size={16} className="transform -rotate-45" />
@@ -347,7 +347,7 @@ export default function Transactions({ useData, n, className = '' }) {
                                 <img
                                   src={props.row.original.sendingChain.explorer.icon}
                                   alt=""
-                                  className="w-4 h-4 rounded-full"
+                                  className="w-4 h-4 rounded-full opacity-50"
                                 />
                                 :
                                 <TiArrowRight size={16} className="transform -rotate-45" />
@@ -398,7 +398,7 @@ export default function Transactions({ useData, n, className = '' }) {
                                 <img
                                   src={props.row.original.receivingChain.explorer.icon}
                                   alt=""
-                                  className="w-4 h-4 rounded-full"
+                                  className="w-4 h-4 rounded-full opacity-50"
                                 />
                                 :
                                 <TiArrowRight size={16} className="transform -rotate-45" />

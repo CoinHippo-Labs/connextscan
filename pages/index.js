@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 import TotalLiquidity from '../components/crosschain/total-liquidity'
+import LiquidityByChain from '../components/crosschain/liquidity-by-chain'
 import TopLiquidity from '../components/crosschain/top-liquidity'
 import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/overview/supported-networks'
@@ -38,7 +39,7 @@ export default function Index() {
       <div className="max-w-5xl my-4 mx-auto pb-2">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
           <Widget
-            title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Liquidity Available</span>}
+            title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Available Liquidity</span>}
           >
             <TotalLiquidity />
           </Widget>
@@ -46,6 +47,7 @@ export default function Index() {
             title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Liquidity by Chain</span>}
             className="sm:col-span-2"
           >
+            <LiquidityByChain />
           </Widget>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">

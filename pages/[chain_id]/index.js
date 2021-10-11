@@ -117,7 +117,7 @@ export default function Chain() {
           <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
             <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Assets</span>
             <span className="sm:text-right mb-auto ml-0 sm:ml-auto">
-              <div className="h-full uppercase text-gray-400 dark:text-gray-500">Liquidity Available</div>
+              <div className="h-full uppercase text-gray-400 dark:text-gray-500">Available Liquidity</div>
               {chain_id && routers?.chain_id === chain_id ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}

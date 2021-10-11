@@ -17,6 +17,7 @@ import '../styles/components/skeleton.css'
 import '../styles/components/button.css'
 import '../styles/components/dropdown.css'
 import '../styles/components/table.css'
+import '../styles/components/recharts.css'
 
 Router.events.on('routeChangeStart', () => NProgress.start())
 Router.events.on('routeChangeComplete', () => NProgress.done())

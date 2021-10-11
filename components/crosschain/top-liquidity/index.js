@@ -109,7 +109,7 @@ export default function TopLiquidity({ n, className = '' }) {
                             <img
                               src={props.row.original.chain_data.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full"
+                              className="w-4 h-4 rounded-full opacity-50"
                             />
                             :
                             <TiArrowRight size={16} className="transform -rotate-45" />

@@ -70,7 +70,7 @@ export default function Transaction({ data, className = '' }) {
                             <img
                               src={general.sendingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full"
+                              className="w-4 h-4 rounded-full opacity-50"
                             />
                             :
                             <TiArrowRight size={20} className="transform -rotate-45" />
@@ -121,7 +121,7 @@ export default function Transaction({ data, className = '' }) {
                             <img
                               src={general.receivingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full"
+                              className="w-4 h-4 rounded-full opacity-50"
                             />
                             :
                             <TiArrowRight size={20} className="transform -rotate-45" />
@@ -175,7 +175,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={general.sendingChain.explorer.icon}
                             alt=""
-                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full"
+                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50"
                           />
                           :
                           <TiArrowRight size={20} className="transform -rotate-45" />
@@ -240,7 +240,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={sender.sendingChain.explorer.icon}
                             alt=""
-                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full"
+                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -269,7 +269,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="min-w-max grid grid-flow-row grid-cols-8 sm:grid-cols-3 gap-2 sm:mt-1 xl:mt-0">
                 {data ?
                   general?.sendingChain && (
-                    <Img
+                    <img
                       src={general.sendingChain.icon}
                       alt=""
                       className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
@@ -278,14 +278,14 @@ export default function Transaction({ data, className = '' }) {
                   :
                   <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
                 }
-                <Img
+                <img
                   src={networks.find(network => network.id === '')?.icon}
                   alt=""
                   className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
                 />
                 {data ?
                   general?.receivingChain && (
-                    <Img
+                    <img
                       src={general.receivingChain.icon}
                       alt=""
                       className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
@@ -352,7 +352,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={receiver.receivingChain.explorer.icon}
                             alt=""
-                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full"
+                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -400,7 +400,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={general.receivingChain.explorer.icon}
                             alt=""
-                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full"
+                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50"
                           />
                           :
                           <TiArrowRight size={20} className="transform -rotate-45" />
@@ -438,7 +438,7 @@ export default function Transaction({ data, className = '' }) {
             key={i}
             title={<div className="flex items-center space-x-2 mb-4">
               {transaction?.[i === 0 ? 'sendingChain' : 'receivingChain']?.icon && (
-                <Img
+                <img
                   src={transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].icon}
                   alt=""
                   className="w-6 h-6 rounded-full"

@@ -95,10 +95,12 @@ export default function ChainMeta() {
             if (assetsData) {
               assetsSet = true
 
-              dispatch({
-                type: ASSETS_DATA,
-                value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-              })
+              if (!(['/'].includes(pathname))) {
+                dispatch({
+                  type: ASSETS_DATA,
+                  value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+                })
+              }
             }
           }
         }
