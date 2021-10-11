@@ -19,7 +19,7 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../../reducers/types'
 
-export default function Transactions({ useData, className = '' }) {
+export default function Transactions({ useData, n, className = '' }) {
   const dispatch = useDispatch()
   const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
   const { contracts_data } = { ...contracts }
@@ -81,7 +81,7 @@ export default function Transactions({ useData, className = '' }) {
               if (!transactions && !loaded && !txsSet) {
                 txsSet = true
 
-                setTransactions({ data })
+                setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
               }
             }
           }
@@ -91,7 +91,7 @@ export default function Transactions({ useData, className = '' }) {
           setLoaded(true)
         }
 
-        setTransactions({ data })
+        setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
 
         if (_contracts_data) {
           dispatch({

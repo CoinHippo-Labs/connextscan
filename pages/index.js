@@ -1,7 +1,11 @@
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 
+import TopLiquidity from '../components/crosschain/top-liquidity'
+import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/overview/supported-networks'
 import SectionTitle from '../components/section-title'
+import Widget from '../components/widget'
 
 import { isMatchRoute } from '../lib/routes'
 import { networks } from '../lib/menus'
@@ -30,7 +34,29 @@ export default function Index() {
         subtitle={network?.title}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-      <SupportedNetworks />
+      <div className="max-w-5xl my-4 mx-auto pb-2">
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
+          <Link href="/bridges">
+            <a className="uppercase text-gray-900 dark:text-gray-100 text-base font-medium mx-3">Top Liquidity</a>
+          </Link>
+          <div className="h-3" />
+          <Widget className="min-h-full contents p-0">
+            <TopLiquidity n={10} />
+          </Widget>
+        </div>
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
+          <Link href="/transactions">
+            <a className="uppercase text-gray-900 dark:text-gray-100 text-base font-medium mx-3">Latest Transactions</a>
+          </Link>
+          <div className="h-3" />
+          <Widget className="min-h-full contents p-0">
+            <Transactions n={10} />
+          </Widget>
+        </div>
+      </div>
+      <div className="pb-2">
+        <SupportedNetworks />
+      </div>
       <div className="dark:bg-black" />
       <div className="border-indigo-300" />
       <div className="border-yellow-400" />
