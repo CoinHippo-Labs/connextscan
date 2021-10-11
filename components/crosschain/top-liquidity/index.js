@@ -202,7 +202,7 @@ export default function TopLiquidity({ n, className = '' }) {
             sortType: (rowA, rowB) => rowA.original.proportion > rowB.original.proportion ? 1 : -1,
             Cell: props => (
               <div className="flex flex-col text-gray-600 dark:text-gray-400 font-normal">
-                {!props.row.original.skeleton ?
+                {!props.row.original.skeleton && props.row.original.data ?
                   <>
                     <span>{props.value > -1 ? `${numberFormat(props.value * 100, `0,0.000${Math.abs(props.value * 100) < 0.001 ? '000' : ''}`)}%` : '-'}</span>
                     <ProgressBar width={props.value > -1 ? props.value * 100 : 0} color="bg-yellow-500" className="h-1" />
