@@ -123,12 +123,12 @@ export default function Bridges() {
                       {asset?.chain_data?.icon && (
                         <Link href={`/${asset.chain_data.id}`}>
                           <a
-                            className="hidden sm:block min-w-max bg-white w-3 sm:w-5 h-3 sm:h-5 rounded-lg relative -top-2 -right-2.5 ml-auto"
+                            className="hidden sm:block min-w-max bg-white w-3 sm:w-5 h-3 sm:h-5 rounded-lg relative -top-2 -right-2 ml-auto"
                           >
                             <img
                               src={asset.chain_data.icon}
                               alt=""
-                              className="w-3 sm:w-5 h-3 sm:h-5"
+                              className="w-3 sm:w-5 h-3 sm:h-5 rounded-lg"
                             />
                           </a>
                         </Link>
@@ -146,7 +146,7 @@ export default function Bridges() {
                 </div>
               </div>
               :
-              <div className="skeleton w-full" style={{ height: '9.5rem' }} />
+              <div className="skeleton w-full" style={{ height: '9.5rem', borderRadius: 0 }} />
             }
           </div>
         ))}
