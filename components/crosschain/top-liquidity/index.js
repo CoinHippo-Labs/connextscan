@@ -11,10 +11,7 @@ import Copy from '../../copy'
 import { ProgressBar } from '../../progress-bars'
 
 import { currency, currency_symbol } from '../../../lib/object/currency'
-import { networks } from '../../../lib/menus'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
-
-import { CONTRACTS_DATA } from '../../../reducers/types'
 
 export default function TopLiquidity({ n, className = '' }) {
   const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)

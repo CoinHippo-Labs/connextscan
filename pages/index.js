@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 
+import TotalLiquidity from '../components/crosschain/total-liquidity'
 import TopLiquidity from '../components/crosschain/top-liquidity'
 import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/overview/supported-networks'
@@ -35,9 +36,21 @@ export default function Index() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-5xl my-4 mx-auto pb-2">
+        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          <Widget
+            title={<span className="uppercase text-black dark:text-white font-semibold">Liquidity Available</span>}
+          >
+            <TotalLiquidity />
+          </Widget>
+          <Widget
+            title={<span className="uppercase text-black dark:text-white font-semibold">Liquidity by Chain</span>}
+            className="md:col-span-2"
+          >
+          </Widget>
+        </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <Link href="/bridges">
-            <a className="uppercase text-gray-900 dark:text-gray-100 text-base font-medium mx-3">Top Liquidity</a>
+            <a className="uppercase text-black dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>
           </Link>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">
@@ -46,7 +59,7 @@ export default function Index() {
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <Link href="/transactions">
-            <a className="uppercase text-gray-900 dark:text-gray-100 text-base font-medium mx-3">Latest Transactions</a>
+            <a className="uppercase text-black dark:text-white text-lg font-semibold mx-3">Latest Transactions</a>
           </Link>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">

@@ -71,7 +71,7 @@ export default function Bridges() {
         />
       </div>}
     >
-      <div className="grid grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-3 mb-2">
+      <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-3 mb-2">
         {bridge?.assets && Object.values(bridge.assets).flatMap(assets => assets).map((asset, j) => (
           <div key={j}>
             {asset?.data ?
