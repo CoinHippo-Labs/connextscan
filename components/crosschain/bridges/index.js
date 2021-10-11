@@ -59,23 +59,23 @@ export default function Bridges() {
 
   const bridgesComponent = bridges?.map((bridge, i) => (
     <Widget
-      key={i} 
-      title={<div className="flex items-center text-gray-900 dark:text-gray-100 font-medium space-x-1">
+      key={i}
+      title={<div className="flex items-center text-gray-400 dark:text-gray-200 font-medium space-x-1">
         <MdOutlineRouter size={20} className="mb-0.5" />
         <span>Router</span>
+        <Copy
+          text={bridge?.router_id}
+          copyTitle={<span className="text-xs text-gray-900 dark:text-gray-100 font-medium">
+            {ellipseAddress(bridge?.router_id, 10)}
+          </span>}
+        />
       </div>}
-      right={<Copy
-        text={bridge?.router_id}
-        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
-          {ellipseAddress(bridge?.router_id, 6)}
-        </span>}
-      />}
     >
-      <div className="grid grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0.5 mt-3 mb-2">
+      <div className="grid grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-3 mb-2">
         {bridge?.assets && Object.values(bridge.assets).flatMap(assets => assets).map((asset, j) => (
           <div key={j}>
             {asset?.data ?
-              <div className={`${asset?.chain_data?.color?.background} bg-opacity-90 rounded text-white p-3`}>
+              <div className={`min-h-full border ${asset?.chain_data?.color?.border} p-2 sm:p-3`}>
                 <div className="space-y-0.5">
                   {asset?.data && (
                     <div className="flex">
@@ -87,24 +87,24 @@ export default function Bridges() {
                         />
                       )}
                       <div>
-                        <div className="text-xs font-bold">{asset.data.contract_name}</div>
-                        {/*<div className="font-normal" style={{ fontSize: '.65rem' }}>{asset.data.contract_ticker_symbol}</div>*/}
+                        <div className="sm:hidden font-medium" style={{ fontSize: '.65rem' }}>{asset.data.contract_name}</div>
+                        <div className="hidden sm:block text-xs font-semibold">{asset.data.contract_name}</div>
+                        {/*<div className="text-gray-600 dark:text-gray-400 font-normal" style={{ fontSize: '.65rem' }}>{asset.data.contract_ticker_symbol}</div>*/}
                         {asset?.id && (
                           <div className="min-w-max flex items-center space-x-1">
                             <Copy
                               size={14}
                               text={asset.id.replace(`-${bridge.router_id}`, '')}
-                              copyTitle={<span className="text-white font-medium" style={{ fontSize: '.65rem' }}>
+                              copyTitle={<span className="font-medium" style={{ fontSize: '.65rem' }}>
                                 {ellipseAddress(asset.id.replace(`-${bridge.router_id}`, ''), 6)}
                               </span>}
-                              className="text-white"
                             />
                             {asset?.chain_data?.explorer?.url && (
                               <a
                                 href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${bridge.router_id}`, ''))}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-white"
+                                className="text-indigo-600 dark:text-white "
                               >
                                 {asset.chain_data.explorer.icon ?
                                   <img
@@ -123,13 +123,12 @@ export default function Bridges() {
                       {asset?.chain_data?.icon && (
                         <Link href={`/${asset.chain_data.id}`}>
                           <a
-                            className="bg-white ring w-5 h-5 rounded relative ml-auto"
-                            style={{ top: '-.25rem', right: '-.3rem' }}
+                            className="hidden sm:block min-w-max bg-white w-3 sm:w-5 h-3 sm:h-5 relative -top-2 -right-2.5 ml-auto"
                           >
                             <img
                               src={asset.chain_data.icon}
                               alt=""
-                              className="w-5 h-5"
+                              className="w-3 sm:w-5 h-3 sm:h-5 rounded-lg"
                             />
                           </a>
                         </Link>
@@ -138,12 +137,12 @@ export default function Bridges() {
                   )}
                 </div>
                 <div className="text-center my-3">
-                  {/*<div className="uppercase text-gray-100" style={{ fontSize: '.65rem' }}>Liquidity</div>*/}
+                  {/*<div className="uppercase text-gray-400 dark:text-gray-500" style={{ fontSize: '.65rem' }}>Liquidity</div>*/}
                   <div>
-                    <span className="font-mono text-black text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
-                    <span className="text-black text-sm">{asset?.data?.contract_ticker_symbol}</span>
+                    <span className="font-mono text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-sm">{asset?.data?.contract_ticker_symbol}</span>
                   </div>
-                  <div className="text-gray-800 text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
+                  <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
                 </div>
               </div>
               :
