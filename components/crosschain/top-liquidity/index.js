@@ -214,7 +214,7 @@ export default function TopLiquidity({ n, className = '' }) {
             ),
           },
         ]}
-        data={assetBalances?.data?.findIndex(assetBalance => assetBalance?.data) > -1 ?
+        data={assetBalances?.data && !(assetBalances?.data?.findIndex(assetBalance => assetBalance?.data) < 0) ?
           (assetBalances.data || []).map((assetBalance, i) => { return { ...assetBalance, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })

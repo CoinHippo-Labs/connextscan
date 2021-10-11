@@ -39,12 +39,12 @@ export default function Index() {
       <div className="max-w-5xl my-4 mx-auto pb-2">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
           <Widget
-            title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Available Liquidity</span>}
+            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Available Liquidity</span>}
           >
             <TotalLiquidity />
           </Widget>
           <Widget
-            title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Liquidity by Chain</span>}
+            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Liquidity by Chain</span>}
             className="sm:col-span-2"
           >
             <LiquidityByChain />

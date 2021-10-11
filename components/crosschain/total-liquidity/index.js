@@ -38,7 +38,7 @@ export default function TotalLiquidity({ className = '' }) {
 
   return (
     <div className="h-full flex flex-col items-center justify-center pt-8 pb-12">
-      {liquidity?.liquidity > 0 ?
+      {liquidity?.data?.findIndex(asset => !(asset?.data)) < 0 ?
         <div className="font-mono text-2xl font-extrabold text-center">
           {currency_symbol}{numberFormat(liquidity.liquidity, '0,0')}
         </div>
