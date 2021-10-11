@@ -147,7 +147,7 @@ export default function Bridges() {
                 </div>
               </div>
               :
-              <div className="skeleton w-full h-36" />
+              <div className="skeleton w-full" style={{ height: '9.5rem' }} />
             }
           </div>
         ))}
@@ -168,15 +168,6 @@ export default function Bridges() {
       <div className="block sm:hidden space-y-3">
         {bridgesComponent}
       </div>
-      <div className="bg-indigo-300" />
-      <div className="bg-yellow-400" />
-      <div className="bg-blue-600" />
-      <div className="bg-red-600" />
-      <div className="bg-indigo-400" />
-      <div className="bg-gray-500" />
-      <div className="bg-indigo-600" />
-      <div className="bg-green-500" />
-      <div className="bg-pink-500" />
     </>
   )
 }
