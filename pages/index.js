@@ -39,20 +39,22 @@ export default function Index() {
       <div className="max-w-5xl my-4 mx-auto pb-2">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
           <Widget
-            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Available Liquidity</span>}
+            title={<div className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-1 mx-3">Available Liquidity</div>}
           >
             <TotalLiquidity />
           </Widget>
           <Widget
-            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Liquidity by Chain</span>}
+            title={<div className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-1 mx-3">Liquidity by Chain</div>}
             className="sm:col-span-2"
           >
-            <LiquidityByChain />
+            <div className="mx-3">
+              <LiquidityByChain />
+            </div>
           </Widget>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <Link href="/bridges">
-            <a className="uppercase text-black dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>
+            <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>
           </Link>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">
@@ -61,7 +63,7 @@ export default function Index() {
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <Link href="/transactions">
-            <a className="uppercase text-black dark:text-white text-lg font-semibold mx-3">Latest Transactions</a>
+            <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Latest Transactions</a>
           </Link>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">

@@ -76,7 +76,7 @@ export default function LiquidityByChain() {
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
   return (
-    <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'pt-5 pb-0 px-2' : ''}`}>
+    <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'pt-5 pb-0 px-2' : 'mb-2'}`}>
       {loaded ?
         <ResponsiveContainer>
           <BarChart
