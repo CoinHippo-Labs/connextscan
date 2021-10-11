@@ -31,7 +31,7 @@ export default function Index() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <SupportedNetworks />
-      <div className="dark:border-black" />
+      <div className="dark:bg-black" />
       <div className="border-indigo-300" />
       <div className="border-yellow-400" />
       <div className="border-purple-600" />
@@ -41,9 +41,9 @@ export default function Index() {
       <div className="border-blue-600" />
       <div className="border-green-500" />
       <div className="border-pink-500" />
-      <div className="dark:border-green-600" />
-      <div className="dark:border-red-700" />
-      <div className="dark:border-indigo-500" />
+      <div className="dark:bg-green-600" />
+      <div className="dark:bg-red-700" />
+      <div className="dark:bg-indigo-500" />
     </>
   )
 }
