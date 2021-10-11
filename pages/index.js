@@ -36,15 +36,15 @@ export default function Index() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-5xl my-4 mx-auto pb-2">
-        <div className="grid grid-flow-row grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
           <Widget
-            title={<span className="uppercase text-black dark:text-white font-semibold">Liquidity Available</span>}
+            title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Liquidity Available</span>}
           >
             <TotalLiquidity />
           </Widget>
           <Widget
-            title={<span className="uppercase text-black dark:text-white font-semibold">Liquidity by Chain</span>}
-            className="md:col-span-2"
+            title={<span className="uppercase text-gray-700 dark:text-gray-300 font-semibold">Liquidity by Chain</span>}
+            className="sm:col-span-2"
           >
           </Widget>
         </div>

@@ -32,27 +32,39 @@ export default function TotalLiquidity({ className = '' }) {
         }
       }))
 
-      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chain: _.uniqBy(data, 'chain_data.id').length })
+      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_contracts: data.length })
     }
   }, [contracts_data, assets_data])
 
   return (
-    <div className="h-full flex flex-col items-center justify-center space-y-3 pt-8 pb-12">
+    <div className="h-full flex flex-col items-center justify-center pt-8 pb-12">
       {liquidity?.liquidity > 0 ?
         <div className="font-mono text-2xl font-extrabold text-center">
           {currency_symbol}{numberFormat(liquidity.liquidity, '0,0')}
         </div>
         :
-        <div className="skeleton w-48 h-8" />
+        <div className="skeleton w-40 h-8" />
       }
+      <div className="h-3" />
       {liquidity?.data?.findIndex(asset => !(asset?.data)) < 0 ?
         <div className="text-gray-400 dark:text-gray-600 text-base font-light text-center space-x-2">
           <span>across</span>
-          <span className="text-gray-700 dark:text-gray-300 font-medium">{numberFormat(liquidity.num_chain, '0,0')}</span>
-          <span>chain{liquidity.num_chain > 1 ? 's' : ''}</span>
+          <span className="text-gray-700 dark:text-gray-300 font-medium">{numberFormat(liquidity.num_chains, '0,0')}</span>
+          <span>chain{liquidity.num_chains > 1 ? 's' : ''}</span>
         </div>
         :
-        <div className="skeleton w-36 h-4" />
+        <div className="skeleton w-36 h-5 mt-1" />
+      }
+      <div className="h-2" />
+      {liquidity?.data?.findIndex(asset => !(asset?.data)) < 0 ?
+        <div className="text-gray-400 dark:text-gray-600 text-sm font-light text-center space-x-1.5">
+          <span>from</span>
+          <span className="text-gray-600 dark:text-gray-400 font-medium">{numberFormat(liquidity.num_contracts, '0,0')}</span>
+          <span>contract{liquidity.num_contracts > 1 ? 's' : ''}</span>
+          <span>in total</span>
+        </div>
+        :
+        <div className="skeleton w-48 h-4 mt-1" />
       }
     </div>
   )
