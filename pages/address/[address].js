@@ -81,7 +81,7 @@ export default function CrosschainAddress() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 30 * 1000)
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
     return () => clearInterval(interval)
   }, [address])
 
