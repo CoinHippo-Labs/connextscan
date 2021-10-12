@@ -143,5 +143,5 @@ body {
 }
 
 .recharts-label {
-  @apply text-2xs sm:text-sm;
+  @apply font-mono text-2xs sm:text-xs md:text-sm xl:text-base font-semibold;
 }
