@@ -70,7 +70,7 @@ export default function Transaction({ data, className = '' }) {
                             <img
                               src={general.sendingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50"
+                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={20} className="transform -rotate-45" />
@@ -121,7 +121,7 @@ export default function Transaction({ data, className = '' }) {
                             <img
                               src={general.receivingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50"
+                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={20} className="transform -rotate-45" />
@@ -175,7 +175,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={general.sendingChain.explorer.icon}
                             alt=""
-                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50"
+                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={20} className="transform -rotate-45" />
@@ -240,7 +240,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={sender.sendingChain.explorer.icon}
                             alt=""
-                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50"
+                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -352,7 +352,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={receiver.receivingChain.explorer.icon}
                             alt=""
-                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50"
+                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -400,7 +400,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={general.receivingChain.explorer.icon}
                             alt=""
-                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50"
+                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={20} className="transform -rotate-45" />

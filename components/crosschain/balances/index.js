@@ -71,7 +71,7 @@ export default function Balances({ data, className = '' }) {
                             <img
                               src={props.row.original.chain_data.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50"
+                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={16} className="transform -rotate-45" />

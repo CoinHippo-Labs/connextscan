@@ -86,7 +86,7 @@ export default function LiquidityByChain() {
             <XAxis dataKey="short_name" axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 
             <Bar dataKey="liquidity" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
-              <LabelList dataKey="liquidity_string" position="top" />
+              <LabelList dataKey="liquidity_string" position="top" cursor="default" />
               {data.map((entry, i) => (<Cell key={i} cursor="pointer" fill={entry?.color?.barchart} />))}
             </Bar>
           </BarChart>

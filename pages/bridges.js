@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router'
 
+import ChainInfo from '../components/crosschain/chain-info'
 import Bridges from '../components/crosschain/bridges'
 import SectionTitle from '../components/section-title'
 
@@ -16,6 +17,7 @@ export default function PoolsIndex() {
       <SectionTitle
         title="Bridges"
         subtitle={network?.title}
+        right={<ChainInfo />}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <Bridges />

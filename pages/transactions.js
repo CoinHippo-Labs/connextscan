@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router'
 
+import ChainInfo from '../components/crosschain/chain-info'
 import Transactions from '../components/crosschain/transactions'
 import SectionTitle from '../components/section-title'
 
@@ -16,6 +17,7 @@ export default function TransactionsIndex() {
       <SectionTitle
         title="Latest Transactions"
         subtitle={network?.title}
+        right={<ChainInfo />}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
