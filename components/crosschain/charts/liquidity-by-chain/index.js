@@ -12,8 +12,8 @@ import {
   Tooltip,
 } from 'recharts'
 
-import { currency_symbol } from '../../../lib/object/currency'
-import { numberFormat } from '../../../lib/utils'
+import { currency_symbol } from '../../../../lib/object/currency'
+import { numberFormat } from '../../../../lib/utils'
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (active) {
@@ -61,7 +61,7 @@ export default function LiquidityByChain() {
     }).map(asset => {
       return {
         ...asset,
-        value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset?.normalize_amount * asset?.data?.prices?.[0].price),
+        value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
       }
     })),
     'chain_data.id'

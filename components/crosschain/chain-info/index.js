@@ -33,7 +33,7 @@ export default function ChainInfo({ className = '' }) {
       }).map(asset => {
         return {
           ...asset,
-          value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset?.normalize_amount * asset?.data?.prices?.[0].price),
+          value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
         }
       }))
 

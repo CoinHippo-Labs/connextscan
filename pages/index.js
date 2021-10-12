@@ -2,8 +2,15 @@ import Link from 'next/link'
 import { useRouter } from 'next/router'
 
 import ChainInfo from '../components/crosschain/chain-info'
-import TotalLiquidity from '../components/crosschain/total-liquidity'
-import LiquidityByChain from '../components/crosschain/liquidity-by-chain'
+import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
+import Volume24h from '../components/crosschain/summary/volume-24h'
+import Transaction24h from '../components/crosschain/summary/transaction-24h'
+import TimelyLiquidity from '../components/crosschain/charts/timely-liquidity'
+import TimelyVolume from '../components/crosschain/charts/timely-volume'
+import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
+import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
+import VolumeByChain from '../components/crosschain/charts/volume-by-chain'
+import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
 import TopLiquidity from '../components/crosschain/top-liquidity'
 import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/overview/supported-networks'
@@ -41,56 +48,38 @@ export default function Index() {
       <div className="max-w-6xl my-4 mx-auto pb-2">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
           <Widget
-            title={<div className="uppercase text-gray-400 text-base sm:text-sm lg:text-base font-light mt-1 mx-3">Available Liquidity</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
           >
             <div className="mx-3">
               <TotalLiquidity />
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 text-base sm:text-sm lg:text-base font-medium mt-1 mx-3">Volume 24h</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Volume 24h</div>}
           >
             <div className="mx-3">
-              <TotalLiquidity />
+              <Volume24h />
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 text-base sm:text-sm lg:text-base font-semibold mt-1 mx-3">Transaction 24h</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Transaction 24h</div>}
           >
             <div className="mx-3">
-              <TotalLiquidity />
+              <Transaction24h />
             </div>
           </Widget>
         </div>
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
           <Widget
-            title={<div className="uppercase text-gray-400 text-lg sm:text-base lg:text-lg font-light mt-1 mx-7 sm:mx-3">Daily Liquidity</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Daily Liquidity</div>}
             className="sm:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">
-              <LiquidityByChain />
+              <TimelyLiquidity />
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
-            className="sm:col-span-2 px-0 sm:px-4"
-          >
-            <div className="sm:mx-3">
-              <LiquidityByChain />
-            </div>
-          </Widget>
-        </div>
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
-          <Widget
-            title={<div className="uppercase text-gray-400 text-lg sm:text-base lg:text-lg font-medium mt-1 mx-7 sm:mx-3">Daily Volume</div>}
-            className="sm:col-span-2 px-0 sm:px-4"
-          >
-            <div className="sm:mx-3">
-              <LiquidityByChain />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 text-lg sm:text-base lg:text-lg font-semibold mt-1 mx-7 sm:mx-3">Volume 24h by Chain</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
             className="sm:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">
@@ -100,19 +89,37 @@ export default function Index() {
         </div>
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
           <Widget
-            title={<div className="uppercase text-gray-400 text-lg sm:text-base lg:text-lg font-bold mt-1 mx-7 sm:mx-3">Daily Transaction</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Daily Volume</div>}
             className="sm:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">
-              <LiquidityByChain />
+              <TimelyVolume />
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 text-lg sm:text-base lg:text-lg font-extrabold mt-1 mx-7 sm:mx-3">Transaction 24h by Chain</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume 24h by Chain</div>}
             className="sm:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">
-              <LiquidityByChain />
+              <VolumeByChain />
+            </div>
+          </Widget>
+        </div>
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 mt-4">
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Daily Transaction</div>}
+            className="sm:col-span-2 px-0 sm:px-4"
+          >
+            <div className="sm:mx-3">
+              <TimelyTransaction />
+            </div>
+          </Widget>
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transaction 24h by Chain</div>}
+            className="sm:col-span-2 px-0 sm:px-4"
+          >
+            <div className="sm:mx-3">
+              <TransactionByChain />
             </div>
           </Widget>
         </div>
