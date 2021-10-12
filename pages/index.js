@@ -44,10 +44,10 @@ export default function Index() {
             <TotalLiquidity />
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-1 mx-3">Liquidity by Chain</div>}
-            className="sm:col-span-2"
+            title={<div className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-1 mx-7 sm:mx-3">Liquidity by Chain</div>}
+            className="sm:col-span-2 px-0 sm:px-4"
           >
-            <div className="mx-3">
+            <div className="sm:mx-3">
               <LiquidityByChain />
             </div>
           </Widget>

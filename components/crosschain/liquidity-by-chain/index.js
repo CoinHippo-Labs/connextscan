@@ -31,7 +31,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           )}
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
-        <div className="uppercase text-gray-400 dark:text-gray-500 mt-2" style={{ fontSize: '.65rem' }}>Liquidity</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Liquidity</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.liquidity === 'number' ? numberFormat(data.liquidity, '0,0') : ' -'}</div>
       </div>
     )
@@ -76,14 +76,14 @@ export default function LiquidityByChain() {
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
   return (
-    <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'pt-5 pb-0 px-2' : 'mb-2'}`}>
+    <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'sm:pt-5 pb-0 sm:px-2' : 'mb-2 px-7 sm:px-0'}`}>
       {loaded ?
         <ResponsiveContainer>
           <BarChart
             data={data}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
           >
-            <XAxis dataKey="short_name" axisLine={false} tickLine={false} style={{ fontWeight: 300 }} />
+            <XAxis dataKey="short_name" axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 
             <Bar dataKey="liquidity" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
               <LabelList dataKey="liquidity_string" position="top" />

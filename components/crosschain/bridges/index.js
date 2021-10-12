@@ -87,15 +87,15 @@ export default function Bridges() {
                         />
                       )}
                       <div>
-                        <div className="sm:hidden font-medium" style={{ fontSize: '.65rem' }}>{asset.data.contract_name}</div>
+                        <div className="sm:hidden text-2xs font-medium">{asset.data.contract_name}</div>
                         <div className="hidden sm:block text-xs font-semibold">{asset.data.contract_name}</div>
-                        {/*<div className="text-gray-600 dark:text-gray-400 font-normal" style={{ fontSize: '.65rem' }}>{asset.data.contract_ticker_symbol}</div>*/}
+                        {/*<div className="text-gray-600 dark:text-gray-400 text-2xs font-normal">{asset.data.contract_ticker_symbol}</div>*/}
                         {asset?.id && (
                           <div className="min-w-max flex items-center space-x-1">
                             <Copy
                               size={14}
                               text={asset.id.replace(`-${bridge.router_id}`, '')}
-                              copyTitle={<span className="font-medium" style={{ fontSize: '.65rem' }}>
+                              copyTitle={<span className="text-2xs font-medium">
                                 {ellipseAddress(asset.id.replace(`-${bridge.router_id}`, ''), 6)}
                               </span>}
                             />
@@ -137,7 +137,7 @@ export default function Bridges() {
                   )}
                 </div>
                 <div className="text-center my-3">
-                  {/*<div className="uppercase text-gray-400 dark:text-gray-500" style={{ fontSize: '.65rem' }}>Liquidity</div>*/}
+                  {/*<div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>*/}
                   <div>
                     <span className="font-mono text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
                     <span className="text-gray-600 dark:text-gray-400 text-sm">{asset?.data?.contract_ticker_symbol}</span>

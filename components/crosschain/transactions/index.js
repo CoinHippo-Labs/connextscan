@@ -232,7 +232,7 @@ export default function Transactions({ useData, n, className = '' }) {
                             className="w-4 h-4 rounded-full"
                           />
                         )}
-                        <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.sendingChain.short_name || props.row.original.sendingChain.title}</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-2xs">{props.row.original.sendingChain.short_name || props.row.original.sendingChain.title}</span>
                       </div>
                     )}
                   </div>
@@ -288,7 +288,7 @@ export default function Transactions({ useData, n, className = '' }) {
                             className="w-4 h-4 rounded-full"
                           />
                         )}
-                        <span className="text-gray-700 dark:text-gray-300" style={{ fontSize: '.65rem' }}>{props.row.original.receivingChain.short_name || props.row.original.receivingChain.title}</span>
+                        <span className="text-gray-700 dark:text-gray-300 text-2xs">{props.row.original.receivingChain.short_name || props.row.original.receivingChain.title}</span>
                       </div>
                     )}
                   </div>
@@ -332,7 +332,7 @@ export default function Transactions({ useData, n, className = '' }) {
                           <Copy
                             size={12}
                             text={props.row.original.sendingAssetId}
-                            copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium" style={{ fontSize: '.65rem' }}>
+                            copyTitle={<span className="text-gray-400 dark:text-gray-200 text-2xs font-medium">
                               {ellipseAddress(props.row.original.sendingAssetId, 6)}
                             </span>}
                           />
@@ -383,7 +383,7 @@ export default function Transactions({ useData, n, className = '' }) {
                           <Copy
                             size={12}
                             text={props.row.original.receivingAssetId}
-                            copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium" style={{ fontSize: '.65rem' }}>
+                            copyTitle={<span className="text-gray-400 dark:text-gray-200 text-2xs font-medium">
                               {ellipseAddress(props.row.original.receivingAssetId, 6)}
                             </span>}
                           />

@@ -88,7 +88,7 @@ export default function TopLiquidity({ n, className = '' }) {
                       )}
                       <span className="font-semibold">{props.value}</span>
                       {props.row.original.data.contract_ticker_symbol && (
-                        <span className="text-gray-600 dark:text-gray-400" style={{ fontSize: '.65rem' }}>{props.row.original.data.contract_ticker_symbol}</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-2xs">{props.row.original.data.contract_ticker_symbol}</span>
                       )}
                     </div>
                     <div className="flex items-center space-x-1 mt-1">
@@ -164,7 +164,7 @@ export default function TopLiquidity({ n, className = '' }) {
                       <div>
                         <div className="font-medium">{props.value}</div>
                         {props.row.original.chain_data?.title && (
-                          <div className="text-gray-700 dark:text-gray-300 mt-1" style={{ fontSize: '.65rem' }}>{props.row.original.chain_data.title}</div>
+                          <div className="text-gray-700 dark:text-gray-300 text-2xs mt-1">{props.row.original.chain_data.title}</div>
                         )}
                       </div>
                     </a>

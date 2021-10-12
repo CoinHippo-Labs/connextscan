@@ -150,7 +150,7 @@ export default function ChainMeta() {
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
-      <span className="min-w-max flex items-center space-x-1 mr-3" style={{ fontSize: '.65rem' }}>
+      <span className="min-w-max flex items-center text-2xs space-x-1 mr-3">
         {network?.explorer && (!chain_data || chain_data?.block) && (
           <span className="flex items-center text-gray-600 dark:text-gray-400 space-x-0.5">
             {typeof chain_data?.block?.number === 'number' && (
@@ -182,7 +182,7 @@ export default function ChainMeta() {
         }
       </span>
       {chain_data?.gas && (
-        <span className="min-w-max flex items-center text-gray-400 dark:text-gray-300 space-x-2 pl-1" style={{ fontSize: '.65rem' }}>
+        <span className="min-w-max flex items-center text-gray-400 dark:text-gray-300 text-2xs space-x-2 pl-1">
           <span className="flex flex-col items-center">
             <RiGasStationFill size={18} style={{ marginTop: '-.4rem' }} />
             <span className="h-1" style={{ fontSize: '.5rem', marginTop: '-.25rem' }}>Gwei</span>
@@ -198,7 +198,7 @@ export default function ChainMeta() {
       <span className="ml-3 md:ml-auto" />
       <div className="flex flex-row space-x-4">
         {chain_data?.coin && (
-          <div className="min-w-max flex items-center space-x-2.5" style={{ fontSize: '.65rem' }}>
+          <div className="min-w-max flex items-center text-2xs space-x-2.5">
             <div className="flex items-center space-x-1">
               <img
                 src={chain_data.coin.image?.thumb || network?.icon}
@@ -246,8 +246,7 @@ export default function ChainMeta() {
             href={network.info_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center text-indigo-600 dark:text-white text-xs font-semibold"
-            style={{ fontSize: '.65rem' }}
+            className="flex items-center text-indigo-600 dark:text-white text-2xs font-semibold"
           >
             <span className="capitalize">website</span>
             <TiArrowRight size={16} className="transform -rotate-45" />
@@ -258,8 +257,7 @@ export default function ChainMeta() {
             href={network.explorer.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center text-indigo-600 dark:text-white text-xs font-semibold"
-            style={{ fontSize: '.65rem' }}
+            className="flex items-center text-indigo-600 dark:text-white text-2xs font-semibold"
           >
             <span>{network.explorer.name || 'Explorer'}</span>
             <TiArrowRight size={16} className="transform -rotate-45" />

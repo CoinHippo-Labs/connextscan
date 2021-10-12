@@ -110,7 +110,7 @@ export default function Assets({ data, className = '' }) {
                       )}
                     </div>
                     <div className="mt-4">
-                      <div className="uppercase text-gray-400 dark:text-gray-500" style={{ fontSize: '.65rem' }}>Liquidity</div>
+                      <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>
                       <div>
                         <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.normalize_amount ? numberFormat(assetBalance.normalize_amount, '0,0') : assetBalance?.amount && !(assetBalance?.data) ? numberFormat(assetBalance.amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
                         <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>

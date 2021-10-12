@@ -249,7 +249,7 @@ export default function Transaction({ data, className = '' }) {
                     </div>
                   )}
                   {sender?.preparedTimestamp && (
-                    <div className="text-gray-400 dark:text-gray-500 font-light mt-1" style={{ fontSize: '.65rem' }}>
+                    <div className="text-gray-400 dark:text-gray-500 text-2xs font-light mt-1">
                       {moment(sender.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')}
                     </div>
                   )}
@@ -361,7 +361,7 @@ export default function Transaction({ data, className = '' }) {
                     </div>
                   )}
                   {receiver?.preparedTimestamp && (
-                    <div className="text-gray-400 dark:text-gray-500 font-light mt-1" style={{ fontSize: '.65rem' }}>
+                    <div className="text-gray-400 dark:text-gray-500 text-2xs font-light mt-1">
                       {moment(receiver.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')}
                     </div>
                   )}

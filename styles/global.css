@@ -133,3 +133,15 @@ body {
 .string-value {
   @apply break-all;
 }
+
+.recharts-cartesian-axis-tick-value {
+  @apply fill-current text-gray-900 dark:text-white font-medium;
+}
+
+.text-2xs {
+  font-size: .65rem;
+}
+
+.recharts-label {
+  @apply text-2xs sm:text-sm;
+}
