@@ -184,13 +184,13 @@ export default function ChainMeta() {
       {chain_data?.gas && (
         <span className="min-w-max flex items-center text-gray-400 dark:text-gray-300 text-2xs space-x-2 pl-1">
           <span className="flex flex-col items-center">
-            <RiGasStationFill size={18} style={{ marginTop: '-.4rem' }} />
-            <span className="h-1" style={{ fontSize: '.5rem', marginTop: '-.25rem' }}>Gwei</span>
+            <RiGasStationFill size={18} className="-mt-2.5" />
+            <span className="h-1 text-3xs">Gwei</span>
           </span>
           {_.orderBy(Object.entries(chain_data.gas), 1).map(([key, value], i) => (
             <span key={i} className="flex flex-col items-center space-y-0.5">
               <span className="h-3.5 text-gray-900 dark:text-gray-100 font-medium">{numberFormat(value, '0,0')}</span>
-              <span className="h-2.5 capitalize" style={{ fontSize: '.5rem' }}>{key}</span>
+              <span className="h-2.5 capitalize text-3xs">{key}</span>
             </span>
           ))}
         </span>

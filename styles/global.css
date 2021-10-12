@@ -138,6 +138,10 @@ body {
   @apply fill-current text-gray-900 dark:text-white font-medium;
 }
 
+.text-3xs {
+  font-size: .5rem;
+}
+
 .text-2xs {
   font-size: .65rem;
 }
