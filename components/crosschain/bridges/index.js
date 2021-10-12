@@ -96,7 +96,7 @@ export default function Bridges() {
                               size={14}
                               text={asset.id.replace(`-${bridge.router_id}`, '')}
                               copyTitle={<span className="text-2xs font-medium">
-                                {ellipseAddress(asset.id.replace(`-${bridge.router_id}`, ''), 6)}
+                                {ellipseAddress(asset.id.replace(`-${bridge.router_id}`, ''), 5)}
                               </span>}
                             />
                             {asset?.chain_data?.explorer?.url && (
