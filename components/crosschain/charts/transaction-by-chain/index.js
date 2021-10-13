@@ -14,7 +14,6 @@ import {
 } from 'recharts'
 
 import { networks } from '../../../../lib/menus'
-import { currency_symbol } from '../../../../lib/object/currency'
 import { numberFormat } from '../../../../lib/utils'
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -97,6 +96,7 @@ export default function TransactionByChain() {
           <BarChart
             data={data}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            className="font-default"
           >
             <XAxis dataKey="short_name" axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 

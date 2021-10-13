@@ -45,7 +45,14 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
         _data.push(__data.find(timely => timely.dayStartTimestamp === time) || { dayStartTimestamp: time, volume: 0, tx_count: 0 })
       }
 
-      _data = _data.map((timely, i) => { return { ...timely, day_string: i % 2 === 0 && moment(timely.dayStartTimestamp * 1000).format('DD') } })
+      _data = _data.map((timely, i) => {
+        return {
+          ...timely,
+          day_string: i % 2 === 0 && moment(timely.dayStartTimestamp * 1000).format('DD'),
+          volume_percentage_change: _data[i - 1]?.volume > 0 && (timely.volume - _data[i - 1].volume) * 100 / _data[i - 1].volume,
+          tx_count_percentage_change: _data[i - 1]?.tx_count > 0 && (timely.tx_count - _data[i - 1].tx_count) * 100 / _data[i - 1].tx_count,
+        }
+      })
 
       dispatch({
         type: TODAY_DATA,
@@ -88,7 +95,7 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
           >
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
             <Bar dataKey="volume" minPointSize={5}>
-              {data.map((entry, i) => (<Cell key={i} fill="#4F46E5" />))}
+              {data.map((entry, i) => (<Cell key={i} fill="#DC2626" />))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

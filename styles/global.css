@@ -153,3 +153,7 @@ body {
 .recharts-label {
   @apply font-mono text-2xs sm:text-xs md:text-sm lg:text-sm xl:text-sm font-semibold;
 }
+
+.font-default .recharts-label {
+  @apply font-sans;
+}
