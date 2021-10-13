@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useSelector, shallowEqual } from 'react-redux'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
@@ -14,7 +14,10 @@ import {
 import { currency_symbol } from '../../../../lib/object/currency'
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
 
+import { TODAY_DATA } from '../../../../reducers/types'
+
 export default function TimelyVolume({ theVolume, setTheVolume }) {
+  const dispatch = useDispatch()
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
 
@@ -28,6 +31,7 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
         assets: value && _.groupBy(value, 'chain_data.id'),
         time: _.head(value)?.dayStartTimestamp,
         volume: _.sumBy(value, 'normalize_volume'),
+        tx_count: _.sumBy(value, 'txCount'),
       }
     }), ['dayStartTimestamp'], ['asc'])
     .filter(timely => moment(timely.dayStartTimestamp * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
@@ -38,10 +42,15 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.dayStartTimestamp === time) || { dayStartTimestamp: time, volume: 0 })
+        _data.push(__data.find(timely => timely.dayStartTimestamp === time) || { dayStartTimestamp: time, volume: 0, tx_count: 0 })
       }
 
       _data = _data.map((timely, i) => { return { ...timely, day_string: i % 2 === 0 && moment(timely.dayStartTimestamp * 1000).format('DD') } })
+
+      dispatch({
+        type: TODAY_DATA,
+        value: _.last(_data),
+      })
     
       setData(_data)
 
@@ -75,6 +84,7 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
               }
             }}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            className="mobile-hidden-x"
           >
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
             <Bar dataKey="volume" minPointSize={5}>

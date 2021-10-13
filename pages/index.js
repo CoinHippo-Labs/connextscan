@@ -7,8 +7,8 @@ import moment from 'moment-timezone'
 
 import ChainInfo from '../components/crosschain/chain-info'
 import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
-import Volume24h from '../components/crosschain/summary/volume-24h'
-import Transaction24h from '../components/crosschain/summary/transaction-24h'
+import TodayVolume from '../components/crosschain/summary/today-volume'
+import TodayTransaction from '../components/crosschain/summary/today-transaction'
 import TimelyVolume from '../components/crosschain/charts/timely-volume'
 import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
 import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
@@ -30,10 +30,11 @@ import { TIMELY_DATA } from '../reducers/types'
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { contracts, assets, timely } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, timely: state.timely }), shallowEqual)
+  const { contracts, assets, timely, today } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, timely: state.timely, today: state.today }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
   const { timely_data } = { ...timely }
+  const { today_data } = { ...today }
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
@@ -115,17 +116,17 @@ export default function Index() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Volume 24h</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Today's Volume</div>}
           >
             <div className="mx-3">
-              <Volume24h />
+              <TodayVolume />
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Transaction 24h</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Today's Transaction</div>}
           >
             <div className="mx-3">
-              <Transaction24h />
+              <TodayTransaction />
             </div>
           </Widget>
         </div>
@@ -171,7 +172,7 @@ export default function Index() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transaction 24h by Chain</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Today's Transaction by Chain</div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">

@@ -138,6 +138,10 @@ body {
   @apply fill-current text-gray-900 dark:text-white font-medium;
 }
 
+.mobile-hidden-x .recharts-cartesian-axis-tick-value {
+  @apply hidden sm:block;
+}
+
 .text-3xs {
   font-size: .5rem;
 }
@@ -147,5 +151,5 @@ body {
 }
 
 .recharts-label {
-  @apply font-mono text-2xs sm:text-xs md:text-sm xl:text-base font-semibold;
+  @apply font-mono text-2xs sm:text-xs md:text-sm lg:text-sm xl:text-sm font-semibold;
 }

@@ -11,8 +11,8 @@ import { TiArrowRight } from 'react-icons/ti'
 import Copy from '../../copy'
 import Widget from '../../widget'
 
-import { currency_symbol } from '../../../lib/object/currency'
 import { networks } from '../../../lib/menus'
+import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function Bridges() {

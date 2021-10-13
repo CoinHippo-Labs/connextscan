@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
@@ -12,6 +13,8 @@ import {
   Tooltip,
 } from 'recharts'
 
+import { networks } from '../../../../lib/menus'
+import { currency_symbol } from '../../../../lib/object/currency'
 import { numberFormat } from '../../../../lib/utils'
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -31,7 +34,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Transactions</div>
-        <div className="text-base font-semibold">{typeof data.txCount === 'number' ? numberFormat(data.txCount, '0,0a') : ' -'}</div>
+        <div className="text-base font-semibold">{typeof data.tx_count === 'number' ? numberFormat(data.tx_count, '0,0a') : ' -'}</div>
       </div>
     )
   }
@@ -40,28 +43,50 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function TransactionByChain() {
-  const { contracts, assets, last24h } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, last24h: state.last24h }), shallowEqual)
+  const { contracts, assets, today } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, today: state.today }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
-  const { last_24h_data } = { ...last24h }
+  const { today_data } = { ...today }
 
   const router = useRouter()
 
-  const data = assets_data && last_24h_data && Object.entries(_.groupBy(last_24h_data.map(_last_24h => {
-    return {
-      ..._last_24h,
-      data: contracts_data?.find(contract => contract.id === _last_24h?.assetId)?.data,
-      chain_data: Object.values(assets_data)?.flatMap(assets => assets).find(asset => asset.contract_address === _last_24h?.assetId)?.chain_data,
+  const [data, setData] = useState(null)
+
+  useEffect(() => {
+    let _data = assets_data && today_data && Object.entries(_.groupBy(today_data.assets?.flatMap(asset => {
+      return {
+        ...asset,
+        data: contracts_data?.find(contract => contract.id === asset?.contract_address)?.data,
+        chain_data: Object.values(assets_data).find(_asset => _asset?.contract_address === asset?.contract_address)?.chain_data,
+      }
+    }),
+      'chain_data.id'
+    )).map(([key, value]) => {
+      return {
+        ...(value.find(asset => asset.chain_data)?.chain_data),
+        assets: value,
+        tx_count: _.sumBy(value, 'txCount')
+      }
+    })
+
+    const __data = _data && _.cloneDeep(_data)
+
+    if (__data) {
+      _data = []
+
+      for (let i = 0; i <= networks.length; i++) {
+        const network = networks[i]
+
+        if (network?.id && !network.disabled) {
+          _data.push(__data.find(chain => chain.id === network.id) || { ...network, tx_count: 0 })
+        }
+      }
+
+      _data = _data.map((chain, i) => { return { ...chain, tx_count_string: numberFormat(chain.tx_count, '0,0a') } })
+
+      setData(_data)
     }
-  }),
-    'chain_data.id'
-  )).map(([key, value]) => {
-    return {
-      ...(value.find(asset => asset.chain_data)?.chain_data),
-      assets: value,
-      txCount: _.sumBy(value, 'txCount')
-    }
-  }).map(chain => { return { ...chain, tx_count_string: `${currency_symbol}${numberFormat(chain.txCount, '0,0')}` } })
+  }, [today_data])
 
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
@@ -75,7 +100,7 @@ export default function TransactionByChain() {
           >
             <XAxis dataKey="short_name" axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 
-            <Bar dataKey="txCount" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
+            <Bar dataKey="tx_count" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
               <LabelList dataKey="tx_count_string" position="top" cursor="default" />
               {data.map((entry, i) => (<Cell key={i} cursor="pointer" fill={entry?.color?.barchart} />))}
             </Bar>

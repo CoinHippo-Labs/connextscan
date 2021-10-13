@@ -74,6 +74,7 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
               }
             }}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            className="mobile-hidden-x"
           >
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
             <Bar dataKey="tx_count" minPointSize={5}>

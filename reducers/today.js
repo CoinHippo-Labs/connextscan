@@ -1,16 +1,16 @@
-import { LAST_24H_DATA } from './types'
+import { TODAY_DATA } from './types'
 
 export default function data(
   state = {
-    [`${LAST_24H_DATA}`]: null,
+    [`${TODAY_DATA}`]: null,
   },
   action
 ) {
   switch (action.type) {
-    case LAST_24H_DATA:
+    case TODAY_DATA:
       return {
         ...state,
-        [`${LAST_24H_DATA}`]: action.value
+        [`${TODAY_DATA}`]: action.value
       }
     default:
       return state
