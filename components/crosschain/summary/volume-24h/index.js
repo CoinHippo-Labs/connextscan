@@ -50,7 +50,7 @@ export default function Volume24h({ className = '' }) {
 
     const interval = setInterval(() => getData(), 5 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [contracts_data, assets_data])
 
   useEffect(() => {
     if (last_24h_data && assets_data && contracts_data) {
@@ -69,7 +69,7 @@ export default function Volume24h({ className = '' }) {
 
       setLast24hData({ data, volume: _.sumBy(data, 'normalize_volume') })
     }
-  }, [contracts_data, assets_data, last_24h_data])
+  }, [last_24h_data])
 
   return (
     <div className="max-h-full flex flex-col py-4">

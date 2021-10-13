@@ -195,7 +195,7 @@ export default function ChainMeta() {
           ))}
         </span>
       )}
-      <span className="ml-3 md:ml-auto" />
+      <span className="ml-3 sm:ml-auto" />
       <div className="flex flex-row space-x-4">
         {chain_data?.coin && (
           <div className="min-w-max flex items-center text-2xs space-x-2.5">

@@ -12,7 +12,6 @@ import {
   Tooltip,
 } from 'recharts'
 
-import { currency_symbol } from '../../../../lib/object/currency'
 import { numberFormat } from '../../../../lib/utils'
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -31,8 +30,8 @@ const CustomTooltip = ({ active, payload, label }) => {
           )}
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
-        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Liquidity</div>
-        <div className="text-base font-semibold">{currency_symbol}{typeof data.liquidity === 'number' ? numberFormat(data.liquidity, '0,0') : ' -'}</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Transactions</div>
+        <div className="text-base font-semibold">{typeof data.txCount === 'number' ? numberFormat(data.txCount, '0,0a') : ' -'}</div>
       </div>
     )
   }
@@ -40,38 +39,29 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null
 }
 
-export default function TimelyTransaction() {
-  const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
+export default function TransactionByChain() {
+  const { contracts, assets, last24h } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, last24h: state.last24h }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
+  const { last_24h_data } = { ...last24h }
 
   const router = useRouter()
 
-  const data = assets_data && Object.entries(_.groupBy(
-    Object.values(assets_data).flatMap(asset_data => asset_data.map(asset => {
-      return {
-        ...asset,
-        data: contracts_data?.find(contract => contract.id === asset.contract_address)?.data,
-      }
-    }).map(asset => {
-      return {
-        ...asset,
-        normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
-      }
-    }).map(asset => {
-      return {
-        ...asset,
-        value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
-      }
-    })),
+  const data = assets_data && last_24h_data && Object.entries(_.groupBy(last_24h_data.map(_last_24h => {
+    return {
+      ..._last_24h,
+      data: contracts_data?.find(contract => contract.id === _last_24h?.assetId)?.data,
+      chain_data: Object.values(assets_data)?.flatMap(assets => assets).find(asset => asset.contract_address === _last_24h?.assetId)?.chain_data,
+    }
+  }),
     'chain_data.id'
   )).map(([key, value]) => {
     return {
       ...(value.find(asset => asset.chain_data)?.chain_data),
       assets: value,
-      liquidity: _.sumBy(value, 'value')
+      txCount: _.sumBy(value, 'txCount')
     }
-  }).map(chain => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, '0,0')}` } })
+  }).map(chain => { return { ...chain, tx_count_string: `${currency_symbol}${numberFormat(chain.txCount, '0,0')}` } })
 
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
@@ -85,8 +75,8 @@ export default function TimelyTransaction() {
           >
             <XAxis dataKey="short_name" axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 
-            <Bar dataKey="liquidity" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
-              <LabelList dataKey="liquidity_string" position="top" cursor="default" />
+            <Bar dataKey="txCount" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
+              <LabelList dataKey="tx_count_string" position="top" cursor="default" />
               {data.map((entry, i) => (<Cell key={i} cursor="pointer" fill={entry?.color?.barchart} />))}
             </Bar>
           </BarChart>
