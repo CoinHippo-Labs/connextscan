@@ -95,13 +95,13 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
             className="mobile-hidden-x"
           >
             <defs>
-              <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#6B7280" stopOpacity={0.65} />
-                <stop offset="100%" stopColor="#6B7280" stopOpacity={0.35} />
+              <linearGradient id="gradient-vol" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="50%" stopColor="#F87171" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#F87171" stopOpacity={0.75} />
               </linearGradient>
             </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
-            <Area type="basisOpen" dataKey="volume" stroke="#6B7280" fillOpacity={1} fill="url(#gradient)" />
+            <Area type="basis" dataKey="volume" stroke="#B91C1C" fillOpacity={1} fill="url(#gradient-vol)" />
           </AreaChart>
         </ResponsiveContainer>
         :

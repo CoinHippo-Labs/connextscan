@@ -6,6 +6,8 @@ import moment from 'moment'
 import {
   ResponsiveContainer,
   BarChart,
+  linearGradient,
+  stop,
   XAxis,
   Bar,
   Cell,
@@ -76,9 +78,15 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
             className="mobile-hidden-x"
           >
+            <defs>
+              <linearGradient id="gradient-tx" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="50%" stopColor="#60A5FA" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#60A5FA" stopOpacity={0.75} />
+              </linearGradient>
+            </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
             <Bar dataKey="tx_count" minPointSize={5}>
-              {data.map((entry, i) => (<Cell key={i} fill="#4F46E5" />))}
+              {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-tx)" />))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

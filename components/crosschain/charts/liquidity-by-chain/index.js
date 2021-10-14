@@ -5,6 +5,8 @@ import _ from 'lodash'
 import {
   ResponsiveContainer,
   BarChart,
+  linearGradient,
+  stop,
   XAxis,
   Bar,
   LabelList,
@@ -83,11 +85,19 @@ export default function LiquidityByChain() {
             data={data}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
           >
+            <defs>
+              {data.map((entry, i) => (
+                <linearGradient key={i} id={`gradient-vol-${entry.short_name}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="25%" stopColor={entry?.color?.barchart} stopOpacity={0.95} />
+                  <stop offset="100%" stopColor={entry?.color?.barchart} stopOpacity={0.75} />
+                </linearGradient>
+              ))}
+            </defs>
             <XAxis dataKey="short_name" axisLine={false} tickLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 
             <Bar dataKey="liquidity" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
               <LabelList dataKey="liquidity_string" position="top" cursor="default" />
-              {data.map((entry, i) => (<Cell key={i} cursor="pointer" fill={entry?.color?.barchart} />))}
+              {data.map((entry, i) => (<Cell key={i} cursor="pointer" fillOpacity={1} fill={`url(#gradient-vol-${entry.short_name})`} />))}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
