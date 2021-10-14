@@ -320,7 +320,7 @@ export default function Transaction({ data, className = '' }) {
             <div className="ml-0 sm:mx-auto">
               {data ?
                 <>
-                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status && receiver.status !== 'Prepared' ? receiver.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                  <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status && receiver.status !== 'Prepared' ? receiver.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                     {receiver?.status && receiver.status !== 'Prepared' ?
                       receiver.status === 'Fulfilled' ?
                         <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
