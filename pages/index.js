@@ -159,6 +159,15 @@ export default function Index() {
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
+            right={<div className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-6 sm:mr-3 py-1 px-1.5">30D</div>}
+            className="lg:col-span-2 px-0 sm:px-4"
+          >
+            <div className="sm:mx-3">
+              <TransactionByChain />
+            </div>
+          </Widget>
+          <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
             right={theTransaction && (
               <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
@@ -171,15 +180,6 @@ export default function Index() {
           >
             <div>
               <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
-            right={<div className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-6 sm:mr-3 py-1 px-1.5">30D</div>}
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div className="sm:mx-3">
-              <TransactionByChain />
             </div>
           </Widget>
         </div>

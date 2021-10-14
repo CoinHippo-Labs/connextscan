@@ -5,11 +5,14 @@ import _ from 'lodash'
 import moment from 'moment'
 import {
   ResponsiveContainer,
-  AreaChart,
+  // AreaChart,
+  BarChart,
   linearGradient,
   stop,
   XAxis,
-  Area,
+  // Area,
+  Bar,
+  Cell,
 } from 'recharts'
 
 import { currency_symbol } from '../../../../lib/object/currency'
@@ -88,7 +91,8 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
     <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'sm:pt-5 pb-0' : 'mb-2 px-7 sm:px-3'}`}>
       {loaded ?
         <ResponsiveContainer>
-          <AreaChart
+          {/*<AreaChart*/}
+          <BarChart
             data={data}
             onMouseEnter={event => {
               if (event && setTheVolume) {
@@ -115,8 +119,12 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
               </linearGradient>
             </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
-            <Area type="basis" dataKey="volume" stroke="#B91C1C" fillOpacity={1} fill="url(#gradient-vol)" />
-          </AreaChart>
+            <Bar dataKey="volume" minPointSize={5}>
+              {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-vol)" />))}
+            </Bar>
+            {/*<Area type="basis" dataKey="volume" stroke="#B91C1C" fillOpacity={1} fill="url(#gradient-vol)" />*/}
+          </BarChart>
+          {/*</AreaChart>*/}
         </ResponsiveContainer>
         :
         <div className="skeleton h-full" />
