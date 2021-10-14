@@ -37,7 +37,7 @@ export default function ChainInfo({ className = '' }) {
         }
       }))
 
-      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_contracts: data.length })
+      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_contracts: _.uniqBy(data, 'data.contract_address').length })
     }
   }, [contracts_data, assets_data])
 

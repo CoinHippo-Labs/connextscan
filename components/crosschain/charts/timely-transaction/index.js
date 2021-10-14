@@ -6,9 +6,9 @@ import moment from 'moment'
 import {
   ResponsiveContainer,
   BarChart,
+  XAxis,
   Bar,
   Cell,
-  XAxis,
 } from 'recharts'
 
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
@@ -20,16 +20,16 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    const today = moment().startOf('day')
+    const today = moment().utc().startOf('day')
 
     let _data = timely_data && _.orderBy(Object.entries(_.groupBy(Object.values(timely_data).flatMap(timely => timely), 'dayStartTimestamp')).map(([key, value]) => {
       return {
         assets: value && _.groupBy(value, 'chain_data.id'),
-        time: _.head(value)?.dayStartTimestamp,
+        time: Number(key),
         tx_count: _.sumBy(value, 'txCount'),
       }
-    }), ['dayStartTimestamp'], ['asc'])
-    .filter(timely => moment(timely.dayStartTimestamp * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
+    }), ['time'], ['asc'])
+    .filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
 
     const __data = _data && _.cloneDeep(_data)
 
@@ -37,10 +37,10 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.dayStartTimestamp === time) || { dayStartTimestamp: time, tx_count: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time: time, tx_count: 0 })
       }
 
-      _data = _data.map((timely, i) => { return { ...timely, day_string: i % 2 === 0 && moment(timely.dayStartTimestamp * 1000).format('DD') } })
+      _data = _data.map((timely, i) => { return { ...timely, day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD') } })
     
       setData(_data)
 

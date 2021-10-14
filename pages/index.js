@@ -3,7 +3,7 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
-import moment from 'moment-timezone'
+import moment from 'moment'
 
 import ChainInfo from '../components/crosschain/chain-info'
 import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
@@ -62,7 +62,7 @@ export default function Index() {
               [`${chain_id}`]: response.data?.map(timely => {
                 return {
                   ...timely,
-                  data: contracts_data.find(contract => contract.contract_address === timely.assetId),
+                  data: contracts_data.find(contract => contract.id === timely.assetId)?.data,
                   chain_data: networks.find(network => network.id === chain_id)
                 }
               }).map(timely => {
@@ -144,7 +144,7 @@ export default function Index() {
             right={theVolume && (
               <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
                 <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theVolume.volume === 'number' ? numberFormat(theVolume.volume, '0,0') : ' -'}</div>
-                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.dayStartTimestamp * 1000).tz('Europe/London').format('MMM, D YYYY [(UTC)]')}</div>
+                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
               </div>
             )}
             contentClassName="items-start"
@@ -160,8 +160,8 @@ export default function Index() {
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transaction</div>}
             right={theTransaction && (
               <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.tx_count === 'number' ? numberFormat(theTransaction.tx_count, '0,0') : ' -'}</div>
-                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.dayStartTimestamp * 1000).tz('Europe/London').format('MMM, D YYYY [(UTC)]')}</div>
+                <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.tx_count === 'number' ? numberFormat(theTransaction.tx_count, '0,0') : '-'}</div>
+                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
               </div>
             )}
             contentClassName="items-start"

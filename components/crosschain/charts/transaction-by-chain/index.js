@@ -6,10 +6,10 @@ import _ from 'lodash'
 import {
   ResponsiveContainer,
   BarChart,
+  XAxis,
   Bar,
   LabelList,
   Cell,
-  XAxis,
   Tooltip,
 } from 'recharts'
 
@@ -52,19 +52,15 @@ export default function TransactionByChain() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    let _data = assets_data && today_data && Object.entries(_.groupBy(today_data.assets?.flatMap(asset => {
+    let _data = assets_data && today_data?.assets && Object.entries(_.groupBy(Object.values(today_data.assets).flatMap(assets => assets).flatMap(asset => {
       return {
         ...asset,
-        data: contracts_data?.find(contract => contract.id === asset?.contract_address)?.data,
-        chain_data: Object.values(assets_data).find(_asset => _asset?.contract_address === asset?.contract_address)?.chain_data,
       }
-    }),
-      'chain_data.id'
-    )).map(([key, value]) => {
+    }), 'chain_data.id')).map(([key, value]) => {
       return {
-        ...(value.find(asset => asset.chain_data)?.chain_data),
+        ...(value.find(asset => asset?.chain_data?.id === key)?.chain_data),
         assets: value,
-        tx_count: _.sumBy(value, 'txCount')
+        tx_count: _.sumBy(value, 'txCount'),
       }
     })
 

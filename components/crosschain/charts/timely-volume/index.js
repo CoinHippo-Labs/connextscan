@@ -5,10 +5,11 @@ import _ from 'lodash'
 import moment from 'moment'
 import {
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
+  AreaChart,
+  linearGradient,
+  stop,
   XAxis,
+  Area,
 } from 'recharts'
 
 import { currency_symbol } from '../../../../lib/object/currency'
@@ -24,17 +25,17 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    const today = moment().startOf('day')
+    const today = moment().utc().startOf('day')
 
     let _data = timely_data && _.orderBy(Object.entries(_.groupBy(Object.values(timely_data).flatMap(timely => timely), 'dayStartTimestamp')).map(([key, value]) => {
       return {
         assets: value && _.groupBy(value, 'chain_data.id'),
-        time: _.head(value)?.dayStartTimestamp,
+        time: Number(key),
         volume: _.sumBy(value, 'normalize_volume'),
         tx_count: _.sumBy(value, 'txCount'),
       }
-    }), ['dayStartTimestamp'], ['asc'])
-    .filter(timely => moment(timely.dayStartTimestamp * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
+    }), ['time'], ['asc'])
+    .filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
 
     const __data = _data && _.cloneDeep(_data)
 
@@ -42,13 +43,13 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.dayStartTimestamp === time) || { dayStartTimestamp: time, volume: 0, tx_count: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time: time, volume: 0, tx_count: 0 })
       }
 
       _data = _data.map((timely, i) => {
         return {
           ...timely,
-          day_string: i % 2 === 0 && moment(timely.dayStartTimestamp * 1000).format('DD'),
+          day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD'),
           volume_percentage_change: _data[i - 1]?.volume > 0 && (timely.volume - _data[i - 1].volume) * 100 / _data[i - 1].volume,
           tx_count_percentage_change: _data[i - 1]?.tx_count > 0 && (timely.tx_count - _data[i - 1].tx_count) * 100 / _data[i - 1].tx_count,
         }
@@ -73,7 +74,7 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
     <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'sm:pt-5 pb-0' : 'mb-2 px-7 sm:px-3'}`}>
       {loaded ?
         <ResponsiveContainer>
-          <BarChart
+          <AreaChart
             data={data}
             onMouseEnter={event => {
               if (event && setTheVolume) {
@@ -93,11 +94,15 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
             className="mobile-hidden-x"
           >
+            <defs>
+              <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#6B7280" stopOpacity={0.65} />
+                <stop offset="100%" stopColor="#6B7280" stopOpacity={0.35} />
+              </linearGradient>
+            </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
-            <Bar dataKey="volume" minPointSize={5}>
-              {data.map((entry, i) => (<Cell key={i} fill="#DC2626" />))}
-            </Bar>
-          </BarChart>
+            <Area type="basisOpen" dataKey="volume" stroke="#6B7280" fillOpacity={1} fill="url(#gradient)" />
+          </AreaChart>
         </ResponsiveContainer>
         :
         <div className="skeleton h-full" />

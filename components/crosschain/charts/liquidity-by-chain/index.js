@@ -5,10 +5,10 @@ import _ from 'lodash'
 import {
   ResponsiveContainer,
   BarChart,
+  XAxis,
   Bar,
   LabelList,
   Cell,
-  XAxis,
   Tooltip,
 } from 'recharts'
 
