@@ -47,7 +47,7 @@ export default function Index() {
 
   useEffect(() => {
     const getData = async () => {
-      if (assets_data && contracts_data && Object.values(assets_data).flatMap(assets => assets).findIndex(asset => contracts_data.findIndex(contract => contract.id === asset.contract_address) < 0) < 0) {
+      if (assets_data && contracts_data/* && Object.values(assets_data).flatMap(assets => assets).findIndex(asset => contracts_data.findIndex(contract => contract.id === asset.contract_address) < 0) < 0*/) {
         let timelyData
 
         for (let i = 0; i < Object.entries(assets_data).length; i++) {
