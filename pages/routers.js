@@ -1,12 +1,12 @@
 import { useRouter } from 'next/router'
 
 import ChainInfo from '../components/crosschain/chain-info'
-import Bridges from '../components/crosschain/bridges'
+import Routers from '../components/crosschain/routers'
 import SectionTitle from '../components/section-title'
 
 import { networks } from '../lib/menus'
 
-export default function PoolsIndex() {
+export default function RoutersIndex() {
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
@@ -15,12 +15,12 @@ export default function PoolsIndex() {
   return (
     <>
       <SectionTitle
-        title="Bridges"
+        title="Routers"
         subtitle={network?.title}
         right={<ChainInfo />}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-      <Bridges />
+      <Routers />
     </>
   )
 }

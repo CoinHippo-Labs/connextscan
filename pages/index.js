@@ -15,7 +15,7 @@ import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain
 import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
 import TopLiquidity from '../components/crosschain/top-liquidity'
 import Transactions from '../components/crosschain/transactions'
-import SupportedNetworks from '../components/overview/supported-networks'
+import SupportedNetworks from '../components/crosschain/supported-networks'
 import SectionTitle from '../components/section-title'
 import Widget from '../components/widget'
 
@@ -116,14 +116,14 @@ export default function Index() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Today's Volume</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
           >
             <div className="mx-3">
               <TodayVolume />
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Today's Transaction</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Transactions</div>}
           >
             <div className="mx-3">
               <TodayTransaction />
@@ -157,7 +157,7 @@ export default function Index() {
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transaction</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
             right={theTransaction && (
               <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
                 <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.tx_count === 'number' ? numberFormat(theTransaction.tx_count, '0,0') : '-'}</div>
@@ -172,7 +172,7 @@ export default function Index() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Today's Transaction by Chain</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">
@@ -181,7 +181,7 @@ export default function Index() {
           </Widget>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
-          <Link href="/bridges">
+          <Link href="/routers">
             <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>
           </Link>
           <div className="h-3" />
@@ -206,10 +206,11 @@ export default function Index() {
       <div className="border-indigo-300" />
       <div className="border-yellow-400" />
       <div className="border-purple-600" />
-      <div className="border-red-600" />
       <div className="border-blue-400" />
-      <div className="border-green-400" />
+      <div className="border-red-600" />
+      <div className="border-red-500" />
       <div className="border-blue-600" />
+      <div className="border-green-400" />
       <div className="border-green-500" />
       <div className="border-pink-500" />
       <div className="dark:bg-green-600" />

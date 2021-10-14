@@ -91,7 +91,7 @@ export default function ChainMeta() {
 
           assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
         
-          if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/bridges'].includes(pathname))) {
+          if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
             if (assetsData) {
               assetsSet = true
 

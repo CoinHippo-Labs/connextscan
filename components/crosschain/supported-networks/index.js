@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { networks } from '../../lib/menus'
+import { networks } from '../../../lib/menus'
 
 export default function SupportedNetworks() {
   return (
@@ -13,7 +13,7 @@ export default function SupportedNetworks() {
               <img
                 src={network.icon}
                 alt=""
-                className="w-8 sm:w-12 min-w-max h-8 sm:h-12 rounded-full"
+                className="w-8 sm:w-12 h-8 sm:h-12 rounded-full"
               />
             </a>
           </Link>

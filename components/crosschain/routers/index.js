@@ -15,12 +15,12 @@ import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
-export default function Bridges() {
+export default function Routers() {
 	const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
 
-  const [bridges, setBridges] = useState(null)
+  const [routers, setRouters] = useState(null)
 
   useEffect(() => {
     if (assets_data) {
@@ -53,26 +53,26 @@ export default function Bridges() {
         }
       }), ['liquidity'], ['desc'])
 
-      setBridges(data)
+      setRouters(data)
     }
   }, [contracts_data, assets_data])
 
-  const bridgesComponent = bridges?.map((bridge, i) => (
+  const routersComponent = routers?.map((router, i) => (
     <Widget
       key={i}
       title={<div className="flex items-center text-gray-400 dark:text-gray-200 font-medium space-x-1">
         <MdOutlineRouter size={20} className="mb-0.5" />
         <span>Router</span>
         <Copy
-          text={bridge?.router_id}
+          text={router?.router_id}
           copyTitle={<span className="text-xs text-gray-900 dark:text-gray-100 font-medium">
-            {ellipseAddress(bridge?.router_id, 10)}
+            {ellipseAddress(router?.router_id, 10)}
           </span>}
         />
       </div>}
     >
       <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-3 mb-2">
-        {bridge?.assets && Object.values(bridge.assets).flatMap(assets => assets).map((asset, j) => (
+        {router?.assets && Object.values(router.assets).flatMap(assets => assets).map((asset, j) => (
           <div key={j}>
             {asset?.data ?
               <div className={`min-h-full border ${asset?.chain_data?.color?.border} p-2 sm:p-3`}>
@@ -94,14 +94,14 @@ export default function Bridges() {
                           <div className="min-w-max flex items-center space-x-1">
                             <Copy
                               size={14}
-                              text={asset.id.replace(`-${bridge.router_id}`, '')}
+                              text={asset.id.replace(`-${router.router_id}`, '')}
                               copyTitle={<span className="text-2xs font-medium">
-                                {ellipseAddress(asset.id.replace(`-${bridge.router_id}`, ''), 5)}
+                                {ellipseAddress(asset.id.replace(`-${router.router_id}`, ''), 5)}
                               </span>}
                             />
                             {asset?.chain_data?.explorer?.url && (
                               <a
-                                href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${bridge.router_id}`, ''))}`}
+                                href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${router.router_id}`, ''))}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-indigo-600 dark:text-white "
@@ -162,10 +162,10 @@ export default function Bridges() {
         gutterHeight={12}
         className="hidden sm:block"
       >
-        {bridgesComponent}
+        {routersComponent}
       </StackGrid>
       <div className="block sm:hidden space-y-3">
-        {bridgesComponent}
+        {routersComponent}
       </div>
     </>
   )

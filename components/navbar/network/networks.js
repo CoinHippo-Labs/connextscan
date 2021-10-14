@@ -19,7 +19,7 @@ export default function Networks({ handleDropdownClick }) {
                 alt=""
                 className="w-6 h-6 rounded-full"
               />
-              <span className="text-xs">{item.title}</span>
+              <span className="text-xs">{item.id ? item.title : 'All'}</span>
             </div>
             :
             <Link key={i} href={item.url}>
@@ -32,7 +32,7 @@ export default function Networks({ handleDropdownClick }) {
                   alt=""
                   className="w-6 h-6 rounded-full"
                 />
-                <span className="text-xs">{item.title}</span>
+                <span className="text-xs">{item.id ? item.title : 'All'}</span>
               </a>
             </Link>
         ))}
