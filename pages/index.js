@@ -7,8 +7,8 @@ import moment from 'moment'
 
 import ChainInfo from '../components/crosschain/chain-info'
 import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
-import TodayVolume from '../components/crosschain/summary/today-volume'
-import TodayTransaction from '../components/crosschain/summary/today-transaction'
+import TotalVolume from '../components/crosschain/summary/total-volume'
+import TotalTransaction from '../components/crosschain/summary/total-transaction'
 import TimelyVolume from '../components/crosschain/charts/timely-volume'
 import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
 import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
@@ -119,14 +119,14 @@ export default function Index() {
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
           >
             <div className="mx-3">
-              <TodayVolume />
+              <TotalVolume />
             </div>
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Transactions</div>}
           >
             <div className="mx-3">
-              <TodayTransaction />
+              <TotalTransaction />
             </div>
           </Widget>
         </div>

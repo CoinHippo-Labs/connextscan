@@ -2,7 +2,7 @@ import { useSelector, shallowEqual } from 'react-redux'
 
 import { numberFormat } from '../../../../lib/utils'
 
-export default function TodayTransaction({ className = '' }) {
+export default function TotalTransaction({ className = '' }) {
   const { today } = useSelector(state => ({ today: state.today }), shallowEqual)
   const { today_data } = { ...today }
 
@@ -11,9 +11,9 @@ export default function TodayTransaction({ className = '' }) {
       {today_data ?
         <div className="flex items-center text-2xl sm:text-xl lg:text-2xl">
           <span className="font-semibold">{numberFormat(today_data.tx_count, '0,0')}</span>
-          {typeof today_data?.tx_count_percentage_change === 'number' && (
+          {/*typeof today_data?.tx_count_percentage_change === 'number' && (
             <span className={`${today_data.tx_count_percentage_change > 0 ? 'text-green-500' : today_data.tx_count_percentage_change < 0 ? 'text-red-500' : 'text-gray-400 dark:text-gray-600'} text-base ml-auto`}>{numberFormat(today_data.tx_count_percentage_change, '+0,0.000')}%</span>
-          )}
+          )*/}
         </div>
         :
         <div className="skeleton w-40 h-8" />
