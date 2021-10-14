@@ -83,7 +83,7 @@ export default function LiquidityByChain() {
         <ResponsiveContainer>
           <BarChart
             data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
           >
             <defs>
               {data.map((entry, i) => (

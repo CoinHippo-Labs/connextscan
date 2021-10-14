@@ -30,11 +30,11 @@ import { TIMELY_DATA } from '../reducers/types'
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { contracts, assets, timely, today } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, timely: state.timely, today: state.today }), shallowEqual)
+  const { contracts, assets, timely, total } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, timely: state.timely, total: state.total }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
   const { timely_data } = { ...timely }
-  const { today_data } = { ...today }
+  const { total_data } = { ...total }
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
@@ -117,6 +117,7 @@ export default function Index() {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
+            right={<span className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-3 py-1 px-1.5">30D</span>}
           >
             <div className="mx-3">
               <TotalVolume />
@@ -124,6 +125,7 @@ export default function Index() {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Transactions</div>}
+            right={<span className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-3 py-1 px-1.5">30D</span>}
           >
             <div className="mx-3">
               <TotalTransaction />
@@ -132,7 +134,7 @@ export default function Index() {
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">
@@ -172,7 +174,8 @@ export default function Index() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-lg sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
+            right={<div className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-6 sm:mr-3 py-1 px-1.5">30D</div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">

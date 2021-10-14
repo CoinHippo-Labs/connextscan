@@ -5,7 +5,7 @@ import data from './data'
 import contracts from './contracts'
 import assets from './assets'
 import timely from './timely'
-import today from './today'
+import total from './total'
 
 export default combineReducers({
   preferences,
@@ -13,5 +13,5 @@ export default combineReducers({
   contracts,
   assets,
   timely,
-  today,
+  total,
 })

@@ -15,7 +15,7 @@ import {
 import { currency_symbol } from '../../../../lib/object/currency'
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
 
-import { TODAY_DATA } from '../../../../reducers/types'
+import { TOTAL_DATA } from '../../../../reducers/types'
 
 export default function TimelyVolume({ theVolume, setTheVolume }) {
   const dispatch = useDispatch()
@@ -55,9 +55,23 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
         }
       })
 
+      const _assets = _data.map(timely => timely.assets).filter(assets => assets)
+
+      const assets = {}
+
+      for (let i = 0; i < _assets.length; i++) {
+        const __assets = _assets[i]
+
+        for (let j = 0; j < Object.entries(__assets).length; j++) {
+          const [key, value] = Object.entries(__assets)[j]
+
+          assets[key] = _.uniqBy(_.concat(assets[key] || [], value || []), 'id')
+        }
+      }
+
       dispatch({
-        type: TODAY_DATA,
-        value: _.last(_data),
+        type: TOTAL_DATA,
+        value: { assets, time: _.head(_data)?.time, volume: _.sumBy(_data, 'volume'), tx_count: _.sumBy(_data, 'tx_count'), day_string: _.head(_data)?.time && moment(_.head(_data)?.time * 1000).utc().format('MMM D, YYYY [(UTC)]') },
       })
     
       setData(_data)

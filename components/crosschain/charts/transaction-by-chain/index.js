@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Transactions</div>
-        <div className="text-base font-semibold">{typeof data.tx_count === 'number' ? numberFormat(data.tx_count, '0,0a') : ' -'}</div>
+        <div className="text-base font-semibold">{typeof data.tx_count === 'number' ? numberFormat(data.tx_count, '0,0') : ' -'}</div>
       </div>
     )
   }
@@ -44,17 +44,17 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function TransactionByChain() {
-  const { contracts, assets, today } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, today: state.today }), shallowEqual)
+  const { contracts, assets, total } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, total: state.total }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
-  const { today_data } = { ...today }
+  const { total_data } = { ...total }
 
   const router = useRouter()
 
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    let _data = assets_data && today_data?.assets && Object.entries(_.groupBy(Object.values(today_data.assets).flatMap(assets => assets).flatMap(asset => {
+    let _data = assets_data && total_data?.assets && Object.entries(_.groupBy(Object.values(total_data.assets).flatMap(assets => assets).flatMap(asset => {
       return {
         ...asset,
       }
@@ -79,11 +79,11 @@ export default function TransactionByChain() {
         }
       }
 
-      _data = _data.map((chain, i) => { return { ...chain, tx_count_string: numberFormat(chain.tx_count, '0,0a') } })
+      _data = _data.map((chain, i) => { return { ...chain, tx_count_string: numberFormat(chain.tx_count, '0,0.00a') } })
 
       setData(_data)
     }
-  }, [today_data])
+  }, [total_data])
 
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
@@ -93,7 +93,7 @@ export default function TransactionByChain() {
         <ResponsiveContainer>
           <BarChart
             data={data}
-            margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
+            margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
             className="font-default"
           >
             <defs>
