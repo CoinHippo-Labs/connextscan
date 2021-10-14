@@ -6,6 +6,7 @@ import { Img } from 'react-image'
 import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
+import { IoEllipsisHorizontalCircleSharp } from 'react-icons/io5'
 
 import Copy from '../../copy'
 import Widget from '../../widget'
@@ -210,10 +211,10 @@ export default function Transaction({ data, className = '' }) {
             <div className="ml-0 sm:mx-auto">
               {data ?
                 <>
-                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled', 'Prepared'].includes(sender.status) ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled', 'Prepared'].includes(sender.status) ? 'yellow-500' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                     {sender?.status ?
                       ['Fulfilled', 'Prepared'].includes(sender.status) ?
-                        <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
+                        <IoEllipsisHorizontalCircleSharp size={14} className="text-yellow-500 dark:text-white" />
                         :
                         <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                       :

@@ -15,7 +15,7 @@ import {
 
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
 
-export default function TimelyTransaction({ theTransaction, setTheTransaction }) {
+export default function TimelyTransaction({ theTransaction, setTheTransaction, setTheVolume }) {
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
 
@@ -28,6 +28,7 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
       return {
         assets: value && _.groupBy(value, 'chain_data.id'),
         time: Number(key),
+        volume: _.sumBy(value, 'normalize_volume'),
         tx_count: _.sumBy(value, 'txCount'),
       }
     }), ['time'], ['asc'])
@@ -39,15 +40,25 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.time === time) || { time: time, tx_count: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, tx_count: 0 })
       }
 
-      _data = _data.map((timely, i) => { return { ...timely, day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD') } })
+      _data = _data.map((timely, i) => {
+        return {
+          ...timely,
+          day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD'),
+          volume_percentage_change: _data[i - 1]?.volume > 0 && (timely.volume - _data[i - 1].volume) * 100 / _data[i - 1].volume,
+          tx_count_percentage_change: _data[i - 1]?.tx_count > 0 && (timely.tx_count - _data[i - 1].tx_count) * 100 / _data[i - 1].tx_count,
+        }
+      })
     
       setData(_data)
 
       if (setTheTransaction) {
         setTheTransaction(_.last(_data))
+      }
+      if (setTheVolume) {
+        setTheVolume(_.last(_data))
       }
     }
   }, [timely_data])
@@ -61,18 +72,33 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction })
           <BarChart
             data={data}
             onMouseEnter={event => {
-              if (event && setTheTransaction) {
-                setTheTransaction(event?.activePayload?.[0]?.payload)
+              if (event) {
+                if (setTheTransaction) {
+                  setTheTransaction(event?.activePayload?.[0]?.payload)
+                }
+                if (setTheVolume) {
+                  setTheVolume(event?.activePayload?.[0]?.payload)
+                }
               }
             }}
             onMouseMove={event => {
-              if (event && setTheTransaction) {
-                setTheTransaction(event?.activePayload?.[0]?.payload)
+              if (event) {
+                if (setTheTransaction) {
+                  setTheTransaction(event?.activePayload?.[0]?.payload)
+                }
+                if (setTheVolume) {
+                  setTheVolume(event?.activePayload?.[0]?.payload)
+                }
               }
             }}
             onMouseLeave={() => {
-              if (data && setTheTransaction) {
-                setTheTransaction(_.last(data))
+              if (event) {
+                if (setTheTransaction) {
+                  setTheTransaction(_.last(data))
+                }
+                if (setTheVolume) {
+                  setTheVolume(_.last(data))
+                }
               }
             }}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}

@@ -20,7 +20,7 @@ import { daily_time_range, day_s } from '../../../../lib/object/timely'
 
 import { TOTAL_DATA } from '../../../../reducers/types'
 
-export default function TimelyVolume({ theVolume, setTheVolume }) {
+export default function TimelyVolume({ theVolume, setTheVolume, setTheTransaction }) {
   const dispatch = useDispatch()
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
@@ -46,7 +46,7 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.time === time) || { time: time, volume: 0, tx_count: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, tx_count: 0 })
       }
 
       _data = _data.map((timely, i) => {
@@ -82,6 +82,9 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
       if (setTheVolume) {
         setTheVolume(_.last(_data))
       }
+      if (setTheTransaction) {
+        setTheTransaction(_.last(_data))
+      }
     }
   }, [timely_data])
 
@@ -95,18 +98,33 @@ export default function TimelyVolume({ theVolume, setTheVolume }) {
           <BarChart
             data={data}
             onMouseEnter={event => {
-              if (event && setTheVolume) {
-                setTheVolume(event?.activePayload?.[0]?.payload)
+              if (event) {
+                if (setTheVolume) {
+                  setTheVolume(event?.activePayload?.[0]?.payload)
+                }
+                if (setTheTransaction) {
+                  setTheTransaction(event?.activePayload?.[0]?.payload)
+                }
               }
             }}
             onMouseMove={event => {
-              if (event && setTheVolume) {
-                setTheVolume(event?.activePayload?.[0]?.payload)
+              if (event) {
+                if (setTheVolume) {
+                  setTheVolume(event?.activePayload?.[0]?.payload)
+                }
+                if (setTheTransaction) {
+                  setTheTransaction(event?.activePayload?.[0]?.payload)
+                }
               }
             }}
             onMouseLeave={() => {
-              if (data && setTheVolume) {
-                setTheVolume(_.last(data))
+              if (event) {
+                if (setTheVolume) {
+                  setTheVolume(_.last(data))
+                }
+                if (setTheTransaction) {
+                  setTheTransaction(_.last(data))
+                }
               }
             }}
             margin={{ top: 10, right: 10, left: 10, bottom: 10 }}

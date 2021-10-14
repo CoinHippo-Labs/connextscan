@@ -153,7 +153,7 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyVolume theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
+              <TimelyVolume theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
             </div>
           </Widget>
         </div>
@@ -179,7 +179,7 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
+              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
             </div>
           </Widget>
         </div>
