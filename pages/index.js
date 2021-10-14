@@ -106,7 +106,7 @@ export default function Index() {
         right={<ChainInfo />}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-      <div className="max-w-6xl my-4 mx-auto pb-2">
+      <div className="max-w-6xl mt-4 mb-6 mx-auto pb-2">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
