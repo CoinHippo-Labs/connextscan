@@ -110,7 +110,7 @@ export default function Routers() {
                                   <img
                                     src={asset.chain_data.explorer.icon}
                                     alt=""
-                                    className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                                    className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                                   />
                                   :
                                   <TiArrowRight size={16} className="transform -rotate-45" />
@@ -123,12 +123,12 @@ export default function Routers() {
                       {asset?.chain_data?.icon && (
                         <Link href={`/${asset.chain_data.id}`}>
                           <a
-                            className="hidden sm:block min-w-max bg-white w-3 sm:w-5 h-3 sm:h-5 rounded-lg relative -top-2 -right-2 ml-auto"
+                            className="hidden sm:block min-w-max w-3 sm:w-5 h-3 sm:h-5 relative -top-2 -right-2 ml-auto"
                           >
                             <img
                               src={asset.chain_data.icon}
                               alt=""
-                              className="w-3 sm:w-5 h-3 sm:h-5 rounded-lg"
+                              className="w-3 sm:w-5 h-3 sm:h-5 rounded-full"
                             />
                           </a>
                         </Link>

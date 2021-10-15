@@ -79,27 +79,29 @@ export default function ChainMeta() {
   }, [network])
 
   useEffect(() => {
-    const getData = async () => {
+    const getData = async isInterval => {
       let assetsData
       let assetsSet = false
 
-      for (let i = 0; i < networks.length; i++) {
-        const network = networks[i]
+      if (!assetsLoaded || isInterval) {
+        for (let i = 0; i < networks.length; i++) {
+          const network = networks[i]
 
-        if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-          const response = await assetBalances({ chain_id: network.id })
+          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+            const response = await assetBalances({ chain_id: network.id })
 
-          assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
-        
-          if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
-            if (assetsData) {
-              assetsSet = true
+            assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+          
+            if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
+              if (assetsData) {
+                assetsSet = true
 
-              if (!(['/'].includes(pathname))) {
-                dispatch({
-                  type: ASSETS_DATA,
-                  value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-                })
+                if (!(['/'].includes(pathname))) {
+                  dispatch({
+                    type: ASSETS_DATA,
+                    value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+                  })
+                }
               }
             }
           }
@@ -144,7 +146,7 @@ export default function ChainMeta() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 60 * 1000)
+    const interval = setInterval(() => getData(true), 60 * 1000)
     return () => clearInterval(interval)
   }, [assetsLoaded])
 

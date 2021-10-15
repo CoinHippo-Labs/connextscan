@@ -90,7 +90,7 @@ export default function Chain() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 15 * 1000)
+    const interval = setInterval(() => getData(), 30 * 1000)
     return () => clearInterval(interval)
   }, [network])
 

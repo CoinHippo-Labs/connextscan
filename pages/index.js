@@ -30,11 +30,8 @@ import { TIMELY_DATA } from '../reducers/types'
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { contracts, assets, timely, total } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, timely: state.timely, total: state.total }), shallowEqual)
+  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
   const { contracts_data } = { ...contracts }
-  const { assets_data } = { ...assets }
-  const { timely_data } = { ...timely }
-  const { total_data } = { ...total }
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
@@ -42,51 +39,66 @@ export default function Index() {
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
+  const [timelyData, setTimelyData] = useState(null)
   const [theVolume, setTheVolume] = useState(null)
   const [theTransaction, setTheTransaction] = useState(null)
 
   useEffect(() => {
     const getData = async () => {
-      if (assets_data && contracts_data/* && Object.values(assets_data).flatMap(assets => assets).findIndex(asset => contracts_data.findIndex(contract => contract.id === asset.contract_address) < 0) < 0*/) {
-        let timelyData
+      let _timelyData
 
-        for (let i = 0; i < Object.entries(assets_data).length; i++) {
-          const entry = Object.entries(assets_data)[i]
-          const [chain_id, assets] = entry
+      const today = moment().utc().startOf('day')
 
-          if (chain_id && assets?.length > 0) {
-            const response = await daily({ chain_id, size: Math.ceil((daily_time_range * assets.length) / 1000) * 1000 })
+      for (let i = 0; i < networks.length; i++) {
+        const network = networks[i]
 
-            timelyData = {
-              ...timelyData,
-              [`${chain_id}`]: response.data?.map(timely => {
-                return {
-                  ...timely,
-                  data: contracts_data.find(contract => contract.id === timely.assetId)?.data,
-                  chain_data: networks.find(network => network.id === chain_id)
-                }
-              }).map(timely => {
-                return {
-                  ...timely,
-                  normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
-                }
-              }) || [],
-            }
+        if (network.id && !network.disabled) {
+          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(daily_time_range, 'days').unix()} }` })
+
+          _timelyData = {
+            ..._timelyData,
+            [`${network.id}`]: response.data || [],
           }
         }
-
-        dispatch({
-          type: TIMELY_DATA,
-          value: timelyData || {},
-        })
       }
+
+      setTimelyData(_timelyData || {})
     }
 
     getData()
 
-    const interval = setInterval(() => getData(), 5 * 60 * 1000)
+    const interval = setInterval(() => getData(), 60 * 1000)
     return () => clearInterval(interval)
-  }, [contracts_data, assets_data])
+  }, [])
+
+  useEffect(() => {
+    if (contracts_data && timelyData) {
+      const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
+        return [
+          key,
+          value.map(timely => {
+            return {
+              ...timely,
+              data: contracts_data.find(contract => contract.id === timely.assetId)?.data,
+              chain_data: networks.find(network => network.id === key),
+            }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
+            }
+          })
+        ]
+      }))
+
+      if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
+        dispatch({
+          type: TIMELY_DATA,
+          value: _timelyData || {},
+        })
+      }
+    }
+  }, [contracts_data, timelyData])
 
   if (typeof window !== 'undefined' && pathname !== _asPath) {
     router.push(isMatchRoute(_asPath) ? asPath : '/')

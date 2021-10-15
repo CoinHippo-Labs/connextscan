@@ -71,7 +71,7 @@ export default function Transaction({ data, className = '' }) {
                             <img
                               src={general.sendingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={20} className="transform -rotate-45" />
@@ -122,7 +122,7 @@ export default function Transaction({ data, className = '' }) {
                             <img
                               src={general.receivingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={20} className="transform -rotate-45" />
@@ -176,7 +176,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={general.sendingChain.explorer.icon}
                             alt=""
-                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50 hover:opacity-100"
+                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={20} className="transform -rotate-45" />
@@ -241,7 +241,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={sender.sendingChain.explorer.icon}
                             alt=""
-                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50 hover:opacity-100"
+                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-60 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -250,7 +250,7 @@ export default function Transaction({ data, className = '' }) {
                     </div>
                   )}
                   {sender?.preparedTimestamp && (
-                    <div className="text-gray-400 dark:text-gray-500 text-2xs font-light mt-1">
+                    <div className={`text-gray-400 dark:text-gray-500 text-2xs font-light mt-${1 + (sender?.chainTx ? 0 : 0.5)}`}>
                       {moment(sender.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')}
                     </div>
                   )}
@@ -307,7 +307,7 @@ export default function Transaction({ data, className = '' }) {
                       </span>}
                     />
                   </div>
-                  <div className="flex items-center text-xs justify-center font-medium space-x-1">
+                  <div className="flex items-center text-xs justify-start sm:justify-center font-medium space-x-1">
                     <MdOutlineRouter size={16} className="mb-0.5" />
                     <span>Router</span>
                   </div>
@@ -353,7 +353,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={receiver.receivingChain.explorer.icon}
                             alt=""
-                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-50 hover:opacity-100"
+                            className="w-4 sm:w-3 xl:w-4 h-4 sm:h-3 xl:h-4 rounded-full opacity-60 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -362,7 +362,7 @@ export default function Transaction({ data, className = '' }) {
                     </div>
                   )}
                   {receiver?.preparedTimestamp && (
-                    <div className="text-gray-400 dark:text-gray-500 text-2xs font-light mt-1">
+                    <div className={`text-gray-400 dark:text-gray-500 text-2xs font-light mt-${1 + (receiver?.chainTx ? 0 : 0.5)}`}>
                       {moment(receiver.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')}
                     </div>
                   )}
@@ -401,7 +401,7 @@ export default function Transaction({ data, className = '' }) {
                           <img
                             src={general.receivingChain.explorer.icon}
                             alt=""
-                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-50 hover:opacity-100"
+                            className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={20} className="transform -rotate-45" />

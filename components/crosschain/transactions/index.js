@@ -32,8 +32,8 @@ export default function Transactions({ useData, n, className = '' }) {
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    const getData = async () => {
-      if (!useData) {
+    const getData = async isInterval => {
+      if (!useData && (!loaded || isInterval)) {
         let data, _contracts_data = _.cloneDeep(contracts_data)
         let txsSet = false
 
@@ -104,7 +104,7 @@ export default function Transactions({ useData, n, className = '' }) {
 
     getData()
 
-    const interval = setInterval(() => getData(), (loaded ? 1 : 1.5) * 30 * 1000)
+    const interval = setInterval(() => getData(true), (loaded ? 1 : 1.5) * 30 * 1000)
     return () => clearInterval(interval)
   }, [loaded])
 
@@ -152,7 +152,7 @@ export default function Transactions({ useData, n, className = '' }) {
                           <img
                             src={networks.find(network => network.network_id === tx.chain_id).explorer.icon}
                             alt=""
-                            className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                            className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                           />
                           :
                           <TiArrowRight size={16} className="transform -rotate-45" />
@@ -215,7 +215,7 @@ export default function Transactions({ useData, n, className = '' }) {
                             <img
                               src={props.row.original.sendingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={16} className="transform -rotate-45" />
@@ -271,7 +271,7 @@ export default function Transactions({ useData, n, className = '' }) {
                             <img
                               src={props.row.original.receivingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                             />
                             :
                             <TiArrowRight size={16} className="transform -rotate-45" />
@@ -347,7 +347,7 @@ export default function Transactions({ useData, n, className = '' }) {
                                 <img
                                   src={props.row.original.sendingChain.explorer.icon}
                                   alt=""
-                                  className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                                  className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                                 />
                                 :
                                 <TiArrowRight size={16} className="transform -rotate-45" />
@@ -398,7 +398,7 @@ export default function Transactions({ useData, n, className = '' }) {
                                 <img
                                   src={props.row.original.receivingChain.explorer.icon}
                                   alt=""
-                                  className="w-4 h-4 rounded-full opacity-50 hover:opacity-100"
+                                  className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                                 />
                                 :
                                 <TiArrowRight size={16} className="transform -rotate-45" />
