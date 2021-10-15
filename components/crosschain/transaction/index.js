@@ -144,8 +144,8 @@ export default function Transaction({ data, className = '' }) {
             </>
             :
             <>
-              <div className="skeleton w-72 h-10 mt-1 ml-auto" />
-              <div className="skeleton w-24 h-6 mt-3 ml-auto" />
+              <div className="skeleton w-72 h-10 mt-1 sm:ml-auto" />
+              <div className="skeleton w-24 h-6 mt-3 sm:ml-auto" />
             </>
           }
         </Widget>
