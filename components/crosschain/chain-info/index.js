@@ -65,8 +65,9 @@ export default function ChainInfo({ className = '' }) {
         :
         ['/', '/routers'].includes(pathname) ?
           <>
-            <div className="skeleton w-24 h-7 my-1 sm:my-0 mr-2 sm:mr-2.5" />
-            <div className="skeleton w-28 h-7 my-1 sm:my-0" />
+            <div className="skeleton w-24 h-8 my-1 sm:my-0 mr-2 sm:mr-2.5" />
+            <div className="skeleton w-28 h-8 my-1 sm:my-0 mr-2 sm:mr-2.5" />
+            <div className="skeleton w-32 h-8 my-1 sm:my-0" />
           </>
           :
           null
