@@ -124,7 +124,7 @@ export default function ChainMeta() {
 
         for (let i = 0; i < Object.entries(_contracts).length; i++) {
           const contract = Object.entries(_contracts)[i]
-          const key = contract?.[0], value = contract?.[1]
+          const [key, value] = contract
 
           const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value?.map(_contract => _contract.contract_address).join(','))
 

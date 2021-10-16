@@ -20,7 +20,7 @@ import { daily_time_range, day_s } from '../../../../lib/object/timely'
 
 import { TOTAL_DATA } from '../../../../reducers/types'
 
-export default function TimelyVolume({ theVolume, setTheVolume, setTheTransaction }) {
+export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTheTransaction }) {
   const dispatch = useDispatch()
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
@@ -58,7 +58,9 @@ export default function TimelyVolume({ theVolume, setTheVolume, setTheTransactio
         }
       })
 
-      const _assets = _data.map(timely => timely.assets).filter(assets => assets)
+      const data_time_range = _.cloneDeep(_data).filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(timeRange?.day || daily_time_range, 'days')) >= 0)
+
+      const _assets = data_time_range.map(timely => timely.assets).filter(assets => assets)
 
       const assets = {}
 
@@ -74,7 +76,13 @@ export default function TimelyVolume({ theVolume, setTheVolume, setTheTransactio
 
       dispatch({
         type: TOTAL_DATA,
-        value: { assets, time: _.head(_data)?.time, volume: _.sumBy(_data, 'volume'), tx_count: _.sumBy(_data, 'tx_count'), day_string: _.head(_data)?.time && moment(_.head(_data)?.time * 1000).utc().format('MMM D, YYYY [(UTC)]') },
+        value: {
+          assets,
+          time: _.head(data_time_range)?.time,
+          volume: _.sumBy(data_time_range, 'volume'),
+          tx_count: _.sumBy(data_time_range, 'tx_count'),
+          day_string: _.head(data_time_range)?.time && moment(_.head(data_time_range)?.time * 1000).utc().format('MMM D, YYYY [(UTC)]'),
+        },
       })
     
       setData(_data)
@@ -86,7 +94,7 @@ export default function TimelyVolume({ theVolume, setTheVolume, setTheTransactio
         setTheTransaction(_.last(_data))
       }
     }
-  }, [timely_data])
+  }, [timeRange, timely_data])
 
   const loaded = data?.findIndex(timely => timely?.assets && Object.values(timely.assets).flatMap(assets => assets).findIndex(asset => !(asset?.data)) > -1) < 0
 

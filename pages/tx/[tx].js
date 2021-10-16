@@ -46,7 +46,7 @@ export default function CrosschainTx() {
 
               for (let i = 0; i < Object.entries(_contracts).length; i++) {
                 const contract = Object.entries(_contracts)[i]
-                const key = contract?.[0], value = contract?.[1]
+                const [key, value] = contract
 
                 const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
@@ -89,7 +89,7 @@ export default function CrosschainTx() {
 
                   for (let i = 0; i < Object.entries(_contracts).length; i++) {
                     const contract = Object.entries(_contracts)[i]
-                    const key = contract?.[0], value = contract?.[1]
+                    const [key, value] = contract
 
                     const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 

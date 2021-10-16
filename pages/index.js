@@ -3,9 +3,11 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
+import _ from 'lodash'
 import moment from 'moment'
 
 import ChainInfo from '../components/crosschain/chain-info'
+import TimeRange from '../components/time-range'
 import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
 import TotalVolume from '../components/crosschain/summary/total-volume'
 import TotalTransaction from '../components/crosschain/summary/total-transaction'
@@ -22,7 +24,7 @@ import Widget from '../components/widget'
 import { daily } from '../lib/api/subgraph'
 import { isMatchRoute } from '../lib/routes'
 import { currency_symbol } from '../lib/object/currency'
-import { daily_time_range } from '../lib/object/timely'
+import { daily_time_ranges, daily_time_range } from '../lib/object/timely'
 import { networks } from '../lib/menus'
 import { numberFormat } from '../lib/utils'
 
@@ -39,6 +41,7 @@ export default function Index() {
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
+  const [timeRange, setTimeRange] = useState(_.last(daily_time_ranges?.filter(time_range => !time_range.disabled)) || { day: daily_time_range })
   const [timelyData, setTimelyData] = useState(null)
   const [theVolume, setTheVolume] = useState(null)
   const [theTransaction, setTheTransaction] = useState(null)
@@ -87,6 +90,11 @@ export default function Index() {
               ...timely,
               normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
             }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volume: typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
+            }
           })
         ]
       }))
@@ -129,7 +137,7 @@ export default function Index() {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
-            right={<span className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-3 py-1 px-1.5">30D</span>}
+            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
           >
             <div className="mx-3">
               <TotalVolume />
@@ -137,7 +145,7 @@ export default function Index() {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Transactions</div>}
-            right={<span className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-3 py-1 px-1.5">30D</span>}
+            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
           >
             <div className="mx-3">
               <TotalTransaction />
@@ -165,14 +173,14 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyVolume theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
+              <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
             </div>
           </Widget>
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
-            right={<div className="bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold mr-6 sm:mr-3 py-1 px-1.5">30D</div>}
+            right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div className="sm:mx-3">

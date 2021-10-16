@@ -3,16 +3,18 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
+import moment from 'moment'
 
 import Assets from '../../components/assets'
 import Transactions from '../../components/transactions'
 import SectionTitle from '../../components/section-title'
 import Widget from '../../components/widget'
 
-import { routers as getRouters } from '../../lib/api/subgraph'
+import { hourly, routers as getRouters } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
+import { hourly_time_range } from '../../lib/object/timely'
 import { numberFormat } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
@@ -28,22 +30,23 @@ export default function Chain() {
   const network = networks[networks.findIndex(network => network.id === chain_id)]
 
   const [routers, setRouters] = useState(null)
+  const [hourlyData, setHourlyData] = useState(null)
 
   useEffect(() => {
     const getData = async () => {
       if (network) {
-        const response = await getRouters({ chain_id: network.id }, contracts_data)
+        let response = await getRouters({ chain_id: network.id }, contracts_data)
+
+        let new_contracts
 
         if (response) {
           let data = response.data || []
 
           const _contracts = _.groupBy(_.uniqBy(data.flatMap(router => router.assetBalances?.map(assetBalance => { return { id: assetBalance?.id?.replace(`-${router.id}`, ''), chain_id: network.network_id, data: assetBalance?.data } }).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.id?.replace(`-${router.id}`, '') && contract.data) > -1)) || []), 'id'), 'chain_id')
 
-          let new_contracts
-
           for (let i = 0; i < Object.entries(_contracts).length; i++) {
             const contract = Object.entries(_contracts)[i]
-            const key = contract?.[0], value = contract?.[1]
+            const [key, value] = contract
 
             const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
@@ -70,7 +73,7 @@ export default function Chain() {
               }).map(assetBalance => {
                 return {
                   ...assetBalance,
-                  value: typeof assetBalance?.normalize_amount === 'number' && typeof assetBalance?.data?.prices?.[0].price === 'number' && (assetBalance?.normalize_amount * assetBalance?.data?.prices?.[0].price),
+                  value: typeof assetBalance?.normalize_amount === 'number' && typeof assetBalance?.data?.prices?.[0].price === 'number' && (assetBalance.normalize_amount * assetBalance.data.prices[0].price),
                 }
               }),
             }
@@ -84,6 +87,50 @@ export default function Chain() {
               value: new_contracts,
             })
           }
+        }
+
+        const currentHour = moment().utc().startOf('hour')
+
+        response = await hourly({ chain_id, where: `{ hourStartTimestamp_gte: ${moment(currentHour).subtract(hourly_time_range, 'hours').unix()} }` })
+
+        if (response) {
+          let data = response.data || []
+
+          const _new_contracts = _.cloneDeep(new_contracts)
+
+          const _contracts = { [`${chain_id}`]: _.uniqBy(data.filter(timely => timely.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
+
+          for (let i = 0; i < Object.entries(_contracts).length; i++) {
+            const contract = Object.entries(_contracts)[i]
+            const [key, value] = contract
+
+            const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+
+            if (resContracts?.data) {
+              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+            }
+          }
+
+          new_contracts = _.uniqBy(_.concat(new_contracts || [], _new_contracts || []), 'id')
+
+          data = data.map(timely => {
+            return {
+              ...timely,
+              data: timely?.data || new_contracts?.find(contract => contract.id === timely?.assetId && contract.data)?.data,
+            }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
+            }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volume: typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
+            }
+          })
+
+          setHourlyData({ data, chain_id })
         }
       }
     }
@@ -116,13 +163,43 @@ export default function Chain() {
         <div>
           <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
             <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Assets</span>
-            <span className="sm:text-right mb-auto ml-0 sm:ml-auto">
+            <span className="ml-0 sm:ml-auto" />
+            <span className="sm:text-right mb-auto ml-0 sm:ml-4">
               <div className="h-full uppercase text-gray-400 dark:text-gray-500">Available Liquidity</div>
               {chain_id && routers?.chain_id === chain_id ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}
                   {routers?.data?.findIndex(router => router?.assetBalances?.findIndex(assetBalance => typeof assetBalance?.value === 'number') > -1) > -1 ?
                     numberFormat(_.sum(routers.data.flatMap(router => router?.assetBalances?.map(assetBalance => assetBalance?.value) || [])), '0,0')
+                    :
+                    '-'
+                  }
+                </div>
+                :
+                <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
+              }
+            </span>
+            <span className="sm:text-right mb-auto ml-0 sm:ml-16">
+              <div className="h-full uppercase text-gray-400 dark:text-gray-500">Volume {hourly_time_range}h</div>
+              {chain_id && hourlyData?.chain_id === chain_id ?
+                <div className="font-mono text-xl font-semibold">
+                  {currency_symbol}
+                  {hourlyData?.data?.findIndex(timely => typeof timely?.normalize_volume === 'number') > -1 ?
+                    numberFormat(_.sumBy(hourlyData.data, 'normalize_volume'), '0,0')
+                    :
+                    '-'
+                  }
+                </div>
+                :
+                <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
+              }
+            </span>
+            <span className="sm:text-right mb-auto ml-0 sm:ml-16">
+              <div className="h-full uppercase text-gray-400 dark:text-gray-500">TX {hourly_time_range}h</div>
+              {chain_id && hourlyData?.chain_id === chain_id ?
+                <div className="text-xl font-semibold">
+                  {hourlyData?.data?.findIndex(timely => typeof timely?.txCount === 'number') > -1 ?
+                    numberFormat(_.sumBy(hourlyData.data, 'txCount'), '0,0')
                     :
                     '-'
                   }
