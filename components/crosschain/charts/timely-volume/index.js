@@ -38,7 +38,6 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
         tx_count: _.sumBy(value, 'txCount'),
       }
     }), ['time'], ['asc'])
-    .filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
 
     const __data = _data && _.cloneDeep(_data)
 
@@ -58,7 +57,7 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
         }
       })
 
-      const data_time_range = _.cloneDeep(_data).filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(timeRange?.day || daily_time_range, 'days')) >= 0)
+      const data_time_range = _.cloneDeep(__data).filter(timely => timeRange?.day ? moment(timely.time * 1000).diff(moment(today).subtract(timeRange?.day, 'days')) >= 0 : true)
 
       const _assets = data_time_range.map(timely => timely.assets).filter(assets => assets)
 

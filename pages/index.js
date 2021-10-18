@@ -22,6 +22,7 @@ import SectionTitle from '../components/section-title'
 import Widget from '../components/widget'
 
 import { daily } from '../lib/api/subgraph'
+import { dayMetrics } from '../lib/api/opensearch'
 import { isMatchRoute } from '../lib/routes'
 import { currency_symbol } from '../lib/object/currency'
 import { daily_time_ranges, daily_time_range } from '../lib/object/timely'
@@ -52,6 +53,27 @@ export default function Index() {
 
       const today = moment().utc().startOf('day')
 
+      const resDayMetrics = await dayMetrics({
+        aggs: {
+          chains: {
+            terms: { field: 'chain_id.keyword', size: 1000 },
+            aggs: {
+              day_metrics: {
+                terms: { field: 'dayStartTimestamp', size: 10000 },
+                aggs: {
+                  volumes: {
+                    sum: { field: 'normalize_volume' },
+                  },
+                  txs: {
+                    sum: { field: 'txCount' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+
       for (let i = 0; i < networks.length; i++) {
         const network = networks[i]
 
@@ -60,7 +82,7 @@ export default function Index() {
 
           _timelyData = {
             ..._timelyData,
-            [`${network.id}`]: response.data || [],
+            [`${network.id}`]: _.concat(response?.data || [], resDayMetrics?.data?.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely.dayStartTimestamp === day.dayStartTimestamp) > -1)) || []),
           }
         }
       }
@@ -82,7 +104,7 @@ export default function Index() {
           value.map(timely => {
             return {
               ...timely,
-              data: contracts_data.find(contract => contract.id === timely.assetId)?.data,
+              data: timely?.data || contracts_data.find(contract => contract.id === timely?.assetId)?.data,
               chain_data: networks.find(network => network.id === key),
             }
           }).map(timely => {
@@ -93,7 +115,7 @@ export default function Index() {
           }).map(timely => {
             return {
               ...timely,
-              normalize_volume: typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
+              normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
             }
           })
         ]
