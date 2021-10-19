@@ -149,7 +149,7 @@ export default function CrosschainTx() {
   return (
     <>
       <SectionTitle
-        title="Txn Hash"
+        title="Txn ID"
         subtitle={tx && (
           <Copy
             size={24}

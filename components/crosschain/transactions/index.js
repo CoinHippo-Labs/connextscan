@@ -120,7 +120,7 @@ export default function Transactions({ useData, n, className = '' }) {
       <Datatable
         columns={[
           {
-            Header: 'Txn Hash',
+            Header: 'Txn ID',
             accessor: 'transactionId',
             disableSortBy: true,
             Cell: props => (

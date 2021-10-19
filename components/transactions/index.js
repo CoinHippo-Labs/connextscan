@@ -93,7 +93,7 @@ export default function Transactions({ className = '' }) {
       <Datatable
         columns={[
           {
-            Header: 'Txn Hash',
+            Header: 'Txn ID',
             accessor: 'transactionId',
             disableSortBy: true,
             Cell: props => (
