@@ -82,7 +82,7 @@ export default function Index() {
 
           _timelyData = {
             ..._timelyData,
-            [`${network.id}`]: _.concat(response?.data || [], resDayMetrics?.data?.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely.dayStartTimestamp === day.dayStartTimestamp) > -1)) || []),
+            [`${network.id}`]: _.concat(response?.data || [], resDayMetrics?.data?.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
         }
       }

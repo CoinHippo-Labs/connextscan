@@ -144,7 +144,7 @@ export default function CrosschainTx() {
     return () => clearInterval(interval)
   }, [tx])
 
-  const status = transaction?.data && _.head(_.orderBy(Object.values(transaction.data), ['preparedTimestamp'], ['desc']))?.status
+  const status = tx && transaction?.tx === tx && ((transaction?.data && _.head(_.orderBy(Object.values(transaction.data), ['preparedTimestamp'], ['desc']))?.status) || 'Not Found')
 
   return (
     <>
