@@ -78,7 +78,7 @@ export default function Index() {
         const network = networks[i]
 
         if (network.id && !network.disabled) {
-          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(query_daily_time_range, 'days').unix()} }` })
+          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(resDayMetrics?.data ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
           _timelyData = {
             ..._timelyData,
