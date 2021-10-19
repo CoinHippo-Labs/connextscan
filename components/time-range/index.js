@@ -2,8 +2,6 @@ import { useState, useEffect, useRef } from 'react'
 
 import TimeRanges from './time-ranges'
 
-import { daily_time_ranges } from '../../lib/object/timely'
-
 export default function DropdownTimeRange({ timeRange, onClick }) {
   const [hidden, setHidden] = useState(true)
 

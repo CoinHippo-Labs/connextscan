@@ -25,7 +25,7 @@ import { daily } from '../lib/api/subgraph'
 import { dayMetrics } from '../lib/api/opensearch'
 import { isMatchRoute } from '../lib/routes'
 import { currency_symbol } from '../lib/object/currency'
-import { daily_time_ranges, daily_time_range } from '../lib/object/timely'
+import { daily_time_ranges, daily_time_range, query_daily_time_range } from '../lib/object/timely'
 import { networks } from '../lib/menus'
 import { numberFormat } from '../lib/utils'
 
@@ -78,7 +78,7 @@ export default function Index() {
         const network = networks[i]
 
         if (network.id && !network.disabled) {
-          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(daily_time_range, 'days').unix()} }` })
+          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(query_daily_time_range, 'days').unix()} }` })
 
           _timelyData = {
             ..._timelyData,

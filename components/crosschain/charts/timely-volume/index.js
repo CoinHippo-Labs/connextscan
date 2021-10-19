@@ -17,6 +17,7 @@ import {
 
 import { currency_symbol } from '../../../../lib/object/currency'
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
+import { networks } from '../../../../lib/menus'
 
 import { TOTAL_DATA } from '../../../../reducers/types'
 
