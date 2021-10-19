@@ -454,7 +454,7 @@ export default function Transaction({ data, className = '' }) {
           >
             <div className="w-full flex flex-col space-y-4">
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
-                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Prepare Txn:</span>
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Prepare Tx:</span>
                 {data ?
                   transaction?.prepareTransactionHash ?
                     <div className="flex items-center">
@@ -479,7 +479,7 @@ export default function Transaction({ data, className = '' }) {
                 }
               </div>
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
-                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">{transaction?.cancelTransactionHash ? 'Cancel' : 'Fulfill'} Txn:</span>
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">{transaction?.cancelTransactionHash ? 'Cancel' : 'Fulfill'} Tx:</span>
                 {data ?
                   transaction?.fulfillTransactionHash || transaction?.cancelTransactionHash ?
                     <div className="flex items-center">
