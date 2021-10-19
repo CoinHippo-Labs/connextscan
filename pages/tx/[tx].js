@@ -40,18 +40,19 @@ export default function CrosschainTx() {
             if (response?.data?.[0]) {
               let _data = response.data[0]
 
-              let _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id === asset.id && contract.data) > -1)), 'chain_id')
+              let _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)), 'chain_id')
 
               let new_contracts
 
               for (let i = 0; i < Object.entries(_contracts).length; i++) {
                 const contract = Object.entries(_contracts)[i]
-                const [key, value] = contract
+                let [key, value] = contract
+                key = Number(key)
 
                 const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
                 if (resContracts?.data) {
-                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
                 }
               }
 
@@ -59,8 +60,8 @@ export default function CrosschainTx() {
 
               _data = {
                 ..._data,
-                sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id === _data.sendingAssetId && contract.data)?.data,
-                receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id === _data.receivingAssetId && contract.data)?.data,
+                sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.sendingChainId)?.id}-`, '') === _data.sendingAssetId && contract.data)?.data,
+                receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.receivingChainId)?.id}-`, '') === _data.receivingAssetId && contract.data)?.data,
               }
 
               _data = {
@@ -83,18 +84,19 @@ export default function CrosschainTx() {
                 if (response?.data?.[0]) {
                   _data = response.data[0]
 
-                  _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id === asset.id && contract.data) > -1)), 'chain_id')
+                  _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)), 'chain_id')
 
                   new_contracts = null
 
                   for (let i = 0; i < Object.entries(_contracts).length; i++) {
                     const contract = Object.entries(_contracts)[i]
-                    const [key, value] = contract
+                    let [key, value] = contract
+                    key = Number(key)
 
                     const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
                     if (resContracts?.data) {
-                      new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+                      new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
                     }
                   }
 
@@ -102,8 +104,8 @@ export default function CrosschainTx() {
 
                   _data = {
                     ..._data,
-                    sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id === _data.sendingAssetId && contract.data)?.data,
-                    receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id === _data.receivingAssetId && contract.data)?.data,
+                    sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.sendingChainId)?.id}-`, '') === _data.sendingAssetId && contract.data)?.data,
+                    receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.receivingChainId)?.id}-`, '') === _data.receivingAssetId && contract.data)?.data,
                   }
 
                   _data = {

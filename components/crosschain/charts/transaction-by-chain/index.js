@@ -44,8 +44,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function TransactionByChain() {
-  const { contracts, assets, total } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, total: state.total }), shallowEqual)
-  const { contracts_data } = { ...contracts }
+  const { assets, total } = useSelector(state => ({ assets: state.assets, total: state.total }), shallowEqual)
   const { assets_data } = { ...assets }
   const { total_data } = { ...total }
 

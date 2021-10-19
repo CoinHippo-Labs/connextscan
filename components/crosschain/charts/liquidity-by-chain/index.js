@@ -53,7 +53,7 @@ export default function LiquidityByChain() {
     Object.values(assets_data).flatMap(asset_data => asset_data.map(asset => {
       return {
         ...asset,
-        data: contracts_data?.find(contract => contract.id === asset.contract_address)?.data,
+        data: contracts_data?.find(contract => contract.id?.replace(`${asset?.chain_data?.id}-`, '') === asset?.contract_address)?.data,
       }
     }).map(asset => {
       return {

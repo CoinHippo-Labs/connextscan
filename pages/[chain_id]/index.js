@@ -42,16 +42,17 @@ export default function Chain() {
         if (response) {
           let data = response.data || []
 
-          const _contracts = _.groupBy(_.uniqBy(data.flatMap(router => router.assetBalances?.map(assetBalance => { return { id: assetBalance?.id?.replace(`-${router.id}`, ''), chain_id: network.network_id, data: assetBalance?.data } }).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.id?.replace(`-${router.id}`, '') && contract.data) > -1)) || []), 'id'), 'chain_id')
+          const _contracts = _.groupBy(_.uniqBy(data.flatMap(router => router.assetBalances?.map(assetBalance => { return { id: assetBalance?.id?.replace(`-${router.id}`, ''), chain_id: network.network_id, data: assetBalance?.data } }).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id?.replace(`${network?.id}-`, '') === asset.id?.replace(`-${router.id}`, '') && contract.data) > -1)) || []), 'id'), 'chain_id')
 
           for (let i = 0; i < Object.entries(_contracts).length; i++) {
             const contract = Object.entries(_contracts)[i]
-            const [key, value] = contract
+            let [key, value] = contract
+            key = Number(key)
 
             const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
             if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
             }
           }
 
@@ -63,7 +64,7 @@ export default function Chain() {
               assetBalances: router?.assetBalances?.map(assetBalance => {
                 return {
                   ...assetBalance,
-                  data: assetBalance.data || new_contracts?.find(contract => contract.id === assetBalance?.id?.replace(`-${router.id}`, '') && contract.data)?.data,
+                  data: assetBalance.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === assetBalance?.id?.replace(`-${router.id}`, '') && contract.data)?.data,
                 }
               }).map(assetBalance => {
                 return {
@@ -98,16 +99,17 @@ export default function Chain() {
 
           const _new_contracts = _.cloneDeep(new_contracts)
 
-          const _contracts = { [`${chain_id}`]: _.uniqBy(data.filter(timely => timely.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
+          const _contracts = { [`${network.network_id}`]: _.uniqBy(data.filter(timely => timely.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
 
           for (let i = 0; i < Object.entries(_contracts).length; i++) {
             const contract = Object.entries(_contracts)[i]
-            const [key, value] = contract
+            let [key, value] = contract
+            key = Number(key)
 
             const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
             if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
             }
           }
 
@@ -116,7 +118,7 @@ export default function Chain() {
           data = data.map(timely => {
             return {
               ...timely,
-              data: timely?.data || new_contracts?.find(contract => contract.id === timely?.assetId && contract.data)?.data,
+              data: timely?.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === timely?.assetId && contract.data)?.data,
             }
           }).map(timely => {
             return {

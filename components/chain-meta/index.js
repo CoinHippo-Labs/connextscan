@@ -129,7 +129,7 @@ export default function ChainMeta() {
           const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value?.map(_contract => _contract.contract_address).join(','))
 
           if (resContracts?.data) {
-            new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+            new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
           }
         }
 

@@ -104,7 +104,7 @@ export default function Index() {
           value.map(timely => {
             return {
               ...timely,
-              data: timely?.data || contracts_data.find(contract => contract.id === timely?.assetId)?.data,
+              data: timely?.data || contracts_data.find(contract => contract.id?.replace(`${key}-`, '') === timely?.assetId)?.data,
               chain_data: networks.find(network => network.id === key),
             }
           }).map(timely => {
@@ -117,7 +117,7 @@ export default function Index() {
               ...timely,
               normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
             }
-          })
+          }).filter(timely => timely?.data)
         ]
       }))
 
