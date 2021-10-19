@@ -211,16 +211,19 @@ export default function Transaction({ data, className = '' }) {
             <div className="ml-0 sm:mx-auto">
               {data ?
                 <>
-                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled', 'Prepared'].includes(sender.status) ? 'yellow-500' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                  <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled'].includes(sender.status) ? 'green-600' : ['Prepared'].includes(sender.status) ? 'yellow-500' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                     {sender?.status ?
-                      ['Fulfilled', 'Prepared'].includes(sender.status) ?
-                        <IoEllipsisHorizontalCircleSharp size={14} className="text-yellow-500 dark:text-white" />
+                      ['Fulfilled'].includes(sender.status) ?
+                        <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                         :
-                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                        ['Prepared'].includes(sender.status) ?
+                          <IoEllipsisHorizontalCircleSharp size={14} className="text-yellow-500 dark:text-white" />
+                          :
+                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                       :
                       <FaClock size={14} className="text-gray-300 dark:text-white" />
                     }
-                    <div className={`uppercase ${sender?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sender?.status ? ['Fulfilled', 'Prepared'] ? 'Prepared' : sender.status : 'Preparing'}</div>
+                    <div className={`uppercase ${sender?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sender?.status || 'Preparing'}</div>
                   </div>
                   {sender?.chainTx && sender?.sendingChain?.explorer?.url && (
                     <div className="flex items-center space-x-1 mt-0.5">
@@ -451,23 +454,48 @@ export default function Transaction({ data, className = '' }) {
           >
             <div className="w-full flex flex-col space-y-4">
               <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
-                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Txn Hash:</span>
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Prepare Txn:</span>
                 {data ?
-                  transaction?.chainTx ?
+                  transaction?.prepareTransactionHash ?
                     <div className="flex items-center">
                       {transaction.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
                         <a
-                          href={`${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', transaction.chainTx)}`}
+                          href={`${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', transaction.prepareTransactionHash)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="uppercase text-indigo-600 dark:text-white text-xs lg:text-base font-medium mr-1"
                         >
-                          {ellipseAddress(transaction.chainTx, 16)}
+                          {ellipseAddress(transaction.prepareTransactionHash, 16)}
                         </a>
                         :
-                        <span className="text-xs lg:text-base mr-1">{ellipseAddress(transaction.chainTx, 16)}</span>
+                        <span className="text-xs lg:text-base mr-1">{ellipseAddress(transaction.prepareTransactionHash, 16)}</span>
                       }
-                      <Copy size={18} text={transaction.chainTx} />
+                      <Copy size={18} text={transaction.prepareTransactionHash} />
+                    </div>
+                    :
+                    <span className="text-xs lg:text-base">-</span>
+                  :
+                  <div className="skeleton w-72 h-4 lg:h-6 mt-1" />
+                }
+              </div>
+              <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">{transaction?.cancelTransactionHash ? 'Cancel' : 'Fulfill'} Txn:</span>
+                {data ?
+                  transaction?.fulfillTransactionHash || transaction?.cancelTransactionHash ?
+                    <div className="flex items-center">
+                      {transaction.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
+                        <a
+                          href={`${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${transaction.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', transaction?.fulfillTransactionHash || transaction?.cancelTransactionHash)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="uppercase text-indigo-600 dark:text-white text-xs lg:text-base font-medium mr-1"
+                        >
+                          {ellipseAddress(transaction?.fulfillTransactionHash || transaction?.cancelTransactionHash, 16)}
+                        </a>
+                        :
+                        <span className="text-xs lg:text-base mr-1">{ellipseAddress(transaction?.fulfillTransactionHash || transaction?.cancelTransactionHash, 16)}</span>
+                      }
+                      <Copy size={18} text={transaction?.fulfillTransactionHash || transaction?.cancelTransactionHash} />
                     </div>
                     :
                     <span className="text-xs lg:text-base">-</span>
@@ -500,16 +528,19 @@ export default function Transaction({ data, className = '' }) {
                 <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Status:</span>
                 {data ?
                   i === 0 ?
-                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled', 'Prepared'].includes(transaction.status) ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled'].includes(transaction.status) ? 'green-600' : ['Prepared'].includes(transaction.status) ? 'yellow-500' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                       {transaction?.status ?
-                        ['Fulfilled', 'Prepared'].includes(transaction.status) ?
+                        ['Fulfilled'].includes(transaction.status) ?
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                           :
-                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                          ['Prepared'].includes(transaction.status) ?
+                            <IoEllipsisHorizontalCircleSharp size={14} className="text-yellow-500 dark:text-white" />
+                            :
+                            <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
                         <FaClock size={14} className="text-gray-300 dark:text-white" />
                       }
-                      <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status ? ['Fulfilled', 'Prepared'] ? 'Success' : 'Failed' : 'Pending'}</div>
+                      <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status || 'Preparing'}</div>
                     </div>
                     :
                     <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status && transaction.status !== 'Prepared' ? transaction.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
@@ -524,7 +555,7 @@ export default function Transaction({ data, className = '' }) {
                           :
                           <FaClock size={14} className="text-gray-300 dark:text-white" />
                       }
-                      <div className={`uppercase ${transaction?.status && transaction.status !== 'Prepared' ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status && transaction.status !== 'Prepared' ? transaction.status === 'Fulfilled' ? 'Success' : 'Failed' : sender?.status === 'Cancelled' ? 'Cancelled' : 'Pending'}</div>
+                      <div className={`uppercase ${transaction?.status && transaction.status !== 'Prepared' ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status && transaction.status !== 'Prepared' ? transaction.status : sender?.status === 'Cancelled' ? 'Cancelled' : (transaction?.status || 'Pending')}</div>
                     </div>
                   :
                   <div className="skeleton w-24 h-5 lg:h-7 mt-1" />
