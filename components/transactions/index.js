@@ -172,12 +172,12 @@ export default function Transactions({ className = '' }) {
                 props.value ?
                   <div className="min-w-max">
                     <div className="flex items-center space-x-1">
-                      <Copy
-                        text={props.value}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
+                      <Link href={`/address/${props.value}`}>
+                        <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
                           {ellipseAddress(props.value, 6)}
-                        </span>}
-                      />
+                        </a>
+                      </Link>
+                      <Copy text={props.value} />
                       {props.row.original.sendingChain?.explorer?.url && (
                         <a
                           href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.address_path?.replace('{address}', props.value)}`}

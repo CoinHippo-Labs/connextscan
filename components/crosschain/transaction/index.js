@@ -160,13 +160,12 @@ export default function Transaction({ data, className = '' }) {
                 general?.sendingAddress ?
                   <div className="min-w-max">
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                      <Copy
-                        size={18}
-                        text={general.sendingAddress}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                      <Link href={`/address/${general.sendingAddress}`}>
+                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
                           {ellipseAddress(general.sendingAddress, 6)}
-                        </span>}
-                      />
+                        </a>
+                      </Link>
+                      <Copy size={18} text={general.sendingAddress} />
                       {general.sendingChain?.explorer?.url && (
                         <a
                           href={`${general.sendingChain.explorer.url}${general.sendingChain.explorer.address_path?.replace('{address}', general.sendingAddress)}`}
@@ -388,13 +387,12 @@ export default function Transaction({ data, className = '' }) {
                 general?.receivingAddress ?
                   <div className="min-w-max">
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                      <Copy
-                        size={18}
-                        text={general.receivingAddress}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                      <Link href={`/address/${general.receivingAddress}`}>
+                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
                           {ellipseAddress(general.receivingAddress, 6)}
-                        </span>}
-                      />
+                        </a>
+                      </Link>
+                      <Copy size={18} text={general.receivingAddress} />
                       {general.receivingChain?.explorer?.url && (
                         <a
                           href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
