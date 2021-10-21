@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 import { useForm } from 'react-hook-form'
 import { FiSearch } from 'react-icons/fi'
@@ -12,6 +12,8 @@ export default function Search() {
 
   const [inputSearch, setInputSearch] = useState('')
 
+  const inputSearchRef = useRef()
+
   const { handleSubmit } = useForm()
 
   const onSubmit = () => {
@@ -19,6 +21,8 @@ export default function Search() {
       router.push(`/${type(inputSearch)}/${inputSearch}`)
 
       setInputSearch('')
+
+      inputSearchRef?.current?.blur()
     }
   }
 
@@ -27,6 +31,7 @@ export default function Search() {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="relative">
           <input
+            ref={inputSearchRef}
             value={inputSearch}
             onChange={event => setInputSearch(event.target.value)}
             type="search"
