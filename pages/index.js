@@ -5,6 +5,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
+import Loader from 'react-loader-spinner'
 
 import ChainInfo from '../components/crosschain/chain-info'
 import TimeRange from '../components/time-range'
@@ -42,6 +43,8 @@ export default function Index() {
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
+  const [numLoadedChains, setNumLoadedChains] = useState(0)
+  const [dayMetricsData, setDayMetricsData] = useState(null)
   const [timeRange, setTimeRange] = useState(_.last(daily_time_ranges?.filter(time_range => !time_range.disabled)) || { day: daily_time_range })
   const [timelyData, setTimelyData] = useState(null)
   const [theVolume, setTheVolume] = useState(null)
@@ -49,52 +52,66 @@ export default function Index() {
 
   useEffect(() => {
     const getData = async () => {
-      let _timelyData
-
-      const today = moment().utc().startOf('day')
-
-      const resDayMetrics = await dayMetrics({
-        aggs: {
-          chains: {
-            terms: { field: 'chain_id.keyword', size: 1000 },
-            aggs: {
-              day_metrics: {
-                terms: { field: 'dayStartTimestamp', size: 10000 },
-                aggs: {
-                  volumes: {
-                    sum: { field: 'normalize_volume' },
-                  },
-                  txs: {
-                    sum: { field: 'txCount' },
+      if (['/'].includes(pathname)) {
+        const resDayMetrics = await dayMetrics({
+          aggs: {
+            chains: {
+              terms: { field: 'chain_id.keyword', size: 1000 },
+              aggs: {
+                day_metrics: {
+                  terms: { field: 'dayStartTimestamp', size: 10000 },
+                  aggs: {
+                    volumes: {
+                      sum: { field: 'normalize_volume' },
+                    },
+                    txs: {
+                      sum: { field: 'txCount' },
+                    },
                   },
                 },
               },
             },
           },
-        },
-      })
+        })
 
-      for (let i = 0; i < networks.length; i++) {
-        const network = networks[i]
+        setDayMetricsData(resDayMetrics?.data || {})
+      }
+    }
 
-        if (network.id && !network.disabled) {
-          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(resDayMetrics?.data ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+    getData()
+  }, [])
+
+  useEffect(() => {
+    const getData = async () => {
+      if (dayMetricsData) {
+        let _timelyData
+
+        const today = moment().utc().startOf('day')
+
+        const _networks = networks.filter(_network => _network.id && !_network.disabled)
+
+        for (let i = 0; i < _networks.length; i++) {
+          const network = _networks[i]
+
+          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
           _timelyData = {
             ..._timelyData,
-            [`${network.id}`]: _.concat(response?.data || [], resDayMetrics?.data?.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
-        }
-      }
 
-      setTimelyData(_timelyData || {})
+          setNumLoadedChains(i + 1)
+        }
+
+        setTimelyData(_timelyData || {})
+      }
     }
 
     getData()
 
     const interval = setInterval(() => getData(), 60 * 1000)
     return () => clearInterval(interval)
-  }, [])
+  }, [dayMetricsData])
 
   useEffect(() => {
     if (contracts_data && timelyData) {
@@ -145,7 +162,33 @@ export default function Index() {
       <SectionTitle
         title="Overview"
         subtitle={network?.title}
-        right={<ChainInfo />}
+        right={contracts_data && timelyData ?
+          <ChainInfo />
+          :
+          <div className="flex items-center text-sm sm:text-base space-x-2 my-1 sm:my-0 py-1.5">
+            <Loader type="ThreeDots" color="gray" width="24" height="24" />
+            {numLoadedChains === networks.filter(_network => _network.id && !_network.disabled).length ?
+              <span className="text-gray-400 dark:text-gray-400 font-light">Loading Contracts</span>
+              :
+              <>
+                <span className="text-gray-400 dark:text-gray-400 text-sm space-x-1">
+                  <span>({numberFormat(numLoadedChains, '0,0')}</span>
+                  <span>/</span>
+                  <span>{networks.filter(_network => _network.id && !_network.disabled).length})</span>
+                </span>
+                <span className="text-gray-400 dark:text-gray-400 font-light">Fetching</span>
+                <div className="flex items-center space-x-1.5">
+                  <img
+                    src={networks.filter(_network => _network.id && !_network.disabled)[numLoadedChains]?.icon}
+                    alt=""
+                    className="w-5 h-5 rounded-full"
+                  />
+                  <span className="font-medium">{networks.filter(_network => _network.id && !_network.disabled)[numLoadedChains]?.short_name}</span>
+                </div>
+              </>
+            }
+          </div>
+        }
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl mt-4 mb-6 mx-auto pb-2">

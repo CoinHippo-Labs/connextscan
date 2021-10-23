@@ -25,6 +25,7 @@
     "react-icons": "^4.2.0",
     "react-image": "^4.0.3",
     "react-json-view": "^1.21.3",
+    "react-loader-spinner": "^4.0.0",
     "react-popper": "^2.2.5",
     "react-redux": "^7.2.4",
     "react-stack-grid": "^0.7.1",
