@@ -34,8 +34,9 @@ import { TIMELY_DATA } from '../reducers/types'
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
+  const { contracts, timely } = useSelector(state => ({ contracts: state.contracts, timely: state.timely }), shallowEqual)
   const { contracts_data } = { ...contracts }
+  const { timely_data } = { ...timely }
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
@@ -162,7 +163,7 @@ export default function Index() {
       <SectionTitle
         title="Overview"
         subtitle={network?.title}
-        right={contracts_data && timelyData ?
+        right={contracts_data && timely_data ?
           <ChainInfo />
           :
           <div className="flex items-center text-sm sm:text-base space-x-2 my-1 sm:my-0 py-1.5">
