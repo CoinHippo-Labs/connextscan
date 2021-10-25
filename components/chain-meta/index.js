@@ -217,30 +217,36 @@ export default function ChainMeta() {
                 <span className={`text-${chain_data.coin.market_data.price_change_percentage_24h_in_currency[currency] < 0 ? 'red' : 'green'}-500 font-medium`}>{numberFormat(chain_data.coin.market_data.price_change_percentage_24h_in_currency[currency], '+0,0.000')}%</span>
               )}
             </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-gray-400 dark:text-gray-500 font-medium">MCap:</span>
-              {typeof chain_data.coin.market_data?.market_cap?.[currency] === 'number' ?
-                <span>{currency_symbol}{numberFormat(chain_data.coin.market_data.market_cap[currency], '0,0')}</span>
-                :
-                <span>-</span>
-              }
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-gray-400 dark:text-gray-500 font-medium">24 Vol:</span>
-              {typeof chain_data.coin.market_data?.total_volume?.[currency] === 'number' ?
-                <span className="uppercase">{currency_symbol}{numberFormat(chain_data.coin.market_data.total_volume[currency], '0,0.00a')}</span>
-                :
-                <span>-</span>
-              }
-            </div>
-            <div className="flex items-center space-x-1">
-              <span className="text-gray-400 dark:text-gray-500 font-medium">Supply:</span>
-              {typeof chain_data.coin.market_data?.circulating_supply === 'number' ?
-                <span>{numberFormat(chain_data.coin.market_data.circulating_supply, '0,0')}</span>
-                :
-                <span>-</span>
-              }
-            </div>
+            {typeof chain_data.coin.market_data?.market_cap?.[currency] === 'number' && (
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-400 dark:text-gray-500 font-medium">MCap:</span>
+                {typeof chain_data.coin.market_data?.market_cap?.[currency] === 'number' ?
+                  <span>{currency_symbol}{numberFormat(chain_data.coin.market_data.market_cap[currency], '0,0')}</span>
+                  :
+                  <span>-</span>
+                }
+              </div>
+            )}
+            {typeof chain_data.coin.market_data?.total_volume?.[currency] === 'number' && (
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-400 dark:text-gray-500 font-medium">24 Vol:</span>
+                {typeof chain_data.coin.market_data?.total_volume?.[currency] === 'number' ?
+                  <span className="uppercase">{currency_symbol}{numberFormat(chain_data.coin.market_data.total_volume[currency], '0,0.00a')}</span>
+                  :
+                  <span>-</span>
+                }
+              </div>
+            )}
+            {typeof chain_data.coin.market_data?.circulating_supply === 'number' && (
+              <div className="flex items-center space-x-1">
+                <span className="text-gray-400 dark:text-gray-500 font-medium">Supply:</span>
+                {typeof chain_data.coin.market_data?.circulating_supply === 'number' ?
+                  <span>{numberFormat(chain_data.coin.market_data.circulating_supply, '0,0')}</span>
+                  :
+                  <span>-</span>
+                }
+              </div>
+            )}
           </div>
         )}
         {network?.info_url && (
