@@ -4,6 +4,7 @@ import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
+import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 
 import Datatable from '../../datatable'
@@ -142,7 +143,7 @@ export default function TopLiquidity({ n, className = '' }) {
                   )}
                 </div>
                 :
-                <div className="skeleton w-16 h-4 ml-auto mr-4" />
+                <div className="skeleton w-20 h-4 ml-auto mr-4" />
             ),
             headerClassName: 'justify-end text-right mr-4',
           },
@@ -173,9 +174,30 @@ export default function TopLiquidity({ n, className = '' }) {
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
                 <>
-                  <div className="skeleton w-24 h-4" />
-                  <div className="skeleton w-16 h-3 mt-3" />
+                  <div className="skeleton w-28 h-4" />
+                  <div className="skeleton w-20 h-3 mt-3" />
                 </>
+            ),
+          },
+          {
+            Header: 'Router',
+            accessor: 'router.id',
+            Cell: props => (
+              !props.row.original.skeleton && props.row.original.data ?
+                props.value ?
+                  <div className="flex items-center space-x-1">
+                    <MdOutlineRouter size={20} className="mb-0.5" />
+                    <Copy
+                      text={props.value}
+                      copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
+                        {ellipseAddress(props.value, 6)}
+                      </span>}
+                    />
+                  </div>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
+                :
+                <div className="skeleton w-36 h-4" />
             ),
           },
           {

@@ -29,6 +29,7 @@ export default function ChainInfo({ className = '' }) {
       }).map(asset => {
         return {
           ...asset,
+          chain_contract_id: `${asset?.chain_data?.id}_${asset?.data?.contract_address}`,
           normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
         }
       }).map(asset => {
@@ -38,7 +39,7 @@ export default function ChainInfo({ className = '' }) {
         }
       }))
 
-      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_routers: _.uniqBy(data, 'router.id').length, num_contracts: _.uniqBy(data, 'data.contract_address').length })
+      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_routers: _.uniqBy(data, 'router.id').length, num_contracts: _.uniqBy(data, 'chain_contract_id').length })
     }
   }, [contracts_data, assets_data])
 

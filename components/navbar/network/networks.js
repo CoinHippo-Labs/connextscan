@@ -7,7 +7,7 @@ export default function Networks({ handleDropdownClick }) {
     <>
       <div className="dropdown-title">Select Network</div>
       <div className="flex flex-wrap pb-1">
-        {networks.map((item, i) => (
+        {networks.filter(item => !item.menu_hidden).map((item, i) => (
           item.disabled ?
             <div
               key={i}

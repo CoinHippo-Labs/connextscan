@@ -77,7 +77,7 @@ export default function LiquidityByChain() {
         assets: value,
         liquidity: _.sumBy(value, 'value')
       }
-    }).map(chain => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, '0,0')}` } })
+    }).map(chain => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, chain.liquidity >= 1000000 ? '0,0.00a' : '0,0')}` } })
 
     const __data = _data && _.cloneDeep(_data)
 

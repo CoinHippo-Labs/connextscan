@@ -38,24 +38,6 @@ export default function Assets({ data, className = '' }) {
                     {ellipseAddress(router.id, 6)}
                   </span>}
                 />
-                {network?.explorer?.url && (
-                  <a
-                    href={`${network.explorer.url}${network.explorer.address_path?.replace('{address}', router.id)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-indigo-600 dark:text-white"
-                  >
-                    {network.explorer.icon ?
-                      <img
-                        src={network.explorer.icon}
-                        alt=""
-                        className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
-                      />
-                      :
-                      <TiArrowRight size={16} className="transform -rotate-45" />
-                    }
-                  </a>
-                )}
               </div>
               :
               <div className="skeleton w-40 h-5" />

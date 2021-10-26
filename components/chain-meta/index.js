@@ -118,15 +118,14 @@ export default function ChainMeta() {
           value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
         })
 
-        const _contracts = _.groupBy(_.uniqBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(assets => assets).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'contract_address'), 'chain_data.id')
+        const _contracts = _.groupBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(assets => assets).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'chain_data.id')
 
         let new_contracts
 
         for (let i = 0; i < Object.entries(_contracts).length; i++) {
           const contract = Object.entries(_contracts)[i]
           const [key, value] = contract
-
-          const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value?.map(_contract => _contract.contract_address).join(','))
+          const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value && _.uniq(value.map(_contract => _contract.contract_address)).join(','))
 
           if (resContracts?.data) {
             new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
