@@ -3,10 +3,9 @@ import { useRouter } from 'next/router'
 
 import moment from 'moment'
 import { Img } from 'react-image'
-import { MdOutlineRouter } from 'react-icons/md'
+import { MdOutlineRouter, MdPending } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
-import { IoEllipsisHorizontalCircleSharp } from 'react-icons/io5'
 import { BsFileEarmarkX } from 'react-icons/bs'
 
 import Copy from '../../copy'
@@ -218,7 +217,7 @@ export default function Transaction({ data, className = '' }) {
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                           :
                           ['Prepared'].includes(sender.status) ?
-                            <IoEllipsisHorizontalCircleSharp size={14} className="text-yellow-500 dark:text-white" />
+                            <MdPending size={14} className="text-yellow-500 dark:text-white" />
                             :
                             <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
@@ -324,19 +323,22 @@ export default function Transaction({ data, className = '' }) {
               <div className="ml-0 sm:mx-auto">
                 {data ?
                   <>
-                    <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status && receiver.status !== 'Prepared' ? receiver.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
-                      {receiver?.status && receiver.status !== 'Prepared' ?
-                        receiver.status === 'Fulfilled' ?
+                    <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status ? ['Fulfilled'].includes(receiver.status) ? 'green-600' : ['Prepared'].includes(receiver.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      {receiver?.status ?
+                        ['Fulfilled'].includes(receiver.status) ?
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                           :
-                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                          ['Prepared'].includes(receiver.status) ?
+                            <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                            :
+                            <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
                         sender?.status === 'Cancelled' ?
                           <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
                           <FaClock size={14} className="text-gray-300 dark:text-white" />
                       }
-                      <div className={`uppercase ${receiver?.status && receiver.status !== 'Prepared' ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receiver?.status && receiver.status !== 'Prepared' ? receiver.status : sender?.status === 'Cancelled' ? 'Ignored' : 'Pending'}</div>
+                      <div className={`uppercase ${receiver?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receiver?.status ? receiver.status : sender?.status === 'Cancelled' ? 'Ignored' : 'Pending'}</div>
                     </div>
                     {receiver?.chainTx && receiver?.receivingChain?.explorer?.url && (
                       <div className="flex items-center space-x-1 mt-0.5">
@@ -534,7 +536,7 @@ export default function Transaction({ data, className = '' }) {
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                             :
                             ['Prepared'].includes(transaction.status) ?
-                              <IoEllipsisHorizontalCircleSharp size={14} className="text-yellow-500 dark:text-white" />
+                              <MdPending size={14} className="text-yellow-500 dark:text-white" />
                               :
                               <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
@@ -543,19 +545,22 @@ export default function Transaction({ data, className = '' }) {
                         <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status || 'Preparing'}</div>
                       </div>
                       :
-                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status && transaction.status !== 'Prepared' ? transaction.status === 'Fulfilled' ? 'green-600' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
-                        {transaction?.status && transaction.status !== 'Prepared' ?
-                          transaction.status === 'Fulfilled' ?
+                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled'].includes(transaction.status) ? 'green-600' : ['Prepared'].includes(transaction.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                        {transaction?.status ?
+                          ['Fulfilled'].includes(transaction.status) ?
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                             :
-                            <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                            ['Prepared'].includes(transaction.status) ?
+                              <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                              :
+                              <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
                           sender?.status === 'Cancelled' ?
                             <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                             :
                             <FaClock size={14} className="text-gray-300 dark:text-white" />
                         }
-                        <div className={`uppercase ${transaction?.status && transaction.status !== 'Prepared' ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status && transaction.status !== 'Prepared' ? transaction.status : sender?.status === 'Cancelled' ? 'Cancelled' : (transaction?.status || 'Pending')}</div>
+                        <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status ? transaction.status : sender?.status === 'Cancelled' ? 'Ignored' : 'Pending'}</div>
                       </div>
                     :
                     <div className="skeleton w-24 h-5 lg:h-7 mt-1" />

@@ -2,7 +2,8 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
-import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import { MdPending } from 'react-icons/md'
 
 import Transaction from '../../components/crosschain/transaction'
 import SectionTitle from '../../components/section-title'
@@ -167,12 +168,12 @@ export default function CrosschainTx() {
         right={<div className="sm:text-right mt-1 sm:mt-0">
           <div className="uppercase text-gray-400 dark:text-gray-600 text-xs mb-1">Status</div>
           {status ?
-            <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'indigo-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+            <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
               {status === 'Fulfilled' ?
                 <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                 :
                 status === 'Prepared' ?
-                  <FaClock size={14} className="text-gray-400 dark:text-white" />
+                  <MdPending size={14} className="text-yellow-500 dark:text-white" />
                   :
                   <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
               }

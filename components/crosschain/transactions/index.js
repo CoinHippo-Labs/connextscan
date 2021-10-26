@@ -7,7 +7,8 @@ import _ from 'lodash'
 import moment from 'moment'
 import { Img } from 'react-image'
 import { TiArrowRight } from 'react-icons/ti'
-import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
+import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import { MdPending } from 'react-icons/md'
 
 import Datatable from '../../datatable'
 import Copy from '../../copy'
@@ -175,12 +176,12 @@ export default function Transactions({ useData, n, className = '' }) {
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className={`max-w-min bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'indigo-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                <div className={`max-w-min bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                   {props.value === 'Fulfilled' ?
                     <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                     :
                     props.value === 'Prepared' ?
-                      <FaClock size={14} className="text-gray-300 dark:text-white" />
+                      <MdPending size={14} className="text-yellow-500 dark:text-white" />
                       :
                       <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                   }

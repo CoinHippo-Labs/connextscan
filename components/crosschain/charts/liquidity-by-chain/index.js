@@ -1,4 +1,5 @@
 import { useRouter } from 'next/router'
+import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
@@ -49,31 +50,41 @@ export default function LiquidityByChain() {
 
   const router = useRouter()
 
-  const data = assets_data && Object.entries(_.groupBy(
-    Object.values(assets_data).flatMap(asset_data => asset_data.map(asset => {
+  const [data, setData] = useState(null)
+
+  useEffect(() => {
+    const _data = assets_data && Object.entries(_.groupBy(
+      Object.values(assets_data).flatMap(asset_data => asset_data.map(asset => {
+        return {
+          ...asset,
+          data: contracts_data?.find(contract => contract.id?.replace(`${asset?.chain_data?.id}-`, '') === asset?.contract_address)?.data,
+        }
+      }).map(asset => {
+        return {
+          ...asset,
+          normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
+        }
+      }).map(asset => {
+        return {
+          ...asset,
+          value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
+        }
+      })),
+      'chain_data.id'
+    )).map(([key, value]) => {
       return {
-        ...asset,
-        data: contracts_data?.find(contract => contract.id?.replace(`${asset?.chain_data?.id}-`, '') === asset?.contract_address)?.data,
+        ...(value.find(asset => asset.chain_data)?.chain_data),
+        assets: value,
+        liquidity: _.sumBy(value, 'value')
       }
-    }).map(asset => {
-      return {
-        ...asset,
-        normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
-      }
-    }).map(asset => {
-      return {
-        ...asset,
-        value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
-      }
-    })),
-    'chain_data.id'
-  )).map(([key, value]) => {
-    return {
-      ...(value.find(asset => asset.chain_data)?.chain_data),
-      assets: value,
-      liquidity: _.sumBy(value, 'value')
+    }).map(chain => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, '0,0')}` } })
+
+    const __data = _data && _.cloneDeep(_data)
+
+    if (_data) {
+      setData(_data)
     }
-  }).map(chain => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, '0,0')}` } })
+  }, [contracts_data, assets_data])
 
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
