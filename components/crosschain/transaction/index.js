@@ -5,7 +5,7 @@ import moment from 'moment'
 import { Img } from 'react-image'
 import { MdOutlineRouter, MdPending } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
-import { FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
+import { FaCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
 import { BsFileEarmarkX } from 'react-icons/bs'
 
 import Copy from '../../copy'
@@ -211,7 +211,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="ml-0 sm:mx-auto">
                 {data ?
                   <>
-                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled'].includes(sender.status) ? 'green-600' : ['Prepared'].includes(sender.status) ? 'yellow-500' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled'].includes(sender.status) ? 'green-600' : ['Prepared'].includes(sender.status) ? 'yellow-500' : 'red-700' : sender?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === sender.chainId) < 0 ? 'gray-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                       {sender?.status ?
                         ['Fulfilled'].includes(sender.status) ?
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
@@ -221,9 +221,12 @@ export default function Transaction({ data, className = '' }) {
                             :
                             <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
-                        <FaClock size={14} className="text-gray-300 dark:text-white" />
+                        sender?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === sender.chainId) < 0 ?
+                          <FaQuestion size={14} className="text-gray-300 dark:text-white" />
+                          :
+                          <FaClock size={14} className="text-gray-300 dark:text-white" />
                       }
-                      <div className={`uppercase ${sender?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sender?.status || 'Preparing'}</div>
+                      <div className={`uppercase ${sender?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sender?.status || (sender?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === sender.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                     </div>
                     {sender?.chainTx && sender?.sendingChain?.explorer?.url && (
                       <div className="flex items-center space-x-1 mt-0.5">
@@ -323,7 +326,7 @@ export default function Transaction({ data, className = '' }) {
               <div className="ml-0 sm:mx-auto">
                 {data ?
                   <>
-                    <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status ? ['Fulfilled'].includes(receiver.status) ? 'green-600' : ['Prepared'].includes(receiver.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status ? ['Fulfilled'].includes(receiver.status) ? 'green-600' : ['Prepared'].includes(receiver.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : receiver?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === receiver.chainId) < 0 ? 'gray-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                       {receiver?.status ?
                         ['Fulfilled'].includes(receiver.status) ?
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
@@ -336,9 +339,12 @@ export default function Transaction({ data, className = '' }) {
                         sender?.status === 'Cancelled' ?
                           <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
-                          <FaClock size={14} className="text-gray-300 dark:text-white" />
+                          receiver?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === receiver.chainId) < 0 ?
+                            <FaQuestion size={14} className="text-gray-300 dark:text-white" />
+                            :
+                            <FaClock size={14} className="text-gray-300 dark:text-white" />
                       }
-                      <div className={`uppercase ${receiver?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receiver?.status ? receiver.status : sender?.status === 'Cancelled' ? 'Ignored' : 'Pending'}</div>
+                      <div className={`uppercase ${receiver?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receiver?.status ? receiver.status : sender?.status === 'Cancelled' ? 'Ignored' : receiver?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === receiver.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                     </div>
                     {receiver?.chainTx && receiver?.receivingChain?.explorer?.url && (
                       <div className="flex items-center space-x-1 mt-0.5">
@@ -530,7 +536,7 @@ export default function Transaction({ data, className = '' }) {
                   <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Status:</span>
                   {data ?
                     i === 0 ?
-                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled'].includes(transaction.status) ? 'green-600' : ['Prepared'].includes(transaction.status) ? 'yellow-500' : 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled'].includes(transaction.status) ? 'green-600' : ['Prepared'].includes(transaction.status) ? 'yellow-500' : 'red-700' : transaction?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === transaction.chainId) < 0 ? 'gray-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                         {transaction?.status ?
                           ['Fulfilled'].includes(transaction.status) ?
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
@@ -540,12 +546,15 @@ export default function Transaction({ data, className = '' }) {
                               :
                               <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
-                          <FaClock size={14} className="text-gray-300 dark:text-white" />
+                          transaction?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === transaction.chainId) < 0 ?
+                            <FaQuestion size={14} className="text-gray-300 dark:text-white" />
+                            :
+                            <FaClock size={14} className="text-gray-300 dark:text-white" />
                         }
-                        <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status || 'Preparing'}</div>
+                        <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status || (transaction?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === transaction.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                       </div>
                       :
-                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled'].includes(transaction.status) ? 'green-600' : ['Prepared'].includes(transaction.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${transaction?.status ? ['Fulfilled'].includes(transaction.status) ? 'green-600' : ['Prepared'].includes(transaction.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : transaction?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === transaction.chainId) < 0 ? 'gray-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
                         {transaction?.status ?
                           ['Fulfilled'].includes(transaction.status) ?
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
@@ -558,9 +567,12 @@ export default function Transaction({ data, className = '' }) {
                           sender?.status === 'Cancelled' ?
                             <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                             :
-                            <FaClock size={14} className="text-gray-300 dark:text-white" />
+                            transaction?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === transaction.chainId) < 0 ?
+                              <FaQuestion size={14} className="text-gray-300 dark:text-white" />
+                              :
+                              <FaClock size={14} className="text-gray-300 dark:text-white" />
                         }
-                        <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status ? transaction.status : sender?.status === 'Cancelled' ? 'Ignored' : 'Pending'}</div>
+                        <div className={`uppercase ${transaction?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{transaction?.status ? transaction.status : sender?.status === 'Cancelled' ? 'Ignored' : transaction?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === transaction.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                       </div>
                     :
                     <div className="skeleton w-24 h-5 lg:h-7 mt-1" />

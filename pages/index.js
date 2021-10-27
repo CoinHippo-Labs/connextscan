@@ -306,6 +306,7 @@ export default function Index() {
       <div className="dark:bg-green-600" />
       <div className="dark:bg-red-700" />
       <div className="dark:bg-indigo-500" />
+      <div className="dark:bg-gray-700" />
     </>
   )
 }
