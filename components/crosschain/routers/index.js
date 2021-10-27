@@ -16,7 +16,7 @@ import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function Routers() {
-	const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
+  const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
 
