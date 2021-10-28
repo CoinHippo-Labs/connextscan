@@ -60,15 +60,19 @@ export default function Routers() {
   const routersComponent = routers?.map((router, i) => (
     <Widget
       key={i}
-      title={<div className="flex items-center text-gray-400 dark:text-gray-200 font-medium space-x-1">
-        <MdOutlineRouter size={20} className="mb-0.5" />
-        <span>Router</span>
-        <Copy
-          text={router?.router_id}
-          copyTitle={<span className="text-xs text-gray-900 dark:text-gray-100 font-medium">
-            {ellipseAddress(router?.router_id, 10)}
-          </span>}
-        />
+      title={<div className="flex items-center font-medium space-x-1">
+        <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
+        <span className="text-gray-400 dark:text-gray-500">Router:</span>
+        {router?.router_id && (
+          <>
+            <Link href={`/router/${router.router_id}`}>
+              <a className="text-indigo-600 dark:text-white text-xs font-medium">
+                {ellipseAddress(router.router_id, 10)}
+              </a>
+            </Link>
+            <Copy text={router.router_id} />
+          </>
+        )}
       </div>}
     >
       <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-3 mb-2">

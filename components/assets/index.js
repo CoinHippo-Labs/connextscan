@@ -1,6 +1,5 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
@@ -29,15 +28,15 @@ export default function Assets({ data, className = '' }) {
         ).map((router, i) => (
           <div key={i} className="space-y-4">
             {!router.skeleton ?
-              <div className="flex items-center space-x-1">
-                <MdOutlineRouter size={20} className="mb-0.5" />
-                <span className="font-medium">Router:</span>
-                <Copy
-                  text={router.id}
-                  copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
-                    {ellipseAddress(router.id, 6)}
-                  </span>}
-                />
+              <div className="flex items-center font-medium space-x-1">
+                <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
+                <span className="text-gray-400 dark:text-gray-500">Router:</span>
+                <Link href={`/router/${router.id}`}>
+                  <a className="text-indigo-600 dark:text-white text-xs font-medium">
+                    {ellipseAddress(router.id, 10)}
+                  </a>
+                </Link>
+                <Copy text={router.id} />
               </div>
               :
               <div className="skeleton w-40 h-5" />

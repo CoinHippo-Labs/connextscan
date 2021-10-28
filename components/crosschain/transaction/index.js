@@ -304,16 +304,15 @@ export default function Transaction({ data, className = '' }) {
                 </div>
                 {general?.router?.id && (
                   <>
-                    <div className="flex items-center space-x-1 mt-1">
-                      <Copy
-                        size={12}
-                        text={general.router.id}
-                        copyTitle={<span className="text-gray-500 dark:text-gray-400 text-xs font-light">
+                    <div className="flex items-center font-medium space-x-1 mt-2">
+                      <Link href={`/router/${general.router.id}`}>
+                        <a className="text-indigo-600 dark:text-white text-xs font-medium">
                           {ellipseAddress(general.router.id, 6)}
-                        </span>}
-                      />
+                        </a>
+                      </Link>
+                      <Copy text={general.router.id} />
                     </div>
-                    <div className="flex items-center text-xs justify-start sm:justify-center font-medium space-x-1">
+                    <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-500 text-xs font-medium space-x-1 mt-0.5">
                       <MdOutlineRouter size={16} className="mb-0.5" />
                       <span>Router</span>
                     </div>

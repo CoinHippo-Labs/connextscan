@@ -186,13 +186,13 @@ export default function TopLiquidity({ n, className = '' }) {
               !props.row.original.skeleton && props.row.original.data ?
                 props.value ?
                   <div className="flex items-center space-x-1">
-                    <MdOutlineRouter size={20} className="mb-0.5" />
-                    <Copy
-                      text={props.value}
-                      copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
+                    <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
+                    <Link href={`/router/${props.value}`}>
+                      <a className="text-indigo-600 dark:text-white text-xs font-medium">
                         {ellipseAddress(props.value, 6)}
-                      </span>}
-                    />
+                      </a>
+                    </Link>
+                    <Copy text={props.value} />
                   </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
