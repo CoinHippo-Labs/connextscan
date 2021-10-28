@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useEffect } from 'react'
+import { useSelector, shallowEqual } from 'react-redux'
 
 import moment from 'moment'
 import { Img } from 'react-image'
@@ -11,12 +13,18 @@ import { BsFileEarmarkX } from 'react-icons/bs'
 import Copy from '../../copy'
 import Widget from '../../widget'
 import Modal from '../../modals/modal-info'
+import Notification from '../../notifications'
+import Wallet from '../../wallet'
 
 import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function Transaction({ data, className = '' }) {
+  const { wallet } = useSelector(state => ({ wallet: state.wallet }), shallowEqual)
+  const { wallet_data } = { ...wallet }
+  const { provider, web3_provider, chain_id, address } = { ...wallet_data }
+
   const router = useRouter()
   const { query } = { ...router }
   const { tx } = { ...query }
@@ -24,24 +32,54 @@ export default function Transaction({ data, className = '' }) {
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
 
-  const cancelButton = receiver?.status === 'Prepared' && (
-    <button
-      className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl font-semibold mb-2 lg:mb-0.5 py-1 sm:py-1.5 px-2 sm:px-3"
-    >
-      Cancel
-    </button>
-  )
-  const fulfillButton = receiver?.status === 'Prepared' && moment().valueOf() < receiver.expiry && (
-    <button
-      className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 rounded-xl text-white font-semibold mb-2 lg:mb-0.5 py-1 sm:py-1.5 px-2 sm:px-3"
-    >
-      Fulfill
-    </button>
-  )
-  const tipsButton = (cancelButton || fulfillButton) && (
+  const canDoAction = receiver?.status === 'Prepared'
+  const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
+  let mustSwitchNetwork = false
+
+  const actionButtons = []
+
+  if (canDoAction) {
+    if (web3_provider) {
+      if (false && address !== receiver?.receivingAddress) {
+        actionButtons.push(
+          <span key={actionButtons.length} className="min-w-max text-gray-400 dark:text-gray-500 text-xs font-light">
+            address not match.
+          </span>
+        )
+      }
+      else {
+        if (typeof chain_id === 'number' && chain_id !== receiver?.receivingChainId) {
+          mustSwitchNetwork = true
+        }
+        else {
+          actionButtons.push(
+            <button
+              key={actionButtons.length}
+              className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
+            >
+              Cancel
+            </button>
+          )
+
+          if (canFulfill) {
+            actionButtons.push(
+              <button
+                key={actionButtons.length}
+                className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 rounded-2xl text-white font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
+              >
+                Fulfill
+              </button>
+            )
+          }
+        }
+      }
+    }
+  }
+
+  const tipsButton = canDoAction && (
     <Modal
       buttonTitle={<MdInfoOutline size={24} className="stroke-current" />}
-      buttonClassName="bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-full text-gray-400 dark:text-gray-500 ml-0.5 sm:ml-1 -mr-1 sm:-mr-2 mb-2 lg:mb-0.5 p-1 sm:p-1.5"
+      buttonClassName="bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-full text-gray-400 dark:text-gray-500 p-1 sm:p-1.5"
       title="Tips"
       body={<span className="text-base text-justify mt-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>}
       confirmButtonTitle="Ok"
@@ -53,7 +91,7 @@ export default function Transaction({ data, className = '' }) {
       <>
         <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0">
           <Widget
-            title={<div className="uppercase text-gray-600 dark:text-gray-400 text-base font-semibold mb-2">Asset</div>}
+            title={<div className="uppercase text-gray-600 dark:text-gray-400 text-sm sm:text-base font-semibold mb-2">Asset</div>}
             className="max-wax sm:max-w-min mr-4 px-5 lg:px-3 xl:px-5"
           >
             {data ?
@@ -176,14 +214,19 @@ export default function Transaction({ data, className = '' }) {
             }
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-600 dark:text-gray-400 text-base font-semibold mb-2">Token Transfers</div>}
-            right={<>
-              <div className="flex items-center space-x-1.5 sm:space-x-3">
-                {cancelButton}
-                {fulfillButton}
+            title={<div className="uppercase text-gray-600 dark:text-gray-400 text-sm sm:text-base font-semibold mb-2">Token Transfers</div>}
+            right={<div className="flex items-center space-x-0.5 mb-2 lg:mb-0.5 -mr-1 sm:-mr-2">
+              <div className="flex items-center space-x-1.5 sm:space-x-2">
+                {canDoAction && (
+                  <Wallet
+                    hidden={web3_provider && !mustSwitchNetwork ? true : false}
+                    chainIdToConnect={mustSwitchNetwork && receiver?.receivingChainId}
+                  />
+                )}
+                {actionButtons}
               </div>
               {tipsButton}
-            </>}
+            </div>}
             className="overflow-x-auto ml-auto px-5 lg:px-3 xl:px-5"
           >
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 mt-0 lg:mt-2">

@@ -166,7 +166,7 @@ export default function CrosschainTx() {
           />
         )}
         right={<div className="sm:text-right mt-1 sm:mt-0">
-          <div className="uppercase text-gray-400 dark:text-gray-600 text-xs mb-1">Status</div>
+          <div className="uppercase text-gray-400 dark:text-gray-400 text-xs mb-1.5">Status</div>
           {status ?
             <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
               {status === 'Fulfilled' ?

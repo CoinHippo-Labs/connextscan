@@ -15,3 +15,7 @@ export const TIMELY_DATA = 'timely_data'
 
 // total
 export const TOTAL_DATA = 'total_data'
+
+// wallet
+export const WALLET_DATA = 'wallet_data'
+export const WALLET_RESET = 'wallet_reset'

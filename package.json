@@ -12,6 +12,7 @@
     "deploy-testnet": "aws s3 sync out/ s3://testnet.explorer.connext.network --acl public-read"
   },
   "dependencies": {
+    "ethers": "^5.5.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "next": "^11.0.0",
@@ -35,7 +36,8 @@
     "react-table": "^7.7.0",
     "recharts": "^2.1.4",
     "redux": "^4.1.0",
-    "redux-devtools-extension": "^2.13.9"
+    "redux-devtools-extension": "^2.13.9",
+    "web3modal": "^1.9.4"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.3.3",

@@ -6,6 +6,7 @@ import contracts from './contracts'
 import assets from './assets'
 import timely from './timely'
 import total from './total'
+import wallet from './wallet'
 
 export default combineReducers({
   preferences,
@@ -14,4 +15,5 @@ export default combineReducers({
   assets,
   timely,
   total,
+  wallet,
 })
