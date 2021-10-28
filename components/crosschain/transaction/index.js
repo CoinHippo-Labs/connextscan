@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
-import { NxtpSdkEvents, NxtpSdk } from '@connext/nxtp-sdk'
+import { NxtpSdk } from '@connext/nxtp-sdk'
+import { TransactionPrepareEventParams } from '@connext/nxtp-utils'
 import { providers } from 'ethers'
 import moment from 'moment'
 import { Img } from 'react-image'
+import Loader from 'react-loader-spinner'
 import { MdOutlineRouter, MdPending, MdInfoOutline } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
@@ -23,7 +25,8 @@ import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function Transaction({ data, className = '' }) {
-  const { wallet } = useSelector(state => ({ wallet: state.wallet }), shallowEqual)
+  const { preferences, wallet } = useSelector(state => ({ preferences: state.preferences, wallet: state.wallet }), shallowEqual)
+  const { theme } = { ...preferences }
   const { wallet_data } = { ...wallet }
   const { provider, web3_provider, signer, chain_id, address } = { ...wallet_data }
 
@@ -31,49 +34,62 @@ export default function Transaction({ data, className = '' }) {
   const { query } = { ...router }
   const { tx } = { ...query }
 
+  const [transfering, setTransfering] = useState(null)
+  const [result, setResult] = useState(null)
+
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
 
   const transfer = async (action, txData) => {
     if (chain_id && signer && txData) {
-      const sdk = new NxtpSdk({
-        chainConfig: {
-          [Number(`${chain_id}`)]: new providers.FallbackProvider(
-            networks.find(_network => _network.network_id === chain_id)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
-              .map(rpc => new providers.JsonRpcProvider(rpc))
-            ||
-            []
-          )
-        },
-        signer,
-      })
+      const chainConfig = {}
+
+      chainConfig[txData.sendingChainId] = {
+        provider: new providers.FallbackProvider(
+          networks.find(_network => _network.network_id === txData.sendingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+            .map(rpc => new providers.JsonRpcProvider(rpc))
+          ||
+          []
+        )
+      }
+
+      chainConfig[chain_id] = {
+        provider: new providers.FallbackProvider(
+          networks.find(_network => _network.network_id === chain_id)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+            .map(rpc => new providers.JsonRpcProvider(rpc))
+          ||
+          []
+        )
+      }
+
+      const sdk = new NxtpSdk({ chainConfig, signer })
 
       let response
 
-//       try {
-// console.log(1)
-//         const prepared = await sdk.waitFor(
-//           NxtpSdkEvents.ReceiverTransactionPrepared, 100_000,
-//           data => data.txData.transactionId === txData.transactionId
-//         )
-// console.log(2)
-//         if (action === 'cancel') {
-//           response = await sdk.cancel(prepared)
-//         }
-//         else {
-//           response = await sdk.fulfillTransfer(prepared)
-//         }
-// console.log(3)
-//       } catch (error) {
-// console.log(4)
-//         response = { error }
-//       }
+      setTransfering(action)
+      setResult(null)
 
-      console.log(response)
+      try {
+        if (action === 'cancel') {
+          response = await sdk.cancel({ txData }, chain_id)
+        }
+        else {
+          response = await sdk.fulfillTransfer({ txData })
+        }
+      } catch (error) {
+        response = { error }
+      }
+console.log(response)
+      setResult(response)
+      setTransfering(null)
+
+      if (response && !response.error) {
+  
+      }
     }
   }
 
-  const canDoAction = receiver?.status === 'Prepared'
+  const canDoAction = receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
   let mustSwitchNetwork = false
 
@@ -81,7 +97,7 @@ export default function Transaction({ data, className = '' }) {
 
   if (canDoAction) {
     if (web3_provider) {
-      if (false && address !== receiver?.receivingAddress) {
+      if (address?.toLowerCase() !== receiver?.receivingAddress?.toLowerCase()) {
         actionButtons.push(
           <span key={actionButtons.length} className="min-w-max text-gray-400 dark:text-gray-500 text-xs font-light">
             address not match.
@@ -97,9 +113,12 @@ export default function Transaction({ data, className = '' }) {
             <button
               key={actionButtons.length}
               onClick={() => transfer('cancel', receiver)}
-              className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
+              className={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
             >
-              Cancel
+              {transfering === 'cancel' && (
+                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+              )}
+              <span>Cancel</span>
             </button>
           )
 
@@ -108,14 +127,26 @@ export default function Transaction({ data, className = '' }) {
               <button
                 key={actionButtons.length}
                 onClick={() => transfer('fulfill', receiver)}
-                className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 rounded-2xl text-white font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
+                className={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
               >
-                Fulfill
+                {transfering === 'fulfill' && (
+                  <Loader type="Oval" color="white" width="16" height="16" className="mb-0.5" />
+                )}
+                <span>Fulfill</span>
               </button>
             )
           }
         }
       }
+    }
+  }
+  else {
+    if (transfering) {
+      setTransfering(null)
+    }
+
+    if (result) {
+      setResult(null)
     }
   }
 
@@ -133,6 +164,19 @@ export default function Transaction({ data, className = '' }) {
     !data || data.data ?
       <>
         <div className="flex flex-col lg:flex-row space-y-4 lg:space-y-0">
+          {result && (
+            <Notification
+              outerClassNames="w-full h-auto z-50 transform fixed top-0 left-0 p-0"
+              innerClassNames={`${result.error ? 'bg-red-500 dark:bg-red-600' : 'bg-green-500 dark:bg-green-600'} text-white`}
+              animation="animate__animated animate__fadeInDown"
+              icon={result.error ?
+                <FaTimesCircle className="w-4 h-4 stroke-current mr-2" />
+                :
+                <FaCheckCircle className="w-4 h-4 stroke-current mr-2" />
+              }
+              content={<span>{result.error?.message || result.message}</span>}
+            />
+          )}
           <Widget
             title={<div className="uppercase text-gray-600 dark:text-gray-400 text-sm sm:text-base font-semibold mb-2">Asset</div>}
             className="max-wax sm:max-w-min mr-4 px-5 lg:px-3 xl:px-5"

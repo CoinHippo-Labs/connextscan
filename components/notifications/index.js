@@ -6,15 +6,16 @@ import Portal from '../portal'
 import { FiX } from 'react-icons/fi'
 
 const Notifications = ({
-  btnTitle,
-  btnClassNames,
+  visible = true,
   outerClassNames,
   innerClassNames,
   animation,
+  btnTitle,
+  btnClassNames,
   icon,
-  content
+  content,
 }) => {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(visible)
 
   const show = () => setOpen(true)
 
@@ -27,7 +28,7 @@ const Notifications = ({
       </button>
       {open && (
         <Portal selector="#portal">
-          <div className={`${show ? animation : ''} ${outerClassNames}`}>
+          <div className={`${visible ? animation : ''} ${outerClassNames}`}>
             <div className={`w-full flex items-center justify-start p-4 ${innerClassNames}`}>
               {icon && (
                 <div className="flex-shrink">{icon}</div>
@@ -50,7 +51,7 @@ const Notifications = ({
 }
 
 Notifications.propTypes = {
-  show: PropTypes.bool,
+  visible: PropTypes.bool,
   outerClassNames: PropTypes.string,
   innerClassNames: PropTypes.string,
   animation: PropTypes.string,
