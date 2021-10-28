@@ -3,6 +3,8 @@ import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
+import { NxtpSdkEvents, NxtpSdk } from '@connext/nxtp-sdk'
+import { providers } from 'ethers'
 import moment from 'moment'
 import { Img } from 'react-image'
 import { MdOutlineRouter, MdPending, MdInfoOutline } from 'react-icons/md'
@@ -23,7 +25,7 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 export default function Transaction({ data, className = '' }) {
   const { wallet } = useSelector(state => ({ wallet: state.wallet }), shallowEqual)
   const { wallet_data } = { ...wallet }
-  const { provider, web3_provider, chain_id, address } = { ...wallet_data }
+  const { provider, web3_provider, signer, chain_id, address } = { ...wallet_data }
 
   const router = useRouter()
   const { query } = { ...router }
@@ -31,6 +33,45 @@ export default function Transaction({ data, className = '' }) {
 
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
+
+  const transfer = async (action, txData) => {
+    if (chain_id && signer && txData) {
+      const sdk = new NxtpSdk({
+        chainConfig: {
+          [Number(`${chain_id}`)]: new providers.FallbackProvider(
+            networks.find(_network => _network.network_id === chain_id)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+              .map(rpc => new providers.JsonRpcProvider(rpc))
+            ||
+            []
+          )
+        },
+        signer,
+      })
+
+      let response
+
+//       try {
+// console.log(1)
+//         const prepared = await sdk.waitFor(
+//           NxtpSdkEvents.ReceiverTransactionPrepared, 100_000,
+//           data => data.txData.transactionId === txData.transactionId
+//         )
+// console.log(2)
+//         if (action === 'cancel') {
+//           response = await sdk.cancel(prepared)
+//         }
+//         else {
+//           response = await sdk.fulfillTransfer(prepared)
+//         }
+// console.log(3)
+//       } catch (error) {
+// console.log(4)
+//         response = { error }
+//       }
+
+      console.log(response)
+    }
+  }
 
   const canDoAction = receiver?.status === 'Prepared'
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
@@ -55,6 +96,7 @@ export default function Transaction({ data, className = '' }) {
           actionButtons.push(
             <button
               key={actionButtons.length}
+              onClick={() => transfer('cancel', receiver)}
               className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
             >
               Cancel
@@ -65,6 +107,7 @@ export default function Transaction({ data, className = '' }) {
             actionButtons.push(
               <button
                 key={actionButtons.length}
+                onClick={() => transfer('fulfill', receiver)}
                 className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 rounded-2xl text-white font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
               >
                 Fulfill

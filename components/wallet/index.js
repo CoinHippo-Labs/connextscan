@@ -13,7 +13,7 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
   const dispatch = useDispatch()
   const { wallet } = useSelector(state => ({ wallet: state.wallet }), shallowEqual)
   const { wallet_data } = { ...wallet }
-  const { provider, web3_provider, chain_id, address } = { ...wallet_data }
+  const { provider, web3_provider, chain_id } = { ...wallet_data }
 
   const [web3Modal, setWeb3Modal] = useState(null)
 
@@ -41,6 +41,7 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
       value: {
         provider,
         web3_provider: web3Provider,
+        signer,
         chain_id: network.chainId,
         address,
       },
