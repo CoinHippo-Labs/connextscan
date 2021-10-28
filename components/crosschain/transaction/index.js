@@ -3,13 +3,14 @@ import { useRouter } from 'next/router'
 
 import moment from 'moment'
 import { Img } from 'react-image'
-import { MdOutlineRouter, MdPending } from 'react-icons/md'
+import { MdOutlineRouter, MdPending, MdInfoOutline } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
 import { BsFileEarmarkX } from 'react-icons/bs'
 
 import Copy from '../../copy'
 import Widget from '../../widget'
+import Modal from '../../modals/modal-info'
 
 import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
@@ -22,6 +23,30 @@ export default function Transaction({ data, className = '' }) {
 
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
+
+  const cancelButton = receiver?.status === 'Prepared' && (
+    <button
+      className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl font-semibold mb-2 lg:mb-0.5 py-1 sm:py-1.5 px-2 sm:px-3"
+    >
+      Cancel
+    </button>
+  )
+  const fulfillButton = receiver?.status === 'Prepared' && moment().valueOf() < receiver.expiry && (
+    <button
+      className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 rounded-xl text-white font-semibold mb-2 lg:mb-0.5 py-1 sm:py-1.5 px-2 sm:px-3"
+    >
+      Fulfill
+    </button>
+  )
+  const tipsButton = (cancelButton || fulfillButton) && (
+    <Modal
+      buttonTitle={<MdInfoOutline size={24} className="stroke-current" />}
+      buttonClassName="bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-full text-gray-400 dark:text-gray-500 ml-0.5 sm:ml-1 -mr-1 sm:-mr-2 mb-2 lg:mb-0.5 p-1 sm:p-1.5"
+      title="Tips"
+      body={<span className="text-base text-justify mt-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>}
+      confirmButtonTitle="Ok"
+    />
+  )
 
   return (
     !data || data.data ?
@@ -152,7 +177,14 @@ export default function Transaction({ data, className = '' }) {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-600 dark:text-gray-400 text-base font-semibold mb-2">Token Transfers</div>}
-            className="ml-auto px-5 lg:px-3 xl:px-5"
+            right={<>
+              <div className="flex items-center space-x-1.5 sm:space-x-3">
+                {cancelButton}
+                {fulfillButton}
+              </div>
+              {tipsButton}
+            </>}
+            className="overflow-x-auto ml-auto px-5 lg:px-3 xl:px-5"
           >
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 mt-0 lg:mt-2">
               {data ?
@@ -310,7 +342,7 @@ export default function Transaction({ data, className = '' }) {
                           {ellipseAddress(general.router.id, 6)}
                         </a>
                       </Link>
-                      <Copy text={general.router.id} />
+                      <Copy size={12} text={general.router.id} />
                     </div>
                     <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-500 text-xs font-medium space-x-1 mt-0.5">
                       <MdOutlineRouter size={16} className="mb-0.5" />

@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
-
+import { useState, useEffect, useRef } from 'react'
 import { usePopper } from 'react-popper'
 
-export default function Popover({ placement, title, content, className = '', children }) {
+export default function Popover({ placement, title, content, children, className = '' }) {
   const [hidden, setHidden] = useState(true)
 
   const buttonRef = useRef(null)
@@ -52,9 +51,9 @@ export default function Popover({ placement, title, content, className = '', chi
       >
         {children}
       </button>
-      <div ref={popoverRef} {...attributes.popper} style={styles.popper}>
+      <div ref={popoverRef} { ...attributes.popper } style={styles.popper}>
         <div
-          className={`w-64 max-w-xs no-underline break-words rounded-lg shadow-lg z-10 bg-white dark:bg-gray-800 border-0 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm font-normal ${hidden ? 'hidden' : 'block'}`}
+          className={`w-auto no-underline break-words rounded-lg shadow-lg z-10 bg-white dark:bg-gray-800 border-0 border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white text-sm font-normal ${hidden ? 'hidden' : 'block'}`}
           style={styles.offset}
         >
           <div className="bg-gray-100 dark:bg-gray-800 border-b border-solid border-gray-200 dark:border-gray-700 rounded-t-lg uppercase text-gray-900 dark:text-white font-semibold mb-0 p-2">

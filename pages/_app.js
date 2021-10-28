@@ -17,6 +17,7 @@ import '../styles/components/skeleton.css'
 import '../styles/components/button.css'
 import '../styles/components/dropdown.css'
 import '../styles/components/table.css'
+import '../styles/components/modals.css'
 import '../styles/components/recharts.css'
 import 'react-loader-spinner/dist/loader/css/react-spinner-loader.css'
 
@@ -39,6 +40,7 @@ export default function App({ Component, pageProps }) {
       </Head>
       <Provider store={store}>
         <Layout>
+          <div id="portal" />
           <Component {...pageProps} />
         </Layout>
       </Provider>
