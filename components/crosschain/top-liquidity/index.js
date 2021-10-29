@@ -15,9 +15,10 @@ import { currency, currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function TopLiquidity({ n, className = '' }) {
-  const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
+  const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
+  const { ens_data } = { ...ens }
 
   const [assetBalances, setAssetBalances] = useState(null)
 
@@ -185,14 +186,21 @@ export default function TopLiquidity({ n, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton && props.row.original.data ?
                 props.value ?
-                  <div className="flex items-center space-x-1">
+                  <div className={`flex items-${ens_data?.[props.value.toLowerCase()]?.name ? 'start' : 'center'} space-x-1`}>
                     <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
-                    <Link href={`/router/${props.value}`}>
-                      <a className="text-indigo-600 dark:text-white text-xs font-medium">
-                        {ellipseAddress(props.value, 6)}
-                      </a>
-                    </Link>
-                    <Copy text={props.value} />
+                    <div className="space-y-1">
+                      {ens_data?.[props.value.toLowerCase()]?.name && (
+                        <span className="font-medium">{ens_data?.[props.value.toLowerCase()]?.name}</span>
+                      )}
+                      <div className="flex items-center space-x-1">
+                        <Link href={`/router/${props.value}`}>
+                          <a className={`${ens_data?.[props.value.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal' : 'text-indigo-600 dark:text-white text-xs font-medium'}`}>
+                            {ellipseAddress(props.value, 6)}
+                          </a>
+                        </Link>
+                        <Copy text={props.value} />
+                      </div>
+                    </div>
                   </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>

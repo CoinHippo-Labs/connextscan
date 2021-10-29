@@ -19,8 +19,9 @@ import { CONTRACTS_DATA } from '../../reducers/types'
 
 export default function RouterAddress() {
   const dispatch = useDispatch()
-  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
+  const { contracts, ens } = useSelector(state => ({ contracts: state.contracts, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
+  const { ens_data } = { ...ens }
 
   const router = useRouter()
   const { query } = { ...router }
@@ -108,13 +109,18 @@ export default function RouterAddress() {
           <MdOutlineRouter size={20} className="mb-0.5" />
           <span>Router</span>
         </div>}
-        subtitle={<Copy
-          size={24}
-          text={address}
-          copyTitle={<span className="uppercase text-gray-900 dark:text-gray-100 font-medium mr-1">
-            {ellipseAddress(address, 10)}
-          </span>}
-        />}
+        subtitle={<div>
+          {ens_data?.[address?.toLowerCase()]?.name && (
+            <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
+          )}
+          <Copy
+            size={ens_data?.[address?.toLowerCase()]?.name ? 12 : 24}
+            text={address}
+            copyTitle={<div className={`${ens_data?.[address?.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal mr-0.5' : 'uppercase text-gray-900 dark:text-gray-100 font-medium mr-1'}`}>
+              {ellipseAddress(address, 10)}
+            </div>}
+          />
+        </div>}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">

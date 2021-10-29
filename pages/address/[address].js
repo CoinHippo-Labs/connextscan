@@ -17,7 +17,7 @@ import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
-import { CONTRACTS_DATA } from '../../reducers/types'
+import { CONTRACTS_DATA, ENS_DATA } from '../../reducers/types'
 
 export default function CrosschainAddress() {
   const dispatch = useDispatch()

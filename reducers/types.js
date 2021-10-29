@@ -10,6 +10,9 @@ export const CONTRACTS_DATA = 'contracts_data'
 // assets
 export const ASSETS_DATA = 'assets_data'
 
+// assets
+export const ENS_DATA = 'ens_data'
+
 // timely
 export const TIMELY_DATA = 'timely_data'
 

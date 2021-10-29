@@ -17,9 +17,10 @@ import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function Routers() {
-  const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
+  const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
+  const { ens_data } = { ...ens }
 
   const [routers, setRouters] = useState(null)
   const [timer, setTimer] = useState(null)
@@ -73,18 +74,23 @@ export default function Routers() {
   const routersComponent = routers?.map((router, i) => (
     <Widget
       key={i}
-      title={<div className="flex items-center font-medium space-x-1">
+      title={<div className={`flex items-${ens_data?.[router.router_id.toLowerCase()]?.name ? 'start' : 'center'} font-medium space-x-1`}>
         <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
         <span className="text-gray-400 dark:text-gray-500">Router:</span>
         {router?.router_id && (
-          <>
-            <Link href={`/router/${router.router_id}`}>
-              <a className="text-indigo-600 dark:text-white text-xs font-medium">
-                {ellipseAddress(router.router_id, 10)}
-              </a>
-            </Link>
-            <Copy text={router.router_id} />
-          </>
+          <div className="space-y-0.5">
+            {ens_data?.[router.router_id.toLowerCase()]?.name && (
+              <span className="font-medium">{ens_data?.[router.router_id.toLowerCase()]?.name}</span>
+            )}
+            <div className="flex items-center space-x-1">
+              <Link href={`/router/${router.router_id}`}>
+                <a className={`${ens_data?.[router.router_id.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal' : 'text-indigo-600 dark:text-white text-xs font-medium'}`}>
+                  {ellipseAddress(router.router_id, 10)}
+                </a>
+              </Link>
+              <Copy text={router.router_id} />
+            </div>
+          </div>
         )}
       </div>}
     >

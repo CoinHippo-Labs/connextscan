@@ -9,19 +9,21 @@ import { TiArrowRight } from 'react-icons/ti'
 
 import { graphql, assetBalances } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
+import { domains } from '../../lib/api/ens'
 import { coin } from '../../lib/api/coingecko'
 import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA, CONTRACTS_DATA, ASSETS_DATA } from '../../reducers/types'
+import { CHAIN_DATA, CONTRACTS_DATA, ASSETS_DATA, ENS_DATA } from '../../reducers/types'
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
-  const { data, contracts, assets } = useSelector(state => ({ data: state.data, contracts: state.contracts, assets: state.assets }), shallowEqual)
+  const { data, contracts, assets, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { chain_data } = { ...data }
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
+  const { ens_data } = { ...ens }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
@@ -80,7 +82,7 @@ export default function ChainMeta() {
 
   useEffect(() => {
     const getData = async isInterval => {
-      let assetsData
+      let assetsData, routerIds
       let assetsSet = false
 
       if (!assetsLoaded || isInterval) {
@@ -91,7 +93,8 @@ export default function ChainMeta() {
             const response = await assetBalances({ chain_id: network.id })
 
             assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
-          
+            routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
+
             if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
               if (assetsData) {
                 assetsSet = true
@@ -139,6 +142,17 @@ export default function ChainMeta() {
             type: CONTRACTS_DATA,
             value: new_contracts,
           })
+        }
+
+        if (routerIds?.length > 0) {
+          const response = await domains({ where: `{ id_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+          if (response?.data) {
+            dispatch({
+              type: ENS_DATA,
+              value: Object.fromEntries(response.data.map(domain => [domain.id?.toLowerCase(), { ...domain }])),
+            })
+          }
         }
       }
     }

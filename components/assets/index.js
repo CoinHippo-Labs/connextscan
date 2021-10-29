@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
+import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
@@ -13,6 +14,9 @@ import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
 export default function Assets({ data, className = '' }) {
+  const { ens } = useSelector(state => ({ ens: state.ens }), shallowEqual)
+  const { ens_data } = { ...ens }
+
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { chain_id } = { ...query }
@@ -28,15 +32,22 @@ export default function Assets({ data, className = '' }) {
         ).map((router, i) => (
           <div key={i} className="space-y-4">
             {!router.skeleton ?
-              <div className="flex items-center font-medium space-x-1">
+              <div className={`flex items-${ens_data?.[router.id.toLowerCase()]?.name ? 'start' : 'center'} font-medium space-x-1`}>
                 <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
                 <span className="text-gray-400 dark:text-gray-500">Router:</span>
-                <Link href={`/router/${router.id}`}>
-                  <a className="text-indigo-600 dark:text-white text-xs font-medium">
-                    {ellipseAddress(router.id, 10)}
-                  </a>
-                </Link>
-                <Copy text={router.id} />
+                <div className="space-y-0.5">
+                  {ens_data?.[router.id.toLowerCase()]?.name && (
+                    <span className="font-medium">{ens_data?.[router.id.toLowerCase()]?.name}</span>
+                  )}
+                  <div className="flex items-center space-x-1">
+                    <Link href={`/router/${router.id}`}>
+                      <a className={`${ens_data?.[router.id.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal' : 'text-indigo-600 dark:text-white text-xs font-medium'}`}>
+                        {ellipseAddress(router.id, 10)}
+                      </a>
+                    </Link>
+                    <Copy text={router.id} />
+                  </div>
+                </div>
               </div>
               :
               <div className="skeleton w-40 h-5" />

@@ -27,10 +27,11 @@ import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 export default function Transaction({ data, className = '' }) {
-  const { preferences, wallet } = useSelector(state => ({ preferences: state.preferences, wallet: state.wallet }), shallowEqual)
+  const { preferences, wallet, ens } = useSelector(state => ({ preferences: state.preferences, wallet: state.wallet, ens: state.ens }), shallowEqual)
   const { theme } = { ...preferences }
   const { wallet_data } = { ...wallet }
   const { provider, web3_provider, signer, chain_id, address } = { ...wallet_data }
+  const { ens_data } = { ...ens }
 
   const router = useRouter()
   const { query } = { ...router }
