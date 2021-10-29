@@ -21,9 +21,10 @@ import { CONTRACTS_DATA, ENS_DATA } from '../../reducers/types'
 
 export default function CrosschainAddress() {
   const dispatch = useDispatch()
-  const { contracts, assets } = useSelector(state => ({ contracts: state.contracts, assets: state.assets }), shallowEqual)
+  const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
+  const { ens_data } = { ...ens }
 
   const router = useRouter()
   const { query } = { ...router }
@@ -169,13 +170,18 @@ export default function CrosschainAddress() {
     <>
       <SectionTitle
         title="Address"
-        subtitle={<Copy
-          size={24}
-          text={address}
-          copyTitle={<span className="uppercase text-gray-900 dark:text-gray-100 font-medium mr-1">
-            {ellipseAddress(address, 10)}
-          </span>}
-        />}
+        subtitle={<div>
+          {ens_data?.[address?.toLowerCase()]?.name && (
+            <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
+          )}
+          <Copy
+            size={ens_data?.[address?.toLowerCase()]?.name ? 12 : 24}
+            text={address}
+            copyTitle={<div className={`${ens_data?.[address?.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal mr-0.5' : 'uppercase text-gray-900 dark:text-gray-100 font-medium mr-1'}`}>
+              {ellipseAddress(address, 10)}
+            </div>}
+          />
+        </div>}
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
