@@ -11,6 +11,7 @@ const Alert = ({
   rounded = false,
   borderLeft = false,
   icon = null,
+  closeDisabled = false,
   children,
 }) => {
   const [hidden, setHidden] = useState(false)
@@ -34,14 +35,16 @@ const Alert = ({
     <div className={`w-full flex items-center justify-start p-4 ${css}`}>
       <div className="flex-shrink">{icon}</div>
       <div className="flex-grow">{children}</div>
-      <div className="flex-shrink">
-        <button
-          onClick={() => setHidden(!hidden)}
-          className="flex items-center justify-center ml-auto"
-        >
-          <FiX className="w-4 h-4 stroke-current" />
-        </button>
-      </div>
+      {!closeDisabled && (
+        <div className="flex-shrink">
+          <button
+            onClick={() => setHidden(!hidden)}
+            className="flex items-center justify-center ml-auto"
+          >
+            <FiX className="w-4 h-4 stroke-current" />
+          </button>
+        </div>
+      )}
     </div>
   )
 }

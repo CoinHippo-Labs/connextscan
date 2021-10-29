@@ -199,9 +199,12 @@ console.log(response)
     <Modal
       buttonTitle={<MdInfoOutline size={24} className="stroke-current" />}
       buttonClassName="bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-full text-gray-400 dark:text-gray-500 p-1 sm:p-1.5"
-      title="Tips"
-      body={<div className="space-y-3 mb-2">
-        <div className="text-base text-justify my-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+      title={<div className="text-left text-sm sm:text-lg">Instructions to fulfill or cancel your transaction</div>}
+      body={<div className="space-y-3">
+        <div className="flex text-left text-sm sm:text-base space-x-2 my-1">
+          <span>1.</span>
+          <span>Connect your Metamask with the address and the network of the receiver side.</span>
+        </div>
         <button
           className="bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 pointer-events-none rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
           style={{ width: 'max-content' }}
@@ -216,6 +219,9 @@ console.log(response)
           </div>
         </button>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        <div className="flex text-left text-gray-400 dark:text-gray-500 text-xs font-light space-x-2 my-1">
+          <span>If the address does not match, the dashboard will show 'Address not match' status. Likewise, if the network does not match, there will be a 'Wrong Network' status. Then you need to switch it to the correct one.</span>
+        </div>
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
           <Copy
             size={18}
@@ -243,20 +249,26 @@ console.log(response)
             </a>
           )}
         </div>
-        <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         {receiver?.receivingChain && (
           <div className="flex items-center justify-center space-x-2 mt-1.5">
             {receiver.receivingChain.icon && (
               <img
                 src={receiver.receivingChain.icon}
                 alt=""
-                className="w-8 sm:w-6 xl:w-8 h-8 sm:h-6 xl:h-8 rounded-full"
+                className="w-6 h-6 rounded-full"
               />
             )}
-            <span className="text-gray-700 dark:text-gray-300 text-lg sm:text-base xl:text-lg font-semibold">{receiver.receivingChain.title || receiver.receivingChain.short_name}</span>
+            <span className="text-gray-700 dark:text-gray-300 text-base font-semibold">{receiver.receivingChain.title || receiver.receivingChain.short_name}</span>
           </div>
         )}
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        <div className="flex text-left text-sm sm:text-base space-x-2 mt-2 mb-1">
+          <span>2.</span>
+          <span>Once connected, the Fulfill button and Cancel button will appear.</span>
+        </div>
+        <div className="flex text-left text-gray-400 dark:text-gray-500 text-xs font-light space-x-2 my-1">
+          <span>The fulfill action can be processed when the receiver transaction is prepared and has not expired yet. While the cancel action does not consider the expiry date, only prepared status is required.</span>
+        </div>
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
           <button
             className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 pointer-events-none rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3"
@@ -271,6 +283,10 @@ console.log(response)
             </button>
           )}
         </div>
+        <div className="flex text-left text-sm sm:text-base space-x-2 mt-2 mb-1">
+          <span>3.</span>
+          <span>Click the actions you want to proceed with.</span>
+        </div>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <div className="w-32 sm:w-40 space-y-1 mx-auto">
           <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
@@ -284,10 +300,15 @@ console.log(response)
             className="h-1"
           />
         </div>
+        <div className="flex text-left text-sm sm:text-base space-x-2 mt-2 mb-1">
+          <span>4.</span>
+          <span>Wait for the final result.</span>
+        </div>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <Alert
           color="bg-green-500 dark:bg-green-600 text-left text-white"
           icon={<FaCheckCircle className="w-4 h-4 stroke-current mr-2" />}
+          closeDisabled={true}
         >
           <span>Response Message</span>
         </Alert>
