@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
+import moment from 'moment'
 import { Img } from 'react-image'
 import StackGrid from 'react-stack-grid'
 import { MdOutlineRouter } from 'react-icons/md'
@@ -21,6 +22,7 @@ export default function Routers() {
   const { assets_data } = { ...assets }
 
   const [routers, setRouters] = useState(null)
+  const [timer, setTimer] = useState(null)
 
   useEffect(() => {
     if (assets_data) {
@@ -56,6 +58,17 @@ export default function Routers() {
       setRouters(data)
     }
   }, [contracts_data, assets_data])
+
+  useEffect(() => {
+    const run = async () => setTimer(moment().unix())
+
+    if (!timer) {
+      run()
+    }
+
+    const interval = setInterval(() => run(), 0.5 * 1000)
+    return () => clearInterval(interval)
+  }, [timer])
 
   const routersComponent = routers?.map((router, i) => (
     <Widget
