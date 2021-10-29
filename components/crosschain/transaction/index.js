@@ -69,8 +69,8 @@ export default function Transaction({ data, className = '' }) {
 
       let response
 
-      setTransfering(action)
       setResult(null)
+      setTransfering(action)
       setStartTransferTime(moment().valueOf())
 
       try {
@@ -80,7 +80,7 @@ export default function Transaction({ data, className = '' }) {
               ...txData,
               user: txData.user?.id,
               router: txData.router?.id,
-              preparedBlockNumber: Number(txData.preparedBlockNumber)
+              preparedBlockNumber: Number(txData.preparedBlockNumber),
             },
             signature: txData.bidSignature,
           }, chain_id)
@@ -91,11 +91,11 @@ export default function Transaction({ data, className = '' }) {
               ...txData,
               user: txData.user?.id,
               router: txData.router?.id,
-              preparedBlockNumber: Number(txData.preparedBlockNumber)
+              preparedBlockNumber: Number(txData.preparedBlockNumber),
             },
             encryptedCallData: txData.encryptedCallData,
             encodedBid: txData.encodedBid,
-            bidSignature: txData.bidSignature
+            bidSignature: txData.bidSignature,
           })
         }
       } catch (error) {
@@ -630,7 +630,7 @@ console.log(response)
                           :
                           ['Prepared'].includes(receiver.status) ?
                             result && !result.error ?
-                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mr-0.5" />
                               :
                               <MdPending size={14} className="text-yellow-500 dark:text-white" />
                             :
@@ -861,7 +861,7 @@ console.log(response)
                             :
                             ['Prepared'].includes(transaction.status) ?
                               result && !result.error ?
-                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mr-0.5" />
                                 :
                                 <MdPending size={14} className="text-yellow-500 dark:text-white" />
                               :
