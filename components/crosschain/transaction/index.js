@@ -18,7 +18,9 @@ import Copy from '../../copy'
 import Widget from '../../widget'
 import Modal from '../../modals/modal-info'
 import Notification from '../../notifications'
+import Alert from '../../alerts'
 import Wallet from '../../wallet'
+import { ProgressBar } from '../../progress-bars'
 
 import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
@@ -36,6 +38,7 @@ export default function Transaction({ data, className = '' }) {
 
   const [transfering, setTransfering] = useState(null)
   const [result, setResult] = useState(null)
+  const [startTransferTime, setStartTransferTime] = useState(null)
 
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
@@ -68,13 +71,32 @@ export default function Transaction({ data, className = '' }) {
 
       setTransfering(action)
       setResult(null)
+      setStartTransferTime(moment().valueOf())
 
       try {
         if (action === 'cancel') {
-          response = await sdk.cancel({ txData }, chain_id)
+          response = await sdk.cancel({
+            txData: {
+              ...txData,
+              user: txData.user?.id,
+              router: txData.router?.id,
+              preparedBlockNumber: Number(txData.preparedBlockNumber)
+            },
+            signature: txData.bidSignature,
+          }, chain_id)
         }
         else {
-          response = await sdk.fulfillTransfer({ txData })
+          response = await sdk.fulfillTransfer({
+            txData: {
+              ...txData,
+              user: txData.user?.id,
+              router: txData.router?.id,
+              preparedBlockNumber: Number(txData.preparedBlockNumber)
+            },
+            encryptedCallData: txData.encryptedCallData,
+            encodedBid: txData.encodedBid,
+            bidSignature: txData.bidSignature
+          })
         }
       } catch (error) {
         response = { error }
@@ -82,6 +104,7 @@ export default function Transaction({ data, className = '' }) {
 console.log(response)
       setResult(response)
       setTransfering(null)
+      setStartTransferTime(null)
 
       if (response && !response.error) {
   
@@ -109,32 +132,50 @@ console.log(response)
           mustSwitchNetwork = true
         }
         else {
-          actionButtons.push(
-            <button
-              key={actionButtons.length}
-              onClick={() => transfer('cancel', receiver)}
-              className={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
-            >
-              {transfering === 'cancel' && (
-                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
-              )}
-              <span>Cancel</span>
-            </button>
-          )
-
-          if (canFulfill) {
+          if (transfering && startTransferTime) {
+            actionButtons.push(
+              <div key={actionButtons.length} className="w-32 sm:w-40 space-y-1">
+                <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
+                  <span className="capitalize font-semibold">{transfering}ing</span>
+                  <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
+                </div>
+                <ProgressBar
+                  width={moment().diff(moment(startTransferTime), 'seconds') * 100 / 300}
+                  color="bg-blue-500 dark:bg-blue-400"
+                  backgroundClassName="bg-gray-50 dark:bg-gray-800"
+                  className="h-1"
+                />
+              </div>
+            )
+          }
+          else {
             actionButtons.push(
               <button
                 key={actionButtons.length}
-                onClick={() => transfer('fulfill', receiver)}
-                className={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
+                onClick={() => transfer('cancel', receiver)}
+                className={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
               >
-                {transfering === 'fulfill' && (
-                  <Loader type="Oval" color="white" width="16" height="16" className="mb-0.5" />
+                {transfering === 'cancel' && (
+                  <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
                 )}
-                <span>Fulfill</span>
+                <span>Cancel</span>
               </button>
             )
+
+            if (canFulfill) {
+              actionButtons.push(
+                <button
+                  key={actionButtons.length}
+                  onClick={() => transfer('fulfill', receiver)}
+                  className={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
+                >
+                  {transfering === 'fulfill' && (
+                    <Loader type="Oval" color="white" width="16" height="16" className="mb-0.5" />
+                  )}
+                  <span>Fulfill</span>
+                </button>
+              )
+            }
           }
         }
       }
@@ -148,6 +189,10 @@ console.log(response)
     if (result) {
       setResult(null)
     }
+
+    if (startTransferTime) {
+      setStartTransferTime(null)
+    }
   }
 
   const tipsButton = canDoAction && (
@@ -155,7 +200,98 @@ console.log(response)
       buttonTitle={<MdInfoOutline size={24} className="stroke-current" />}
       buttonClassName="bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-full text-gray-400 dark:text-gray-500 p-1 sm:p-1.5"
       title="Tips"
-      body={<span className="text-base text-justify mt-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>}
+      body={<div className="space-y-3 mb-2">
+        <div className="text-base text-justify my-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</div>
+        <button
+          className="bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 pointer-events-none rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
+          style={{ width: 'max-content' }}
+        >
+          <div className="flex items-center space-x-2">
+            <span>Connect</span>
+            <img
+              src="/logos/wallets/metamask.png"
+              alt=""
+              className="w-4 h-4 -mr-1 mb-0.5"
+            />
+          </div>
+        </button>
+        <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        <div className="flex items-center justify-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+          <Copy
+            size={18}
+            text={receiver?.receivingAddress}
+            copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+              {ellipseAddress(receiver?.receivingAddress, 6)}
+            </span>}
+          />
+          {receiver?.receivingChain?.explorer?.url && (
+            <a
+              href={`${receiver.receivingChain.explorer.url}${receiver.receivingChain.explorer.address_path?.replace('{address}', receiver.receivingAddress)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 dark:text-white"
+            >
+              {receiver.receivingChain.explorer.icon ?
+                <img
+                  src={receiver.receivingChain.explorer.icon}
+                  alt=""
+                  className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                />
+                :
+                <TiArrowRight size={20} className="transform -rotate-45" />
+              }
+            </a>
+          )}
+        </div>
+        <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        {receiver?.receivingChain && (
+          <div className="flex items-center justify-center space-x-2 mt-1.5">
+            {receiver.receivingChain.icon && (
+              <img
+                src={receiver.receivingChain.icon}
+                alt=""
+                className="w-8 sm:w-6 xl:w-8 h-8 sm:h-6 xl:h-8 rounded-full"
+              />
+            )}
+            <span className="text-gray-700 dark:text-gray-300 text-lg sm:text-base xl:text-lg font-semibold">{receiver.receivingChain.title || receiver.receivingChain.short_name}</span>
+          </div>
+        )}
+        <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
+          <button
+            className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 pointer-events-none rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3"
+          >
+            <span>Cancel</span>
+          </button>
+          {canFulfill && (
+            <button
+              className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 pointer-events-none rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3"
+            >
+              <span>Fulfill</span>
+            </button>
+          )}
+        </div>
+        <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        <div className="w-32 sm:w-40 space-y-1 mx-auto">
+          <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
+            <span className="capitalize font-semibold">{canFulfill ? 'Fulfilling' : 'Canceling'}</span>
+            <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
+          </div>
+          <ProgressBar
+            width={100/3}
+            color="bg-blue-500 dark:bg-blue-400"
+            backgroundClassName="bg-gray-50 dark:bg-gray-800"
+            className="h-1"
+          />
+        </div>
+        <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
+        <Alert
+          color="bg-green-500 dark:bg-green-600 text-left text-white"
+          icon={<FaCheckCircle className="w-4 h-4 stroke-current mr-2" />}
+        >
+          <span>Response Message</span>
+        </Alert>
+      </div>}
       confirmButtonTitle="Ok"
     />
   )
@@ -174,7 +310,7 @@ console.log(response)
                 :
                 <FaCheckCircle className="w-4 h-4 stroke-current mr-2" />
               }
-              content={<span>{result.error?.message || result.message}</span>}
+              content={<span>{result.error?.reason || result.error?.message || result.message}</span>}
             />
           )}
           <Widget
@@ -493,7 +629,10 @@ console.log(response)
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                           :
                           ['Prepared'].includes(receiver.status) ?
-                            <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                            result && !result.error ?
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+                              :
+                              <MdPending size={14} className="text-yellow-500 dark:text-white" />
                             :
                             <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
@@ -721,7 +860,10 @@ console.log(response)
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                             :
                             ['Prepared'].includes(transaction.status) ?
-                              <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                              result && !result.error ?
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+                                :
+                                <MdPending size={14} className="text-yellow-500 dark:text-white" />
                               :
                               <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
