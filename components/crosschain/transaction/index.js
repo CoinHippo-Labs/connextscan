@@ -219,9 +219,6 @@ console.log(response)
           </div>
         </button>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
-        <div className="flex text-left text-gray-400 dark:text-gray-500 text-xs font-light space-x-2 my-1">
-          <span>If the address does not match, the dashboard will show 'Address not match' status. Likewise, if the network does not match, there will be a 'Wrong Network' status. Then you need to switch it to the correct one.</span>
-        </div>
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
           <Copy
             size={18}
@@ -261,6 +258,9 @@ console.log(response)
             <span className="text-gray-700 dark:text-gray-300 text-base font-semibold">{receiver.receivingChain.title || receiver.receivingChain.short_name}</span>
           </div>
         )}
+        <div className="flex text-left text-gray-400 dark:text-gray-500 text-xs font-light space-x-2 my-1">
+          <span>If the address does not match, the dashboard will show 'Address not match' status. Likewise, if the network does not match, there will be a 'Wrong Network' status. Then you need to switch it to the correct one.</span>
+        </div>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <div className="flex text-left text-sm sm:text-base space-x-2 mt-2 mb-1">
           <span>2.</span>
