@@ -39,7 +39,7 @@ export default function Navbar() {
                 value: theme === 'light' ? 'dark' : 'light'
               })
             }
-            className="w-8 sm:w-12 h-16 btn-transparent flex items-center justify-center"
+            className="w-10 sm:w-12 h-16 btn-transparent flex items-center justify-center"
           >
             <div className="w-6 h-6 flex items-center justify-center">
               {theme === 'light' ? (

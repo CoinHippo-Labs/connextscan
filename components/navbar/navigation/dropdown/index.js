@@ -33,7 +33,7 @@ export default function DropdownNavigation() {
       <button
         ref={buttonRef}
         onClick={handleDropdownClick}
-        className="w-8 sm:w-12 h-16 flex items-center justify-center"
+        className="w-10 sm:w-12 h-16 flex items-center justify-center"
       >
         <FiMenu size={24} />
       </button>

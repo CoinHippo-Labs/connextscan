@@ -39,7 +39,7 @@ export default function DropdownNetwork() {
       <button
         ref={buttonRef}
         onClick={handleDropdownClick}
-        className="w-6 sm:w-12 h-16 flex items-center justify-center"
+        className="w-10 sm:w-12 h-16 flex items-center justify-center"
       >
         {network && (
           <img
