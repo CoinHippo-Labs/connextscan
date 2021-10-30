@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import { NxtpSdk } from '@connext/nxtp-sdk'
-import { TransactionPrepareEventParams } from '@connext/nxtp-utils'
+import { TransactionPrepareEventParams, signCancelTransactionPayload } from '@connext/nxtp-utils'
 import { providers } from 'ethers'
 import moment from 'moment'
 import { Img } from 'react-image'
@@ -76,6 +76,8 @@ export default function Transaction({ data, className = '' }) {
 
       try {
         if (action === 'cancel') {
+          const signature = await signCancelTransactionPayload(txData.transactionId, chain_id, txData.receivingChainTxManagerAddress, signer)
+
           response = await sdk.cancel({
             txData: {
               ...txData,
@@ -83,7 +85,7 @@ export default function Transaction({ data, className = '' }) {
               router: txData.router?.id,
               preparedBlockNumber: Number(txData.preparedBlockNumber),
             },
-            signature: txData.signature,
+            signature,
           }, chain_id)
         }
         else {
