@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import { NxtpSdk } from '@connext/nxtp-sdk'
-import { TransactionPrepareEventParams, signCancelTransactionPayload } from '@connext/nxtp-utils'
+import { signCancelTransactionPayload } from '@connext/nxtp-utils'
 import { providers } from 'ethers'
 import moment from 'moment'
 import { Img } from 'react-image'
