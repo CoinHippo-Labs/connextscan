@@ -108,14 +108,10 @@ console.log(response)
       setResult(response)
       setTransfering(null)
       setStartTransferTime(null)
-
-      if (response && !response.error) {
-  
-      }
     }
   }
 
-  const canDoAction = receiver?.status === 'Prepared' && !(result && !result.error)
+  const canDoAction = process.env.NEXT_PUBLIC_NETWORK === 'testnet' && receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
   let mustSwitchNetwork = false
 
@@ -625,20 +621,38 @@ console.log(response)
                   }
                 </div>
                 {general?.router?.id && (
-                  <>
-                    <div className="flex items-center font-medium space-x-1 mt-2">
-                      <Link href={`/router/${general.router.id}`}>
-                        <a className="text-indigo-600 dark:text-white text-xs font-medium">
+                  ens_data?.[general.router.id.toLowerCase()]?.name ?
+                    <>
+                      <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-500 text-xs font-medium space-x-1 mt-1.5">
+                        <MdOutlineRouter size={16} className="mb-0.5" />
+                        <Link href={`/router/${general.router.id}`}>
+                          <a className="text-gray-900 dark:text-white font-semibold">
+                            {ens_data[general.router.id.toLowerCase()].name}
+                          </a>
+                        </Link>
+                      </div>
+                      <Copy
+                        text={general.router.id}
+                        copyTitle={<span className="text-gray-400 dark:text-gray-500 text-xs font-normal">
                           {ellipseAddress(general.router.id, 6)}
-                        </a>
-                      </Link>
-                      <Copy size={12} text={general.router.id} />
-                    </div>
-                    <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-500 text-xs font-medium space-x-1 mt-0.5">
-                      <MdOutlineRouter size={16} className="mb-0.5" />
-                      <span>Router</span>
-                    </div>
-                  </>
+                        </span>}
+                      />
+                    </>
+                    :
+                    <>
+                      <div className="flex items-center font-medium space-x-1 mt-2">
+                        <Link href={`/router/${general.router.id}`}>
+                          <a className="text-indigo-600 dark:text-white text-xs font-medium">
+                            {ellipseAddress(general.router.id, 6)}
+                          </a>
+                        </Link>
+                        <Copy size={12} text={general.router.id} />
+                      </div>
+                      <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-500 text-xs font-medium space-x-1 mt-0.5">
+                        <MdOutlineRouter size={16} className="mb-0.5" />
+                        <span>Router</span>
+                      </div>
+                    </>
                 )}
               </div>
               <div className="ml-0 sm:mx-auto">

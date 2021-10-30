@@ -187,18 +187,33 @@ export default function TopLiquidity({ n, className = '' }) {
               !props.row.original.skeleton && props.row.original.data ?
                 props.value ?
                   <div className={`flex items-${ens_data?.[props.value.toLowerCase()]?.name ? 'start' : 'center'} space-x-1`}>
-                    <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
+                    <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-500 mb-0.5" />
                     <div className="space-y-1">
                       {ens_data?.[props.value.toLowerCase()]?.name && (
-                        <span className="font-medium">{ens_data?.[props.value.toLowerCase()]?.name}</span>
-                      )}
-                      <div className="flex items-center space-x-1">
                         <Link href={`/router/${props.value}`}>
-                          <a className={`${ens_data?.[props.value.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal' : 'text-indigo-600 dark:text-white text-xs font-medium'}`}>
-                            {ellipseAddress(props.value, 6)}
+                          <a className="text-gray-900 dark:text-white font-semibold">
+                            {ens_data[props.value.toLowerCase()].name}
                           </a>
                         </Link>
-                        <Copy text={props.value} />
+                      )}
+                      <div className="flex items-center space-x-1">
+                        {ens_data?.[props.value.toLowerCase()]?.name ?
+                          <Copy
+                            text={props.value}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-500 text-xs font-normal">
+                              {ellipseAddress(props.value, 10)}
+                            </span>}
+                          />
+                          :
+                          <>
+                            <Link href={`/router/${props.value}`}>
+                              <a className="text-indigo-600 dark:text-white text-xs font-medium">
+                                {ellipseAddress(props.value, 10)}
+                              </a>
+                            </Link>
+                            <Copy text={props.value} />
+                          </>
+                        }
                       </div>
                     </div>
                   </div>
