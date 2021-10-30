@@ -83,7 +83,7 @@ export default function Transaction({ data, className = '' }) {
               router: txData.router?.id,
               preparedBlockNumber: Number(txData.preparedBlockNumber),
             },
-            signature: txData.bidSignature,
+            signature: txData.signature,
           }, chain_id)
         }
         else {
