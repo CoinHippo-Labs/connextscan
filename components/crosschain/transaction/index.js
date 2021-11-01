@@ -57,9 +57,9 @@ export default function Transaction({ data, className = '' }) {
         )
       }
 
-      chainConfig[chain_id] = {
+      chainConfig[txData.receivingChainId] = {
         provider: new providers.FallbackProvider(
-          networks.find(_network => _network.network_id === chain_id)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+          networks.find(_network => _network.network_id === txData.receivingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
             .map(rpc => new providers.JsonRpcProvider(rpc))
           ||
           []

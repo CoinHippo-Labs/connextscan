@@ -150,7 +150,7 @@ export default function ChainMeta() {
           if (response?.data) {
             dispatch({
               type: ENS_DATA,
-              value: Object.fromEntries(response.data.map(domain => [domain.id?.toLowerCase(), { ...domain }])),
+              value: Object.fromEntries(response.data.map(domain => [domain?.id?.toLowerCase(), { ...domain }])),
             })
           }
         }
