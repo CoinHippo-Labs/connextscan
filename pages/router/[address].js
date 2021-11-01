@@ -32,7 +32,7 @@ export default function RouterAddress() {
   useEffect(() => {
     const getData = async () => {
       if (address) {
-        let data, _contracts_data = _.cloneDeep(contracts_data)
+        let data, allTransactions, _contracts_data = _.cloneDeep(contracts_data)
 
         for (let i = 0; i < networks.length; i++) {
           const network = networks[i]
@@ -61,7 +61,9 @@ export default function RouterAddress() {
 
               new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
 
-              data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat((data || []), _data.map(tx => {
+              allTransactions = _.concat(allTransactions || [], _data)
+
+              data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat(data || [], allTransactions.map(tx => {
                 return {
                   ...tx,
                   sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
@@ -72,7 +74,7 @@ export default function RouterAddress() {
                   ...tx,
                   normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
                 }
-              })), ['preparedTimestamp'], ['desc']), 'id')).map(([key, value]) => { return { txs: _.orderBy(value, ['preparedTimestamp'], ['asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
+              })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
 
               _contracts_data = new_contracts
 
