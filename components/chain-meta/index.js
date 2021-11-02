@@ -92,33 +92,29 @@ export default function ChainMeta() {
   }, [network])
 
   useEffect(() => {
-    const controller = new AbortController()
-
     const getData = async isInterval => {
       let assetsData, routerIds
       let assetsSet = false
 
       if (['/', '/routers'].includes(pathname) || !assetsLoaded || isInterval) {
         for (let i = 0; i < networks.length; i++) {
-          if (!controller.signal.aborted) {
-            const network = networks[i]
+          const network = networks[i]
 
-            if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-              const response = await assetBalances({ chain_id: network.id })
+          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+            const response = await assetBalances({ chain_id: network.id })
 
-              assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
-              routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
+            assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+            routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
 
-              if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
-                if (assetsData) {
-                  assetsSet = true
+            if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
+              if (assetsData) {
+                assetsSet = true
 
-                  if (!(['/'].includes(pathname))) {
-                    dispatch({
-                      type: ASSETS_DATA,
-                      value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-                    })
-                  }
+                if (!(['/'].includes(pathname))) {
+                  dispatch({
+                    type: ASSETS_DATA,
+                    value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+                  })
                 }
               }
             }
@@ -131,50 +127,42 @@ export default function ChainMeta() {
           setAssetsLoaded(true)
         }
 
-        if (!controller.signal.aborted) {
-          dispatch({
-            type: ASSETS_DATA,
-            value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-          })
-        }
+        dispatch({
+          type: ASSETS_DATA,
+          value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+        })
 
         const _contracts = _.groupBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(assets => assets).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'chain_data.id')
 
         let new_contracts
 
         for (let i = 0; i < Object.entries(_contracts).length; i++) {
-          if (!controller.signal.aborted) {
-            const contract = Object.entries(_contracts)[i]
-            const [key, value] = contract
-            const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value && _.uniq(value.map(_contract => _contract.contract_address)).join(','))
+          const contract = Object.entries(_contracts)[i]
+          const [key, value] = contract
+          const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value && _.uniq(value.map(_contract => _contract.contract_address)).join(','))
 
-            if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
-            }
+          if (resContracts?.data) {
+            new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
           }
         }
 
         new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
 
-        if (!controller.signal.aborted) {
-          if (new_contracts) {
-            dispatch({
-              type: CONTRACTS_DATA,
-              value: new_contracts,
-            })
-          }
+        if (new_contracts) {
+          dispatch({
+            type: CONTRACTS_DATA,
+            value: new_contracts,
+          })
         }
 
-        if (!controller.signal.aborted) {
-          if (routerIds?.length > 0) {
-            const response = await domains({ where: `{ id_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+        if (routerIds?.length > 0) {
+          const response = await domains({ where: `{ resolvedAddress_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
 
-            if (response?.data) {
-              dispatch({
-                type: ENS_DATA,
-                value: Object.fromEntries(response.data.map(domain => [domain?.id?.toLowerCase(), { ...domain }])),
-              })
-            }
+          if (response?.data) {
+            dispatch({
+              type: ENS_DATA,
+              value: Object.fromEntries(response.data.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+            })
           }
         }
       }
@@ -183,10 +171,7 @@ export default function ChainMeta() {
     getData()
 
     const interval = setInterval(() => getData(true), 60 * 1000)
-    return () => {
-      controller?.abort()
-      clearInterval(interval)
-    }
+    return () => clearInterval(interval)
   }, [assetsLoaded, pathname])
 
   return (
