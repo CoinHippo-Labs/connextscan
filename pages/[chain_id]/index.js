@@ -33,106 +33,118 @@ export default function Chain() {
   const [hourlyData, setHourlyData] = useState(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async () => {
       if (network) {
-        let response = await getRouters({ chain_id: network.id }, contracts_data)
+        let response, new_contracts
 
-        let new_contracts
+        if (!controller.signal.aborted) {
+          response = await getRouters({ chain_id: network.id }, contracts_data)
 
-        if (response) {
-          let data = response.data || []
+          if (response) {
+            let data = response.data || []
 
-          const _contracts = _.groupBy(_.uniqBy(data.flatMap(router => router.assetBalances?.map(assetBalance => { return { id: assetBalance?.id?.replace(`-${router.id}`, ''), chain_id: network.network_id, data: assetBalance?.data } }).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id?.replace(`${network?.id}-`, '') === asset.id?.replace(`-${router.id}`, '') && contract.data) > -1)) || []), 'id'), 'chain_id')
+            const _contracts = _.groupBy(_.uniqBy(data.flatMap(router => router.assetBalances?.map(assetBalance => { return { id: assetBalance?.id?.replace(`-${router.id}`, ''), chain_id: network.network_id, data: assetBalance?.data } }).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id?.replace(`${network?.id}-`, '') === asset.id?.replace(`-${router.id}`, '') && contract.data) > -1)) || []), 'id'), 'chain_id')
 
-          for (let i = 0; i < Object.entries(_contracts).length; i++) {
-            const contract = Object.entries(_contracts)[i]
-            let [key, value] = contract
-            key = Number(key)
+            for (let i = 0; i < Object.entries(_contracts).length; i++) {
+              if (!controller.signal.aborted) {
+                const contract = Object.entries(_contracts)[i]
+                let [key, value] = contract
+                key = Number(key)
 
-            const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
-            if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                if (resContracts?.data) {
+                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                }
+              }
             }
-          }
 
-          new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
+            new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
 
-          data = data.map(router => {
-            return {
-              ...router,
-              assetBalances: router?.assetBalances?.map(assetBalance => {
-                return {
-                  ...assetBalance,
-                  data: assetBalance.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === assetBalance?.id?.replace(`-${router.id}`, '') && contract.data)?.data,
-                }
-              }).map(assetBalance => {
-                return {
-                  ...assetBalance,
-                  normalize_amount: assetBalance?.data?.contract_decimals && (assetBalance.amount / Math.pow(10, assetBalance.data.contract_decimals)),
-                }
-              }).map(assetBalance => {
-                return {
-                  ...assetBalance,
-                  value: typeof assetBalance?.normalize_amount === 'number' && typeof assetBalance?.data?.prices?.[0].price === 'number' && (assetBalance.normalize_amount * assetBalance.data.prices[0].price),
-                }
-              }),
-            }
-          })
-
-          setRouters({ data, chain_id })
-
-          if (new_contracts) {
-            dispatch({
-              type: CONTRACTS_DATA,
-              value: new_contracts,
+            data = data.map(router => {
+              return {
+                ...router,
+                assetBalances: router?.assetBalances?.map(assetBalance => {
+                  return {
+                    ...assetBalance,
+                    data: assetBalance.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === assetBalance?.id?.replace(`-${router.id}`, '') && contract.data)?.data,
+                  }
+                }).map(assetBalance => {
+                  return {
+                    ...assetBalance,
+                    normalize_amount: assetBalance?.data?.contract_decimals && (assetBalance.amount / Math.pow(10, assetBalance.data.contract_decimals)),
+                  }
+                }).map(assetBalance => {
+                  return {
+                    ...assetBalance,
+                    value: typeof assetBalance?.normalize_amount === 'number' && typeof assetBalance?.data?.prices?.[0].price === 'number' && (assetBalance.normalize_amount * assetBalance.data.prices[0].price),
+                  }
+                }),
+              }
             })
+
+            setRouters({ data, chain_id })
+
+            if (!controller.signal.aborted) {
+              if (new_contracts) {
+                dispatch({
+                  type: CONTRACTS_DATA,
+                  value: new_contracts,
+                })
+              }
+            }
           }
         }
 
         const currentHour = moment().utc().startOf('hour')
 
-        response = await hourly({ chain_id, where: `{ hourStartTimestamp_gte: ${moment(currentHour).subtract(hourly_time_range, 'hours').unix()} }` })
+        if (!controller.signal.aborted) {
+          response = await hourly({ chain_id, where: `{ hourStartTimestamp_gte: ${moment(currentHour).subtract(hourly_time_range, 'hours').unix()} }` })
 
-        if (response) {
-          let data = response.data || []
+          if (response) {
+            let data = response.data || []
 
-          const _new_contracts = _.cloneDeep(new_contracts)
+            const _new_contracts = _.cloneDeep(new_contracts)
 
-          const _contracts = { [`${network.network_id}`]: _.uniqBy(data.filter(timely => timely.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
+            const _contracts = { [`${network.network_id}`]: _.uniqBy(data.filter(timely => timely.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
 
-          for (let i = 0; i < Object.entries(_contracts).length; i++) {
-            const contract = Object.entries(_contracts)[i]
-            let [key, value] = contract
-            key = Number(key)
+            for (let i = 0; i < Object.entries(_contracts).length; i++) {
+              if (!controller.signal.aborted) {
+                const contract = Object.entries(_contracts)[i]
+                let [key, value] = contract
+                key = Number(key)
 
-            const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
-            if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                if (resContracts?.data) {
+                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                }
+              }
             }
+
+            new_contracts = _.uniqBy(_.concat(new_contracts || [], _new_contracts || []), 'id')
+
+            data = data.map(timely => {
+              return {
+                ...timely,
+                data: timely?.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === timely?.assetId && contract.data)?.data,
+              }
+            }).map(timely => {
+              return {
+                ...timely,
+                normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
+              }
+            }).map(timely => {
+              return {
+                ...timely,
+                normalize_volume: typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
+              }
+            })
+
+            setHourlyData({ data, chain_id })
           }
-
-          new_contracts = _.uniqBy(_.concat(new_contracts || [], _new_contracts || []), 'id')
-
-          data = data.map(timely => {
-            return {
-              ...timely,
-              data: timely?.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === timely?.assetId && contract.data)?.data,
-            }
-          }).map(timely => {
-            return {
-              ...timely,
-              normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
-            }
-          }).map(timely => {
-            return {
-              ...timely,
-              normalize_volume: typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
-            }
-          })
-
-          setHourlyData({ data, chain_id })
         }
       }
     }
@@ -140,7 +152,10 @@ export default function Chain() {
     getData()
 
     const interval = setInterval(() => getData(), 30 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
   }, [network])
 
   if (query?.chain_id && !network) {

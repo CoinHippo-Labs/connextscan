@@ -33,6 +33,8 @@ export default function ChainMeta() {
   const [assetsLoaded, setAssetsLoaded] = useState(false)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async () => {
       if (network) {
         let chainData
@@ -41,28 +43,34 @@ export default function ChainMeta() {
 
         chainData = { ...chainData, ...response?.data?._meta }
 
-        if (network?.currency?.coingecko_id) {
-          response = await coin(network.currency.coingecko_id)
+        if (!controller.signal.aborted) {
+          if (network?.currency?.coingecko_id) {
+            response = await coin(network.currency.coingecko_id)
 
-          chainData = { ...chainData, coin: { ...response } }
-        }
-
-        if (network?.gas?.url) {
-          const res = await fetch(network.gas.url)
-          response = await res.json()
-
-          chainData = { ...chainData, gas: { ...(response?.data || response) } }
-
-          if (chainData.gas) {
-            chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
+            chainData = { ...chainData, coin: { ...response } }
           }
         }
 
-        if (chainData) {
-          dispatch({
-            type: CHAIN_DATA,
-            value: chainData,
-          })
+        if (!controller.signal.aborted) {
+          if (network?.gas?.url) {
+            const res = await fetch(network.gas.url)
+            response = await res.json()
+
+            chainData = { ...chainData, gas: { ...(response?.data || response) } }
+
+            if (chainData.gas) {
+              chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
+            }
+          }
+        }
+
+        if (!controller.signal.aborted) {
+          if (chainData) {
+            dispatch({
+              type: CHAIN_DATA,
+              value: chainData,
+            })
+          }
         }
       }
     }
@@ -77,33 +85,40 @@ export default function ChainMeta() {
     }
 
     const interval = setInterval(() => getData(), 15 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
   }, [network])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async isInterval => {
       let assetsData, routerIds
       let assetsSet = false
 
-      if (!assetsLoaded || isInterval) {
+      if (['/', '/routers'].includes(pathname) || !assetsLoaded || isInterval) {
         for (let i = 0; i < networks.length; i++) {
-          const network = networks[i]
+          if (!controller.signal.aborted) {
+            const network = networks[i]
 
-          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-            const response = await assetBalances({ chain_id: network.id })
+            if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+              const response = await assetBalances({ chain_id: network.id })
 
-            assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
-            routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
+              assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+              routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
 
-            if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
-              if (assetsData) {
-                assetsSet = true
+              if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
+                if (assetsData) {
+                  assetsSet = true
 
-                if (!(['/'].includes(pathname))) {
-                  dispatch({
-                    type: ASSETS_DATA,
-                    value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-                  })
+                  if (!(['/'].includes(pathname))) {
+                    dispatch({
+                      type: ASSETS_DATA,
+                      value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+                    })
+                  }
                 }
               }
             }
@@ -116,42 +131,50 @@ export default function ChainMeta() {
           setAssetsLoaded(true)
         }
 
-        dispatch({
-          type: ASSETS_DATA,
-          value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-        })
+        if (!controller.signal.aborted) {
+          dispatch({
+            type: ASSETS_DATA,
+            value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+          })
+        }
 
         const _contracts = _.groupBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(assets => assets).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'chain_data.id')
 
         let new_contracts
 
         for (let i = 0; i < Object.entries(_contracts).length; i++) {
-          const contract = Object.entries(_contracts)[i]
-          const [key, value] = contract
-          const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value && _.uniq(value.map(_contract => _contract.contract_address)).join(','))
+          if (!controller.signal.aborted) {
+            const contract = Object.entries(_contracts)[i]
+            const [key, value] = contract
+            const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value && _.uniq(value.map(_contract => _contract.contract_address)).join(','))
 
-          if (resContracts?.data) {
-            new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+            if (resContracts?.data) {
+              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+            }
           }
         }
 
         new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
 
-        if (new_contracts) {
-          dispatch({
-            type: CONTRACTS_DATA,
-            value: new_contracts,
-          })
+        if (!controller.signal.aborted) {
+          if (new_contracts) {
+            dispatch({
+              type: CONTRACTS_DATA,
+              value: new_contracts,
+            })
+          }
         }
 
-        if (routerIds?.length > 0) {
-          const response = await domains({ where: `{ id_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+        if (!controller.signal.aborted) {
+          if (routerIds?.length > 0) {
+            const response = await domains({ where: `{ id_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
 
-          if (response?.data) {
-            dispatch({
-              type: ENS_DATA,
-              value: Object.fromEntries(response.data.map(domain => [domain?.id?.toLowerCase(), { ...domain }])),
-            })
+            if (response?.data) {
+              dispatch({
+                type: ENS_DATA,
+                value: Object.fromEntries(response.data.map(domain => [domain?.id?.toLowerCase(), { ...domain }])),
+              })
+            }
           }
         }
       }
@@ -160,8 +183,11 @@ export default function ChainMeta() {
     getData()
 
     const interval = setInterval(() => getData(true), 60 * 1000)
-    return () => clearInterval(interval)
-  }, [assetsLoaded])
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
+  }, [assetsLoaded, pathname])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">

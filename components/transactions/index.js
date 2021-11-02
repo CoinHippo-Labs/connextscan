@@ -33,51 +33,59 @@ export default function Transactions({ className = '' }) {
   const [transactions, setTransactions] = useState(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async () => {
       if (network) {
-        const response = await getTransactions({ chain_id: network.id }, contracts_data)
+        if (!controller.signal.aborted) {
+          const response = await getTransactions({ chain_id: network.id }, contracts_data)
 
-        if (response) {
-          let data = response.data || []
+          if (response) {
+            let data = response.data || []
 
-          const _contracts = _.groupBy(_.uniqBy(data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
+            const _contracts = _.groupBy(_.uniqBy(data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
 
-          let new_contracts
+            let new_contracts
 
-          for (let i = 0; i < Object.entries(_contracts).length; i++) {
-            const contract = Object.entries(_contracts)[i]
-            let [key, value] = contract
-            key = Number(key)
+            for (let i = 0; i < Object.entries(_contracts).length; i++) {
+              if (!controller.signal.aborted) {
+                const contract = Object.entries(_contracts)[i]
+                let [key, value] = contract
+                key = Number(key)
 
-            const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
-            if (resContracts?.data) {
-              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                if (resContracts?.data) {
+                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                }
+              }
             }
-          }
 
-          new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
+            new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
 
-          data = data.map(tx => {
-            return {
-              ...tx,
-              sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
-              receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
-            }
-          }).map(tx => {
-            return {
-              ...tx,
-              normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
-            }
-          })
-
-          setTransactions({ data, chain_id })
-
-          if (new_contracts) {
-            dispatch({
-              type: CONTRACTS_DATA,
-              value: new_contracts,
+            data = data.map(tx => {
+              return {
+                ...tx,
+                sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
+                receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
+              }
+            }).map(tx => {
+              return {
+                ...tx,
+                normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
+              }
             })
+
+            setTransactions({ data, chain_id })
+
+            if (!controller.signal.aborted) {
+              if (new_contracts) {
+                dispatch({
+                  type: CONTRACTS_DATA,
+                  value: new_contracts,
+                })
+              }
+            }
           }
         }
       }
@@ -86,7 +94,10 @@ export default function Transactions({ className = '' }) {
     getData()
 
     const interval = setInterval(() => getData(), 15 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
   }, [network])
 
   return (

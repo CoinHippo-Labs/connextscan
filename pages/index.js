@@ -52,37 +52,47 @@ export default function Index() {
   const [theTransaction, setTheTransaction] = useState(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async () => {
-      if (['/'].includes(pathname)) {
-        const resDayMetrics = await dayMetrics({
-          aggs: {
-            chains: {
-              terms: { field: 'chain_id.keyword', size: 1000 },
-              aggs: {
-                day_metrics: {
-                  terms: { field: 'dayStartTimestamp', size: 10000 },
-                  aggs: {
-                    volumes: {
-                      sum: { field: 'normalize_volume' },
-                    },
-                    txs: {
-                      sum: { field: 'txCount' },
+      if (!controller.signal.aborted) {
+        if (['/'].includes(pathname)) {
+          const resDayMetrics = await dayMetrics({
+            aggs: {
+              chains: {
+                terms: { field: 'chain_id.keyword', size: 1000 },
+                aggs: {
+                  day_metrics: {
+                    terms: { field: 'dayStartTimestamp', size: 10000 },
+                    aggs: {
+                      volumes: {
+                        sum: { field: 'normalize_volume' },
+                      },
+                      txs: {
+                        sum: { field: 'txCount' },
+                      },
                     },
                   },
                 },
               },
             },
-          },
-        })
+          })
 
-        setDayMetricsData(resDayMetrics?.data || {})
+          setDayMetricsData(resDayMetrics?.data || {})
+        }
       }
     }
 
     getData()
+
+    return () => {
+      controller?.abort()
+    }
   }, [])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async () => {
       if (dayMetricsData) {
         let _timelyData
@@ -92,16 +102,18 @@ export default function Index() {
         const _networks = networks.filter(_network => _network.id && !_network.disabled)
 
         for (let i = 0; i < _networks.length; i++) {
-          const network = _networks[i]
+          if (!controller.signal.aborted) {
+            const network = _networks[i]
 
-          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+            const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
-          _timelyData = {
-            ..._timelyData,
-            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            _timelyData = {
+              ..._timelyData,
+              [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            }
+
+            setNumLoadedChains(i + 1)
           }
-
-          setNumLoadedChains(i + 1)
         }
 
         setTimelyData(_timelyData || {})
@@ -111,10 +123,15 @@ export default function Index() {
     getData()
 
     const interval = setInterval(() => getData(), 60 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
   }, [dayMetricsData])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     if (contracts_data && timelyData) {
       const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
         return [
@@ -139,12 +156,18 @@ export default function Index() {
         ]
       }))
 
-      if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
-        dispatch({
-          type: TIMELY_DATA,
-          value: _timelyData || {},
-        })
+      if (!controller.signal.aborted) {
+        if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
+          dispatch({
+            type: TIMELY_DATA,
+            value: _timelyData || {},
+          })
+        }
       }
+    }
+
+    return () => {
+      controller?.abort()
     }
   }, [contracts_data, timelyData])
 

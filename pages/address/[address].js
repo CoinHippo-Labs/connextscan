@@ -47,44 +47,53 @@ export default function CrosschainAddress() {
   }, [address, routerIds])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async isInterval => {
       if (address && (isInterval || (routerIds && !routerIds.includes(address.toLowerCase())))) {
         let data
 
         for (let i = 0; i < networks.length; i++) {
-          const network = networks[i]
+          if (!controller.signal.aborted) {
+            const network = networks[i]
 
-          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-            let page = 0
-            let hasMore = true
+            if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+              let page = 0
+              let hasMore = true
 
-            while (hasMore) {
-              const response = await getBalances(network.network_id, address, { 'page-number': page })
+              while (hasMore) {
+                if (!controller.signal.aborted) {
+                  const response = await getBalances(network.network_id, address, { 'page-number': page })
 
-              if (response?.data) {
-                data = (
-                  _.orderBy(
-                    _.uniqBy(_.concat(data || [], response.data.items || []), 'contract_address')
-                    .map(balance => {
-                      return {
-                        ...balance,
-                        balance: typeof balance.balance === 'string' ? Number(balance.balance) : typeof balance.balance === 'number' ? balance.balance : -1,
-                        quote_rate: typeof balance.quote_rate === 'string' ? Number(balance.quote_rate) : typeof balance.quote_rate === 'number' ? balance.quote_rate : -1,
-                        quote: typeof balance.quote === 'string' ? Number(balance.quote) : typeof balance.quote === 'number' ? balance.quote : -1,
-                        chain_data: balance.chain_data || network,
-                      }
-                    }),
-                    ['quote'], ['desc']
-                  )
-                )
+                  if (response?.data) {
+                    data = (
+                      _.orderBy(
+                        _.uniqBy(_.concat(data || [], response.data.items || []), 'contract_address')
+                        .map(balance => {
+                          return {
+                            ...balance,
+                            balance: typeof balance.balance === 'string' ? Number(balance.balance) : typeof balance.balance === 'number' ? balance.balance : -1,
+                            quote_rate: typeof balance.quote_rate === 'string' ? Number(balance.quote_rate) : typeof balance.quote_rate === 'number' ? balance.quote_rate : -1,
+                            quote: typeof balance.quote === 'string' ? Number(balance.quote) : typeof balance.quote === 'number' ? balance.quote : -1,
+                            chain_data: balance.chain_data || network,
+                          }
+                        }),
+                        ['quote'], ['desc']
+                      )
+                    )
 
-                hasMore = response.data.pagination?.has_more
+                    hasMore = response.data.pagination?.has_more
+                  }
+                  else {
+                    hasMore = false
+                  }
+                }
+                else {
+                  hasMore = false
+                }
+
+                page++
               }
-              else {
-                hasMore = false
-              }
-
-              page++
             }
           }
         }
@@ -96,10 +105,15 @@ export default function CrosschainAddress() {
     getData()
 
     const interval = setInterval(() => getData(true), 5 * 60 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
   }, [address, routerIds])
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const getData = async isInterval => {
       if (address && (isInterval || (routerIds && !routerIds.includes(address.toLowerCase())))) {
         let data, allTransactions, _contracts_data = _.cloneDeep(contracts_data)
@@ -165,7 +179,10 @@ export default function CrosschainAddress() {
     getData()
 
     const interval = setInterval(() => getData(true), 15 * 1000)
-    return () => clearInterval(interval)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
   }, [address, routerIds])
 
   return (
