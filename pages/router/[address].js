@@ -16,6 +16,7 @@ import Widget from '../../components/widget'
 import { transactions as getTransactions } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
+import { type } from '../../lib/object/id'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
@@ -34,6 +35,16 @@ export default function RouterAddress() {
 
   const [routerAssets, setRouterAssets] = useState(null)
   const [transactions, setTransactions] = useState(null)
+
+  useEffect(() => {
+    let _address = address
+
+    if (type(_address) === 'router' && ens_data && Object.entries(ens_data).findIndex(([key, value]) => value?.name?.toLowerCase() === _address?.toLowerCase()) > -1) {
+      _address = Object.entries(ens_data).find(([key, value]) => value?.name?.toLowerCase() === _address?.toLowerCase())[0]
+
+      router.push(`/router/${_address}`)
+    }
+  }, [address, ens_data])
 
   useEffect(() => {
     if (assets_data) {
@@ -181,7 +192,7 @@ export default function RouterAddress() {
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 p-4 pb-6">
           <div className="flex items-center mx-3">
             <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Assets</span>
-            {typeof routerAssets?.liquidity === 'number' && (
+            {typeof routerAssets?.liquidity === 'number' && routerAssets.liquidity > 0 && (
               <div className="flex flex-col justify-end space-y-1 ml-auto">
                 <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
                 <div className="font-mono sm:text-base font-semibold text-right">

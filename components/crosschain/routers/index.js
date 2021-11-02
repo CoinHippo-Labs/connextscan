@@ -110,7 +110,7 @@ export default function Routers() {
           </div>
         )}
       </div>}
-      right={typeof router.liquidity === 'number' && (
+      right={typeof router.liquidity === 'number' && router.liquidity > 0 && (
         <div className="flex flex-col justify-end space-y-1">
           <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
           <div className="font-mono sm:text-base font-semibold text-right">

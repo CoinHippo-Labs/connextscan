@@ -10,8 +10,9 @@ import { networks } from '../../../lib/menus'
 import { type } from '../../../lib/object/id'
 
 export default function Search() {
-  const { assets } = useSelector(state => ({ assets: state.assets }), shallowEqual)
+  const { assets, ens } = useSelector(state => ({ assets: state.assets, ens: state.ens }), shallowEqual)
   const { assets_data } = { ...assets }
+  const { ens_data } = { ...ens }
 
   const router = useRouter()
 
@@ -29,14 +30,20 @@ export default function Search() {
   }, [assets_data])
 
   const onSubmit = () => {
-    let searchType = type(inputSearch)
+    let _inputSearch = inputSearch
+
+    let searchType = type(_inputSearch)
 
     if (searchType) {
-      if (searchType === 'address' && routerIds?.includes(inputSearch?.toLowerCase())) {
+      if (searchType === 'address' && routerIds?.includes(_inputSearch?.toLowerCase())) {
+        searchType = 'router'
+      }
+      else if (ens_data && Object.entries(ens_data).findIndex(([key, value]) => value?.name?.toLowerCase() === _inputSearch?.toLowerCase()) > -1) {
+        _inputSearch = Object.entries(ens_data).find(([key, value]) => value?.name?.toLowerCase() === _inputSearch?.toLowerCase())[0]
         searchType = 'router'
       }
 
-      router.push(`/${searchType}/${inputSearch}`)
+      router.push(`/${searchType}/${_inputSearch}`)
 
       setInputSearch('')
 
