@@ -132,6 +132,17 @@ export default function ChainMeta() {
           value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
         })
 
+        if (routerIds?.length > 0) {
+          const response = await domains({ where: `{ resolvedAddress_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+          if (response?.data) {
+            dispatch({
+              type: ENS_DATA,
+              value: Object.fromEntries(response.data.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+            })
+          }
+        }
+
         const _contracts = _.groupBy(Object.values({ ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') }).flatMap(assets => assets).filter(asset => asset?.contract_address && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id === asset.contract_address && contract.data) > -1)), 'chain_data.id')
 
         let new_contracts
@@ -153,17 +164,6 @@ export default function ChainMeta() {
             type: CONTRACTS_DATA,
             value: new_contracts,
           })
-        }
-
-        if (routerIds?.length > 0) {
-          const response = await domains({ where: `{ resolvedAddress_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
-
-          if (response?.data) {
-            dispatch({
-              type: ENS_DATA,
-              value: Object.fromEntries(response.data.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
-            })
-          }
         }
       }
     }
