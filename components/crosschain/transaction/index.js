@@ -631,12 +631,14 @@ console.log(response)
                           </a>
                         </Link>
                       </div>
-                      <Copy
-                        text={general.router.id}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-500 text-xs font-normal">
-                          {ellipseAddress(general.router.id, 6)}
-                        </span>}
-                      />
+                      <div className="flex justify-center">
+                        <Copy
+                          text={general.router.id}
+                          copyTitle={<span className="text-gray-400 dark:text-gray-500 text-xs font-normal">
+                            {ellipseAddress(general.router.id, 6)}
+                          </span>}
+                        />
+                      </div>
                     </>
                     :
                     <>
