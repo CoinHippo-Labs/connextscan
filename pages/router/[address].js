@@ -62,7 +62,7 @@ export default function RouterAddress() {
       }).map(assets => {
         return {
           ...assets,
-          liquidity: assets &&_.sumBy(Object.values(assets.assets), 'value'),
+          liquidity: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value'),
         }
       }))
 
@@ -179,7 +179,17 @@ export default function RouterAddress() {
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 p-4 pb-6">
-          <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light mx-3">Assets</span>
+          <div className="flex items-center mx-3">
+            <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Assets</span>
+            {typeof routerAssets?.liquidity === 'number' && (
+              <div className="flex flex-col justify-end space-y-1 ml-auto">
+                <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
+                <div className="font-mono sm:text-base font-semibold text-right">
+                  {currency_symbol}{numberFormat(routerAssets.liquidity, '0,0')}
+                </div>
+              </div>
+            )}
+          </div>
           <div className="h-3" />
           <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-0 mx-1.5 md:mx-3 lg:mx-1 xl:mx-3">
             {routerAssets?.assets && Object.values(routerAssets.assets).flatMap(assets => assets).map((asset, j) => (

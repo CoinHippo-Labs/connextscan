@@ -52,7 +52,7 @@ export default function Routers() {
       }).map(assets => {
         return {
           ...assets,
-          liquidity: assets &&_.sumBy(Object.values(assets.assets), 'value'),
+          liquidity: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value'),
         }
       }), ['liquidity'], ['desc'])
 
@@ -110,6 +110,14 @@ export default function Routers() {
           </div>
         )}
       </div>}
+      right={typeof router.liquidity === 'number' && (
+        <div className="flex flex-col justify-end space-y-1">
+          <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
+          <div className="font-mono sm:text-base font-semibold text-right">
+            {currency_symbol}{numberFormat(router.liquidity, '0,0')}
+          </div>
+        </div>
+      )}
     >
       <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-3 mb-2">
         {router?.assets && Object.values(router.assets).flatMap(assets => assets).map((asset, j) => (
