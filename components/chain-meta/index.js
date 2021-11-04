@@ -13,7 +13,7 @@ import { domains } from '../../lib/api/ens'
 import { coin } from '../../lib/api/coingecko'
 import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
-import { numberFormat } from '../../lib/utils'
+import { getName, numberFormat } from '../../lib/utils'
 
 import { CHAIN_DATA, CONTRACTS_DATA, ASSETS_DATA, ENS_DATA } from '../../reducers/types'
 
@@ -56,10 +56,10 @@ export default function ChainMeta() {
             const res = await fetch(network.gas.url)
             response = await res.json()
 
-            chainData = { ...chainData, gas: { ...(response?.data || response) } }
+            chainData = { ...chainData, gas: { ...(response?.result || response?.data || response) } }
 
             if (chainData.gas) {
-              chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
+              chainData.gas = Object.fromEntries(Object.entries(chainData.gas).filter(([key, value]) => ['SafeGasPrice', 'ProposeGasPrice', 'FastGasPrice', 'standard', 'fast', 'fastest', 'rapid'].includes(key)).map(([key, value]) => [key, value / Math.pow(10, network.gas.decimals)]))
             }
           }
         }
@@ -216,7 +216,7 @@ export default function ChainMeta() {
           {_.orderBy(Object.entries(chain_data.gas), 1).map(([key, value], i) => (
             <span key={i} className="flex flex-col items-center space-y-0.5">
               <span className="h-3.5 text-gray-900 dark:text-gray-100 font-medium">{numberFormat(value, '0,0')}</span>
-              <span className="h-2.5 capitalize text-3xs">{key}</span>
+              <span className="h-2.5 capitalize text-3xs">{getName(key)}</span>
             </span>
           ))}
         </span>

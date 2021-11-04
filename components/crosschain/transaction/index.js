@@ -115,7 +115,7 @@ export default function Transaction({ data, className = '' }) {
                   className="flex items-center font-semibold"
                 >
                   <span>view on {txData.receivingChain.explorer.name}</span>
-                  <TiArrowRight size={20} className="transform -rotate-45 mt-0.5" />
+                  <TiArrowRight size={20} className="transform -rotate-45" />
                 </a>
               )}
             </div>,

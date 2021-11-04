@@ -87,7 +87,7 @@ export default function Transactions({ useData, n, className = '' }) {
 
                 _contracts_data = new_contracts
               
-                if (!transactions && !loaded && !txsSet) {
+                if (!transactions && !loaded && !txsSet && data.length > 0) {
                   txsSet = true
 
                   setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
