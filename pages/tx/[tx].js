@@ -199,7 +199,7 @@ export default function CrosschainTx() {
               <div className="uppercase text-gray-900 dark:text-white font-semibold">{status}</div>
             </div>
             :
-            <div className="skeleton w-20 h-6" />
+            <div className="skeleton w-24 h-7" />
           }
         </div>}
         className="xl:max-w-7xl flex-col sm:flex-row items-start sm:items-center xl:my-4 mx-auto"

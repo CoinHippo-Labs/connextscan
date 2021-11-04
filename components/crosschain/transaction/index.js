@@ -76,7 +76,7 @@ export default function Transaction({ data, className = '' }) {
 
       try {
         if (action === 'cancel') {
-          const signature = await signCancelTransactionPayload(txData.transactionId, chain_id, txData.receivingChainTxManagerAddress, signer)
+          const signature = '0x'//await signCancelTransactionPayload(txData.transactionId, chain_id, txData.receivingChainTxManagerAddress, signer)
 
           response = await sdk.cancel({
             txData: {
@@ -86,7 +86,7 @@ export default function Transaction({ data, className = '' }) {
               preparedBlockNumber: Number(txData.preparedBlockNumber),
             },
             signature,
-          }, chain_id)
+          }, txData.receivingChainId)
         }
         else {
           response = await sdk.fulfillTransfer({
@@ -99,12 +99,32 @@ export default function Transaction({ data, className = '' }) {
             encryptedCallData: txData.encryptedCallData,
             encodedBid: txData.encodedBid,
             bidSignature: txData.bidSignature,
-          })
+          }, 0, false)
+        }
+
+        if (response?.hash) {
+          response = {
+            ...response,
+            message: <div className="flex items-center space-x-1.5">
+              <span>Wait for Confirmation.</span>
+              {txData.receivingChain?.explorer?.url && (
+                <a
+                  href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response.hash)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center font-semibold"
+                >
+                  <span>view on {txData.receivingChain.explorer.name}</span>
+                  <TiArrowRight size={20} className="transform -rotate-45 mt-0.5" />
+                </a>
+              )}
+            </div>,
+          }
         }
       } catch (error) {
         response = { error }
       }
-console.log(response)
+
       setResult(response)
       setTransfering(null)
       setStartTransferTime(null)
@@ -127,7 +147,7 @@ console.log(response)
         )
       }
       else {
-        if (typeof chain_id === 'number' && chain_id !== receiver?.receivingChainId) {
+        if (typeof chain_id === 'number' && chain_id !== receiver?./*sendingChainId*/receivingChainId) {
           mustSwitchNetwork = true
         }
         else {
@@ -185,7 +205,7 @@ console.log(response)
       setTransfering(null)
     }
 
-    if (result) {
+    if (result && receiver?.status !== 'Prepared') {
       setResult(null)
     }
 
@@ -293,7 +313,7 @@ console.log(response)
             <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
           </div>
           <ProgressBar
-            width={100/3}
+            width={100 / 3}
             color="bg-blue-500 dark:bg-blue-400"
             backgroundClassName="bg-gray-50 dark:bg-gray-800"
             className="h-1"
@@ -305,11 +325,11 @@ console.log(response)
         </div>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <Alert
-          color="bg-green-500 dark:bg-green-600 text-left text-white"
-          icon={<FaCheckCircle className="w-4 h-4 stroke-current mr-2" />}
+          color="bg-blue-500 dark:bg-blue-600 text-left text-white"
+          icon={<FaClock className="w-4 h-4 stroke-current mr-2" />}
           closeDisabled={true}
         >
-          <span>Response Message</span>
+          <span>Wait for Confirmation</span>
         </Alert>
       </div>}
       confirmButtonTitle="Ok"
@@ -323,12 +343,12 @@ console.log(response)
           {result && (
             <Notification
               outerClassNames="w-full h-auto z-50 transform fixed top-0 left-0 p-0"
-              innerClassNames={`${result.error ? 'bg-red-500 dark:bg-red-600' : 'bg-green-500 dark:bg-green-600'} text-white`}
+              innerClassNames={`${result.error ? 'bg-red-500 dark:bg-red-600' : 'bg-blue-500 dark:bg-blue-600'} text-white`}
               animation="animate__animated animate__fadeInDown"
               icon={result.error ?
                 <FaTimesCircle className="w-4 h-4 stroke-current mr-2" />
                 :
-                <FaCheckCircle className="w-4 h-4 stroke-current mr-2" />
+                <FaClock className="w-4 h-4 stroke-current mr-2" />
               }
               content={<span>{result.error?.reason || result.error?.message || result.message}</span>}
             />
@@ -463,7 +483,7 @@ console.log(response)
                 {canDoAction && (
                   <Wallet
                     hidden={web3_provider && !mustSwitchNetwork ? true : false}
-                    chainIdToConnect={mustSwitchNetwork && receiver?.receivingChainId}
+                    chainIdToConnect={mustSwitchNetwork && receiver?./*sendingChainId*/receivingChainId}
                   />
                 )}
                 {actionButtons}
@@ -581,9 +601,9 @@ console.log(response)
                   </>
                   :
                   <>
-                    <div className="skeleton w-20 h-6 mt-0.5" />
+                    <div className="skeleton w-24 h-7 mt-0.5" />
                     <div className="skeleton w-28 h-4 mt-1.5" />
-                    <div className="skeleton w-24 h-3 mt-3" />
+                    <div className="skeleton w-28 h-3.5 mt-1.5" />
                   </>
                 }
               </div>
@@ -721,9 +741,9 @@ console.log(response)
                   </>
                   :
                   <>
-                    <div className="skeleton w-20 h-6 mt-0.5" />
+                    <div className="skeleton w-24 h-7 mt-0.5" />
                     <div className="skeleton w-28 h-4 mt-1.5" />
-                    <div className="skeleton w-24 h-3 mt-3" />
+                    <div className="skeleton w-28 h-3.5 mt-1.5" />
                   </>
                 }
               </div>
