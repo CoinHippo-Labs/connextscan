@@ -14,7 +14,7 @@ import { ProgressBar } from '../../progress-bars'
 import { currency, currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
-export default function TopLiquidity({ n, className = '' }) {
+export default function TopLiquidity({ n, isAggs = true, className = '' }) {
   const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
@@ -23,7 +23,7 @@ export default function TopLiquidity({ n, className = '' }) {
   const [assetBalances, setAssetBalances] = useState(null)
 
   useEffect(() => {
-    if (assets_data) {
+    if (assets_data && contracts_data) {
       let data = _.orderBy(
         Object.values(assets_data).flatMap(asset_data => asset_data.map(asset => {
           return {
@@ -43,6 +43,25 @@ export default function TopLiquidity({ n, className = '' }) {
         })),
         ['value', 'normalize_amount'], ['desc', 'desc']
       )
+
+      if (isAggs && data) {
+        data = _.orderBy(Object.entries(_.groupBy(data.map(asset => {
+          return {
+            ...asset,
+            _symbol: asset?.data?.contract_ticker_symbol?.substring(0, asset.data.contract_ticker_symbol.includes('.') ? asset.data.contract_ticker_symbol.indexOf('.') : asset.data.contract_ticker_symbol.length).split('').filter(c => c === c.toUpperCase()).join(''),
+          }
+        }), '_symbol')).map(([key, value]) => {
+          return {
+            ..._.maxBy(value, ['value']),
+            normalize_amount: _.sumBy(value, 'normalize_amount'),
+            value: _.sumBy(value, 'value'),
+            data: {
+              ...(_.maxBy(value, ['value'])?.data),
+              contract_ticker_symbol: key,
+            },
+          }
+        }), ['value'], ['desc'])
+      }
 
       data = data?.map(asset => {
         return {
@@ -79,7 +98,7 @@ export default function TopLiquidity({ n, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton && props.row.original.data ?
                 props.row.original.data.contract_address ?
-                  <>
+                  <div className={`mb-${isAggs ? 2 : 0} mr-2 lg:mr-0`}>
                     <div className="flex items-center space-x-1.5">
                       {props.row.original.data.logo_url && (
                         <Img
@@ -93,33 +112,35 @@ export default function TopLiquidity({ n, className = '' }) {
                         <span className="text-gray-600 dark:text-gray-400 text-2xs">{props.row.original.data.contract_ticker_symbol}</span>
                       )}
                     </div>
-                    <div className="flex items-center space-x-1 mt-1">
-                      <Copy
-                        text={props.row.original.data.contract_address}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
-                          {ellipseAddress(props.row.original.data.contract_address, 6)}
-                        </span>}
-                      />
-                      {props.row.original.chain_data?.explorer?.url && (
-                        <a
-                          href={`${props.row.original.chain_data.explorer.url}${props.row.original.chain_data.explorer.contract_path?.replace('{address}', props.row.original.contract_address)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-white"
-                        >
-                          {props.row.original.chain_data.explorer.icon ?
-                            <img
-                              src={props.row.original.chain_data.explorer.icon}
-                              alt=""
-                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
-                            />
-                            :
-                            <TiArrowRight size={16} className="transform -rotate-45" />
-                          }
-                        </a>
-                      )}
-                    </div>
-                  </>
+                    {!isAggs && (
+                      <div className="flex items-center space-x-1 mt-1">
+                        <Copy
+                          text={props.row.original.data.contract_address}
+                          copyTitle={<span className="text-gray-400 dark:text-gray-200 text-xs font-medium">
+                            {ellipseAddress(props.row.original.data.contract_address, 6)}
+                          </span>}
+                        />
+                        {props.row.original.chain_data?.explorer?.url && (
+                          <a
+                            href={`${props.row.original.chain_data.explorer.url}${props.row.original.chain_data.explorer.contract_path?.replace('{address}', props.row.original.contract_address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 dark:text-white"
+                          >
+                            {props.row.original.chain_data.explorer.icon ?
+                              <img
+                                src={props.row.original.chain_data.explorer.icon}
+                                alt=""
+                                className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                              />
+                              :
+                              <TiArrowRight size={16} className="transform -rotate-45" />
+                            }
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
                   :
                   <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
                 :
@@ -236,7 +257,7 @@ export default function TopLiquidity({ n, className = '' }) {
                 :
                 <div className="skeleton w-16 h-4 ml-auto mr-4" />
             ),
-            headerClassName: 'justify-end text-right mr-4',
+            headerClassName: 'whitespace-nowrap justify-end text-right mr-4',
           },
           {
             Header: 'Proportion',
@@ -258,7 +279,7 @@ export default function TopLiquidity({ n, className = '' }) {
               </div>
             ),
           },
-        ]}
+        ].filter(column => !isAggs || !(['chain_data.short_name', 'router.id'].includes(column.accessor)))}
         data={assetBalances?.data && !(assetBalances?.data?.findIndex(assetBalance => assetBalance?.data) < 0) ?
           (assetBalances.data || []).map((assetBalance, i) => { return { ...assetBalance, i } })
           :
