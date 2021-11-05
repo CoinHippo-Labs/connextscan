@@ -96,7 +96,7 @@ export default function ChainMeta() {
       let assetsData, routerIds
       let assetsSet = false
 
-      if (['/', '/routers'].includes(pathname) || !assetsLoaded || isInterval) {
+      if ((['/', '/routers'].includes(pathname) && !assetsLoaded) || !assetsLoaded || isInterval) {
         for (let i = 0; i < networks.length; i++) {
           const network = networks[i]
 
