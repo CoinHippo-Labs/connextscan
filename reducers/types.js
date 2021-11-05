@@ -15,6 +15,7 @@ export const ENS_DATA = 'ens_data'
 
 // timely
 export const TIMELY_DATA = 'timely_data'
+export const TIMELY_SYNC_DATA = 'timely_sync_data'
 
 // total
 export const TOTAL_DATA = 'total_data'

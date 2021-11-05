@@ -30,13 +30,14 @@ import { daily_time_ranges, daily_time_range, query_daily_time_range } from '../
 import { networks } from '../lib/menus'
 import { numberFormat } from '../lib/utils'
 
-import { TIMELY_DATA } from '../reducers/types'
+import { TIMELY_DATA, TIMELY_SYNC_DATA } from '../reducers/types'
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { contracts, timely } = useSelector(state => ({ contracts: state.contracts, timely: state.timely }), shallowEqual)
+  const { contracts, timely, timely_sync } = useSelector(state => ({ contracts: state.contracts, timely: state.timely, timely_sync: state.timely_sync }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { timely_data } = { ...timely }
+  const { timely_sync_data } = { ...timely_sync }
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
@@ -89,11 +90,32 @@ export default function Index() {
       controller?.abort()
     }
   }, [])
-
   useEffect(() => {
     const controller = new AbortController()
 
-    const getData = async () => {
+    const getDataSync = async (dayMetricsData, today, _networks) => {
+      if (today && _networks) {
+        let _timelyData
+
+        for (let i = 0; i < _networks.length; i++) {
+          const network = _networks[i]
+
+          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+
+          _timelyData = {
+            ..._timelyData,
+            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+          }
+        }
+
+        dispatch({
+          type: TIMELY_SYNC_DATA,
+          value: _timelyData || {},
+        })
+      }
+    }
+
+    const getData = async isInterval => {
       if (dayMetricsData) {
         let _timelyData
 
@@ -101,33 +123,49 @@ export default function Index() {
 
         const _networks = networks.filter(_network => _network.id && !_network.disabled)
 
-        for (let i = 0; i < _networks.length; i++) {
-          if (!controller.signal.aborted) {
-            const network = _networks[i]
+        if (isInterval) {
+          for (let i = 0; i < _networks.length; i++) {
+            if (!controller.signal.aborted) {
+              const network = _networks[i]
 
-            const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+              const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
-            _timelyData = {
-              ..._timelyData,
-              [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+              _timelyData = {
+                ..._timelyData,
+                [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+              }
+
+              setNumLoadedChains(i + 1)
             }
-
-            setNumLoadedChains(i + 1)
           }
-        }
 
-        setTimelyData(_timelyData || {})
+          setTimelyData(_timelyData || {})
+        }
+        else {
+          _.chunk([...Array(_networks.length).keys()], 2).forEach(chunk => getDataSync(dayMetricsData, today, _networks.filter((_n, i) => chunk.includes(i))))
+        }
       }
     }
 
     getData()
 
-    const interval = setInterval(() => getData(), 60 * 1000)
+    const interval = setInterval(() => getData(true), 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
     }
   }, [dayMetricsData])
+
+  useEffect(() => {
+    if (timely_sync_data) {
+      setNumLoadedChains(Object.keys(timely_sync_data).length)
+
+      if (Object.keys(timely_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
+        setTimelyData(timely_sync_data)
+console.log(timely_sync_data)
+      }
+    }
+  }, [timely_sync_data])
 
   useEffect(() => {
     const controller = new AbortController()
