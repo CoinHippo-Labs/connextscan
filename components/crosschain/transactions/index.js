@@ -54,9 +54,9 @@ export default function Transactions({ useData, n, className = '' }) {
 
                 let new_contracts
 
-                for (let i = 0; i < Object.entries(_contracts).length; i++) {
+                for (let j = 0; j < Object.entries(_contracts).length; j++) {
                   if (!controller.signal.aborted) {
-                    const contract = Object.entries(_contracts)[i]
+                    const contract = Object.entries(_contracts)[j]
                     let [key, value] = contract
                     key = Number(key)
 
@@ -87,10 +87,14 @@ export default function Transactions({ useData, n, className = '' }) {
 
                 _contracts_data = new_contracts
               
-                if (!transactions && !loaded && !txsSet && data.length > 0) {
-                  txsSet = true
+                if ((!transactions || !isInterval) && !loaded && !txsSet) {
+                  if (i === networks.length.length - 1) {
+                    txsSet = true
+                  }
 
-                  setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
+                  if (data.length > 0) {
+                    setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
+                  }
                 }
               }
             }

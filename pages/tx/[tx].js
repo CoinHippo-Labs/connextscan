@@ -51,9 +51,9 @@ export default function CrosschainTx() {
 
                   let new_contracts
 
-                  for (let i = 0; i < Object.entries(_contracts).length; i++) {
+                  for (let j = 0; j < Object.entries(_contracts).length; j++) {
                     if (!controller.signal.aborted) {
-                      const contract = Object.entries(_contracts)[i]
+                      const contract = Object.entries(_contracts)[j]
                       let [key, value] = contract
                       key = Number(key)
 
@@ -98,9 +98,9 @@ export default function CrosschainTx() {
 
                         new_contracts = null
 
-                        for (let i = 0; i < Object.entries(_contracts).length; i++) {
+                        for (let j = 0; j < Object.entries(_contracts).length; j++) {
                           if (!controller.signal.aborted) {
-                            const contract = Object.entries(_contracts)[i]
+                            const contract = Object.entries(_contracts)[j]
                             let [key, value] = contract
                             key = Number(key)
 

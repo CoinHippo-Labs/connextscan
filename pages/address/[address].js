@@ -131,8 +131,8 @@ export default function CrosschainAddress() {
 
               let new_contracts
 
-              for (let i = 0; i < Object.entries(_contracts).length; i++) {
-                const contract = Object.entries(_contracts)[i]
+              for (let j = 0; j < Object.entries(_contracts).length; j++) {
+                const contract = Object.entries(_contracts)[j]
                 let [key, value] = contract
                 key = Number(key)
 
