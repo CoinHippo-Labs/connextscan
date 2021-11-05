@@ -114,7 +114,7 @@ export default function Transaction({ data, className = '' }) {
                   rel="noopener noreferrer"
                   className="flex items-center font-semibold"
                 >
-                  <span>view on {txData.receivingChain.explorer.name}</span>
+                  <span>View on {txData.receivingChain.explorer.name}</span>
                   <TiArrowRight size={20} className="transform -rotate-45" />
                 </a>
               )}
