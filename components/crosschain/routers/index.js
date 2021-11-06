@@ -77,7 +77,7 @@ export default function Routers() {
       title={<div className={`flex items-${ens_data?.[router.router_id.toLowerCase()]?.name ? 'start' : 'center'} font-medium space-x-1`}>
         <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-500 mb-0.5" />
         {!ens_data?.[router.router_id.toLowerCase()]?.name && (
-          <span className="text-gray-400 dark:text-gray-500">Router:</span>
+          <span className="hidden sm:block text-gray-400 dark:text-gray-500">Router:</span>
         )}
         {router?.router_id && (
           <div className="space-y-0.5">
@@ -111,8 +111,8 @@ export default function Routers() {
         )}
       </div>}
       right={typeof router.liquidity === 'number' && router.liquidity > 0 && (
-        <div className="flex flex-col justify-end space-y-1">
-          <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
+        <div className="flex flex-col justify-end space-y-1 ml-2">
+          <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal">Available Liquidity</div>
           <div className="font-mono sm:text-base font-semibold text-right">
             {currency_symbol}{numberFormat(router.liquidity, '0,0')}
           </div>
