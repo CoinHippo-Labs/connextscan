@@ -171,7 +171,7 @@ export default function Index() {
   useEffect(() => {
     const controller = new AbortController()
 
-    if (contracts_data && timelyData) {
+    if (contracts_data && timelyData && Object.keys(timelyData).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
       const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
         return [
           key,
