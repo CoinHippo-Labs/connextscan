@@ -73,7 +73,7 @@ export default function TransactionByChain() {
       for (let i = 0; i <= networks.length; i++) {
         const network = networks[i]
 
-        if (network?.id && !network.disabled) {
+        if (network?.id && !network.disabled/* && __data.findIndex(chain => chain.id === network.id) > -1*/) {
           _data.push(__data.find(chain => chain.id === network.id) || { ...network, tx_count: 0 })
         }
       }

@@ -129,18 +129,18 @@ export default function ChainMeta() {
             assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
             routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
 
-            if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
-              if (assetsData) {
-                assetsSet = true
+            // if (!(assets_data?.[network.id]) && !assetsLoaded && (!assetsSet || ['/routers'].includes(pathname))) {
+            //   if (assetsData) {
+            //     assetsSet = true
 
-                if (!(['/'].includes(pathname))) {
-                  dispatch({
-                    type: ASSETS_DATA,
-                    value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
-                  })
-                }
-              }
-            }
+            //     if (!(['/'].includes(pathname))) {
+            //       dispatch({
+            //         type: ASSETS_DATA,
+            //         value: { ...assets_data, ..._.groupBy(assetsData, 'chain_data.id') },
+            //       })
+            //     }
+            //   }
+            // }
           }
         }
         else if (!assets_data) {

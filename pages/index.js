@@ -136,7 +136,7 @@ export default function Index() {
                 [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
               }
 
-              setNumLoadedChains(i + 1)
+              // setNumLoadedChains(i + 1)
             }
           }
 
