@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from 'recharts'
 
+import { networks } from '../../../../lib/menus'
 import { currency_symbol } from '../../../../lib/object/currency'
 import { numberFormat } from '../../../../lib/utils'
 
@@ -53,7 +54,7 @@ export default function LiquidityByChain() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    const _data = assets_data && Object.entries(_.groupBy(
+    let _data = assets_data && Object.entries(_.groupBy(
       Object.values(assets_data).flatMap(asset_data => asset_data.map(asset => {
         return {
           ...asset,
@@ -82,6 +83,18 @@ export default function LiquidityByChain() {
     const __data = _data && _.cloneDeep(_data)
 
     if (_data) {
+      _data = []
+
+      for (let i = 0; i <= networks.length; i++) {
+        const network = networks[i]
+
+        if (network?.id && !network.disabled) {
+          _data.push(__data.find(chain => chain.id === network.id) || { ...network, liquidity: 0 })
+        }
+      }
+
+      _data = _data.map((chain, i) => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, chain.liquidity >= 1000000 ? '0,0.00a' : '0,0')}` } })
+
       setData(_data)
     }
   }, [contracts_data, assets_data])
@@ -89,7 +102,7 @@ export default function LiquidityByChain() {
   const loaded = data?.findIndex(chain => chain?.assets?.findIndex(asset => !(asset?.data)) > -1) < 0
 
   return (
-    <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'sm:pt-5 pb-0 sm:px-2' : 'mb-2 px-7 sm:px-0'}`}>
+    <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'sm:pt-5 pb-0' : 'mb-2 px-7 sm:px-3'}`}>
       {loaded ?
         <ResponsiveContainer>
           <BarChart

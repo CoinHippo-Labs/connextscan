@@ -90,6 +90,7 @@ export default function Index() {
       controller?.abort()
     }
   }, [])
+
   useEffect(() => {
     const controller = new AbortController()
 
@@ -141,7 +142,7 @@ export default function Index() {
 
           setTimelyData(_timelyData || {})
         }
-        else {
+        else if (!timely_data) {
           const chunkSize = _.head([...Array(_networks.length).keys()].map(i => i + 1).filter(i => Math.ceil(_networks.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _networks.length
           _.chunk([...Array(_networks.length).keys()], chunkSize).forEach(chunk => getDataSync(dayMetricsData, today, _networks.filter((_n, i) => chunk.includes(i))))
         }
@@ -150,12 +151,12 @@ export default function Index() {
 
     getData()
 
-    const interval = setInterval(() => getData(true), 60 * 1000)
+    const interval = setInterval(() => getData(true), 20 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [dayMetricsData])
+  }, [dayMetricsData, timely_data])
 
   useEffect(() => {
     if (timely_sync_data) {
@@ -163,7 +164,6 @@ export default function Index() {
 
       if (Object.keys(timely_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
         setTimelyData(timely_sync_data)
-console.log(timely_sync_data)
       }
     }
   }, [timely_sync_data])
@@ -285,7 +285,7 @@ console.log(timely_sync_data)
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
-            <div className="sm:mx-3">
+            <div>
               <LiquidityByChain />
             </div>
           </Widget>
@@ -311,7 +311,7 @@ console.log(timely_sync_data)
             right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
             className="lg:col-span-2 px-0 sm:px-4"
           >
-            <div className="sm:mx-3">
+            <div>
               <TransactionByChain />
             </div>
           </Widget>

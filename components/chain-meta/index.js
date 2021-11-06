@@ -15,14 +15,16 @@ import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { getName, numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA, CONTRACTS_DATA, ASSETS_DATA, ENS_DATA } from '../../reducers/types'
+import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA } from '../../reducers/types'
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
-  const { data, contracts, assets, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
+  const { data, contracts, contracts_sync, assets, assets_sync, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, contracts_sync: state.contracts_sync, assets: state.assets, assets_sync: state.assets_sync, ens: state.ens }), shallowEqual)
   const { chain_data } = { ...data }
   const { contracts_data } = { ...contracts }
+  const { contracts_sync_data } = { ...contracts_sync }
   const { assets_data } = { ...assets }
+  const { assets_sync_data } = { ...assets_sync }
   const { ens_data } = { ...ens }
 
   const router = useRouter()
@@ -92,15 +94,36 @@ export default function ChainMeta() {
   }, [network])
 
   useEffect(() => {
+    const getDataSync = async _networks => {
+      if (_networks) {
+        let assetsData
+
+        for (let i = 0; i < _networks.length; i++) {
+          const network = _networks[i]
+
+          const response = await assetBalances({ chain_id: network.id })
+
+          assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
+        }
+
+        dispatch({
+          type: ASSETS_SYNC_DATA,
+          value: _.groupBy(assetsData, 'chain_data.id'),
+        })
+      }
+    }
+
     const getData = async isInterval => {
       let assetsData, routerIds
       let assetsSet = false
 
       if ((['/', '/routers'].includes(pathname) && !assetsLoaded) || !assetsLoaded || isInterval) {
-        for (let i = 0; i < networks.length; i++) {
-          const network = networks[i]
+        const _networks = networks.filter(_network => _network.id && !_network.disabled)
 
-          if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
+        if (isInterval) {
+          for (let i = 0; i < _networks.length; i++) {
+            const network = _networks[i]
+
             const response = await assetBalances({ chain_id: network.id })
 
             assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
@@ -119,6 +142,10 @@ export default function ChainMeta() {
               }
             }
           }
+        }
+        else if (!assets_data) {
+          const chunkSize = _.head([...Array(_networks.length).keys()].map(i => i + 1).filter(i => Math.ceil(_networks.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _networks.length
+          _.chunk([...Array(_networks.length).keys()], chunkSize).forEach(chunk => getDataSync(_networks.filter((_n, i) => chunk.includes(i))))
         }
       }
 
@@ -170,9 +197,74 @@ export default function ChainMeta() {
 
     getData()
 
-    const interval = setInterval(() => getData(true), 60 * 1000)
+    const interval = setInterval(() => getData(true), 30 * 1000)
     return () => clearInterval(interval)
-  }, [assetsLoaded, pathname])
+  }, [assetsLoaded, pathname. assets_data])
+
+  useEffect(async () => {
+    const getContractsSync = async _contracts => {
+      if (_contracts) {
+        let new_contracts
+
+        for (let i = 0; i < _contracts.length; i++) {
+          const contract = _contracts[i]
+          const [key, value] = contract
+          const resContracts = await getContracts(networks.find(network => network.id === key)?.network_id, value && _.uniq(value.map(_contract => _contract.contract_address)).join(','))
+
+          if (resContracts?.data) {
+            new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: `${key}-${_contract?.contract_address}`, chain_id: key, data: { ..._contract } } }), new_contracts || []), 'id')
+          }
+        }
+
+        if (new_contracts) {
+          dispatch({
+            type: CONTRACTS_SYNC_DATA,
+            value: new_contracts,
+          })
+        }
+      }
+    }
+
+    if (assets_sync_data) {
+      if (Object.keys(assets_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
+        dispatch({
+          type: ASSETS_DATA,
+          value: assets_sync_data,
+        })
+
+        const routerIds = Object.values(assets_sync_data).flatMap(assets => assets).map(asset => asset?.router?.id)
+
+        if (routerIds?.length > 0) {
+          const response = await domains({ where: `{ resolvedAddress_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+          if (response?.data) {
+            dispatch({
+              type: ENS_DATA,
+              value: Object.fromEntries(response.data.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+            })
+          }
+        }
+
+        const _contracts = Object.entries(_.groupBy(Object.values(assets_sync_data).flatMap(assets => assets), 'chain_data.id'))
+
+        const chunkSize = _.head([...Array(_contracts.length).keys()].map(i => i + 1).filter(i => Math.ceil(_contracts.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _contracts.length
+        _.chunk([...Array(_contracts.length).keys()], chunkSize).forEach(chunk => getContractsSync(_contracts.filter((_n, i) => chunk.includes(i))))
+      }
+    }
+  }, [assets_sync_data])
+
+  useEffect(() => {
+    if (contracts_sync_data) {
+      if (Object.keys(assets_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
+        if (contracts_sync_data.length >= _.uniqBy(Object.values(assets_sync_data).flatMap(assets => assets).map(asset => { return { id: `${asset?.chain_data?.id}-${asset?.contract_address}` } }), 'id').length) {
+          dispatch({
+            type: CONTRACTS_DATA,
+            value: contracts_sync_data,
+          })
+        }
+      }
+    }
+  }, [contracts_sync_data, assets_sync_data])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
