@@ -61,6 +61,9 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
             _symbol: SYMBOL_LOOKUP[asset._symbol?.toLowerCase()] || asset._symbol,
           }
         }), '_symbol')).map(([key, value]) => {
+          const contract_name = value ? _.orderBy(value, ['value'], ['desc']).map(_contract => _contract?.data?.contract_name).filter(name => name) : []
+          const logo_url = value ? _.orderBy(value, ['value'], ['desc']).flatMap(_contract => _contract?.data?.logo_url).filter(url => url) : []
+
           return {
             ..._.maxBy(value, ['value']),
             normalize_amount: _.sumBy(value, 'normalize_amount'),
@@ -68,6 +71,8 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
             data: {
               ...(_.maxBy(value, ['value'])?.data),
               contract_ticker_symbol: key,
+              contract_name: _.head(_.uniqBy(/*_.orderBy(*/contract_name.map(_name => { return { name: _name, count: contract_name.filter(__name => __name === _name).length } }) || []/*, ['count'], ['desc'])*/, 'name').map(_name => _name.name)),
+              logo_url: _.uniqBy(_.orderBy(logo_url.map(_logo_url => { return { url: _logo_url, count: logo_url.filter(__logo_url => __logo_url === _logo_url).length } }) || [], ['count'], ['desc']), 'url').map(_logo_url => _logo_url.url),
             },
           }
         }), ['value'], ['desc'])
