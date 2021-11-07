@@ -14,6 +14,11 @@ import { ProgressBar } from '../../progress-bars'
 import { currency, currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
+const SYMBOL_LOOKUP = {
+  weth: 'ETH',
+  xdai: 'DAI',
+}
+
 export default function TopLiquidity({ n, isAggs = true, className = '' }) {
   const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
@@ -49,6 +54,11 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
           return {
             ...asset,
             _symbol: asset?.data?.contract_ticker_symbol?.substring(0, asset.data.contract_ticker_symbol.includes('.') ? asset.data.contract_ticker_symbol.indexOf('.') : asset.data.contract_ticker_symbol.length).split('').filter(c => c === c.toUpperCase()).join(''),
+          }
+        }).map(asset => {
+          return {
+            ...asset,
+            _symbol: SYMBOL_LOOKUP[asset._symbol?.toLowerCase()] || asset._symbol,
           }
         }), '_symbol')).map(([key, value]) => {
           return {
