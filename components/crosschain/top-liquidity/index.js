@@ -17,6 +17,7 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 const SYMBOL_LOOKUP = {
   weth: 'ETH',
   xdai: 'DAI',
+  oai: 'OMN',
 }
 
 export default function TopLiquidity({ n, isAggs = true, className = '' }) {
