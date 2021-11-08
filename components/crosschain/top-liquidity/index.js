@@ -213,7 +213,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
                 </div>
                 :
                 <div className="space-y-1.5 mr-4">
-                  {[...Array(networks.filter(network => network?.id && !(network?.disabled)).length).keys()].map(i => (
+                  {[...Array(COLLAPSE_CHAINS_SIZE).keys()].map(i => (
                     <div key={i} className="skeleton w-28 h-4 ml-auto" />
                   ))}
                 </div>
