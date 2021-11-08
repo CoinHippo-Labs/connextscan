@@ -6,11 +6,13 @@ import _ from 'lodash'
 import { Img } from 'react-image'
 import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
+import { IoCaretUpOutline, IoCaretDownOutline } from 'react-icons/io5'
 
 import Datatable from '../../datatable'
 import Copy from '../../copy'
 import { ProgressBar } from '../../progress-bars'
 
+import { networks } from '../../../lib/menus'
 import { currency, currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
@@ -20,6 +22,8 @@ const SYMBOL_LOOKUP = {
   oai: 'OMN',
 }
 
+const COLLAPSE_CHAINS_SIZE = 3
+
 export default function TopLiquidity({ n, isAggs = true, className = '' }) {
   const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }
@@ -27,6 +31,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
   const { ens_data } = { ...ens }
 
   const [assetBalances, setAssetBalances] = useState(null)
+  const [symbolsSeeMore, setSymbolsSeeMore] = useState([])
 
   useEffect(() => {
     if (assets_data && contracts_data) {
@@ -75,6 +80,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
               contract_name: _.head(_.uniqBy(/*_.orderBy(*/contract_name.map(_name => { return { name: _name, count: contract_name.filter(__name => __name === _name).length } }) || []/*, ['count'], ['desc'])*/, 'name').map(_name => _name.name)),
               logo_url: _.uniqBy(_.orderBy(logo_url.map(_logo_url => { return { url: _logo_url, count: logo_url.filter(__logo_url => __logo_url === _logo_url).length } }) || [], ['count'], ['desc']), 'url').map(_logo_url => _logo_url.url),
             },
+            assets: _.groupBy(value, 'chain_data.id'),
           }
         }), ['value'], ['desc'])
       }
@@ -162,12 +168,60 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
                 :
                 <>
                   <div className="skeleton w-32 h-4" />
-                  <div className="skeleton w-24 h-3 mt-3" />
+                  {!isAggs && (
+                    <div className="skeleton w-24 h-3 mt-3" />
+                  )}
                 </>
             ),
           },
           {
-            Header: 'Liquidity',
+            Header: 'Max Transfer Size',
+            accessor: 'assets',
+            disableSortBy: true,
+            Cell: props => (
+              !props.row.original.skeleton && props.row.original.data ?
+                <div className="space-y-1.5 mr-4">
+                  {_.slice(_.orderBy(Object.entries(props.value).filter(([key, value]) => value?.length > 0), _entry => -1 * _.maxBy(_entry[1], 'normalize_amount')?.normalize_amount), 0, symbolsSeeMore.includes(props.row.original._symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_CHAINS_SIZE).map(([key, value]) => (
+                    <div key={key} className="flex items-center justify-end space-x-2">
+                      <span className="font-mono font-semibold">
+                        {numberFormat(_.maxBy(value, 'normalize_amount')?.normalize_amount, '0,0')}
+                      </span>
+                      {_.maxBy(value, 'normalize_amount')?.data?.contract_ticker_symbol && (
+                        <span className="text-gray-600 dark:text-gray-400 text-xs">{_.maxBy(value, 'normalize_amount').data.contract_ticker_symbol}</span>
+                      )}
+                      {_.maxBy(value, 'normalize_amount')?.chain_data?.icon && (
+                        <img
+                          src={_.maxBy(value, 'normalize_amount').chain_data.icon}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                      )}
+                    </div>
+                  ))}
+                  {(Object.entries(props.value).filter(([key, value]) => value?.length > 0).length > COLLAPSE_CHAINS_SIZE || symbolsSeeMore.includes(props.row.original._symbol)) && (
+                    <div
+                      onClick={() => setSymbolsSeeMore(symbolsSeeMore.includes(props.row.original._symbol) ? symbolsSeeMore.filter(_symbol => _symbol !== props.row.original._symbol) : _.uniq(_.concat(symbolsSeeMore, props.row.original._symbol)))}
+                      className={`max-w-min flex items-center cursor-pointer rounded capitalize text-${symbolsSeeMore.includes(props.row.original._symbol) ? 'red-500' : 'gray-500 dark:text-white'} text-xs font-medium space-x-0.5 ml-auto`}
+                    >
+                      <span>See {symbolsSeeMore.includes(props.row.original._symbol) ? 'Less' : 'More'}</span>
+                      {!(symbolsSeeMore.includes(props.row.original._symbol)) && (
+                        <span>({numberFormat(Object.entries(props.value).filter(([key, value]) => value?.length > 0).length - COLLAPSE_CHAINS_SIZE, '0,0')})</span>
+                      )}
+                      {symbolsSeeMore.includes(props.row.original._symbol) ? <IoCaretUpOutline /> : <IoCaretDownOutline />}
+                    </div>
+                  )}
+                </div>
+                :
+                <div className="space-y-1.5 mr-4">
+                  {[...Array(networks.filter(network => network?.id && !(network?.disabled)).length).keys()].map(i => (
+                    <div key={i} className="skeleton w-28 h-4 ml-auto" />
+                  ))}
+                </div>
+            ),
+            headerClassName: 'justify-end text-right mr-4',
+          },
+          {
+            Header: 'Total Liquidity',
             accessor: 'normalize_amount',
             disableSortBy: true,
             Cell: props => (
@@ -181,7 +235,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
                   )}
                 </div>
                 :
-                <div className="skeleton w-20 h-4 ml-auto mr-4" />
+                <div className="skeleton w-28 h-4 ml-auto mr-4" />
             ),
             headerClassName: 'justify-end text-right mr-4',
           },
@@ -295,7 +349,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
               </div>
             ),
           },
-        ].filter(column => !isAggs || !(['chain_data.short_name', 'router.id'].includes(column.accessor)))}
+        ].filter(column => !isAggs ? !(['assets'].includes(column.accessor)) : !(['chain_data.short_name', 'router.id'].includes(column.accessor)))}
         data={assetBalances?.data && !(assetBalances?.data?.findIndex(assetBalance => assetBalance?.data) < 0) ?
           (assetBalances.data || []).map((assetBalance, i) => { return { ...assetBalance, i } })
           :

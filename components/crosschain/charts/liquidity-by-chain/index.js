@@ -93,7 +93,7 @@ export default function LiquidityByChain() {
         }
       }
 
-      _data = _data.map((chain, i) => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, chain.liquidity >= 1000000 ? '0,0.00a' : '0,0')}` } })
+      _data = _data.map((chain, i) => { return { ...chain, liquidity_string: `${currency_symbol}${numberFormat(chain.liquidity, chain.liquidity >= 100000 ? '0,0.00a' : '0,0')}` } })
 
       setData(_data)
     }

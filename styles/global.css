@@ -157,3 +157,7 @@ body {
 .font-default .recharts-label {
   @apply font-sans;
 }
+
+.recharts-label-list text tspan {
+  @apply text-3xs sm:text-xs md:text-xs lg:text-xs xl:text-xs;
+}
