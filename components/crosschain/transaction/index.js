@@ -84,6 +84,7 @@ export default function Transaction({ data, className = '' }) {
               user: txData.user?.id,
               router: txData.router?.id,
               preparedBlockNumber: Number(txData.preparedBlockNumber),
+              expiry: txData.expiry / 1000,
             },
             signature,
           }, txData.receivingChainId)
@@ -95,6 +96,7 @@ export default function Transaction({ data, className = '' }) {
               user: txData.user?.id,
               router: txData.router?.id,
               preparedBlockNumber: Number(txData.preparedBlockNumber),
+              expiry: txData.expiry / 1000,
             },
             encryptedCallData: txData.encryptedCallData,
             encodedBid: txData.encodedBid,
