@@ -120,7 +120,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton && props.row.original.data ?
                 props.row.original.data.contract_address ?
-                  <div className={`mb-${isAggs ? 2 : 0} mr-2 lg:mr-0`}>
+                  <div className={`mb-${isAggs ? 2 : 0} mr-4 lg:mr-0`}>
                     <div className="flex items-center space-x-1.5">
                       {props.row.original.data.logo_url && (
                         <Img
@@ -218,7 +218,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
                   ))}
                 </div>
             ),
-            headerClassName: 'justify-end text-right mr-4',
+            headerClassName: 'whitespace-nowrap justify-end text-right mr-4',
           },
           {
             Header: 'Total Liquidity',
@@ -237,7 +237,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
                 :
                 <div className="skeleton w-28 h-4 ml-auto mr-4" />
             ),
-            headerClassName: 'justify-end text-right mr-4',
+            headerClassName: 'whitespace-nowrap justify-end text-right mr-4',
           },
           {
             Header: 'Chain',
