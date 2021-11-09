@@ -104,14 +104,14 @@ export default function Transaction({ data, className = '' }) {
           }, 0, false)
         }
 
-        if (response?.hash) {
+        if (response?.fulfillResponse?.hash || response?.hash) {
           response = {
             ...response,
             message: <div className="flex items-center space-x-1.5">
               <span>Wait for Confirmation.</span>
               {txData.receivingChain?.explorer?.url && (
                 <a
-                  href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response.hash)}`}
+                  href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response?.fulfillResponse?.hash || response?.hash)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center font-semibold"
@@ -135,6 +135,7 @@ export default function Transaction({ data, className = '' }) {
 
   const canDoAction = process.env.NEXT_PUBLIC_NETWORK === 'testnet' && receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
+  const isActionBeta = canDoAction// && !process.env.NEXT_PUBLIC_NETWORK
   let mustSwitchNetwork = false
 
   const actionButtons = []
@@ -149,7 +150,7 @@ export default function Transaction({ data, className = '' }) {
         )
       }
       else {
-        if (typeof chain_id === 'number' && chain_id !== receiver?./*sendingChainId*/receivingChainId) {
+        if (typeof chain_id === 'number' && chain_id !== receiver?.receivingChainId) {
           mustSwitchNetwork = true
         }
         else {
@@ -174,12 +175,15 @@ export default function Transaction({ data, className = '' }) {
               <button
                 key={actionButtons.length}
                 onClick={() => transfer('cancel', receiver)}
-                className={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
+                className={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
               >
                 {transfering === 'cancel' && (
-                  <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+                  <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
                 )}
                 <span>Cancel</span>
+                {isActionBeta && (
+                  <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-7 py-0.5 px-1">Beta</span>
+                )}
               </button>
             )
 
@@ -188,12 +192,15 @@ export default function Transaction({ data, className = '' }) {
                 <button
                   key={actionButtons.length}
                   onClick={() => transfer('fulfill', receiver)}
-                  className={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
+                  className={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
                 >
                   {transfering === 'fulfill' && (
-                    <Loader type="Oval" color="white" width="16" height="16" className="mb-0.5" />
+                    <Loader type="Oval" color="white" width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
                   )}
                   <span>Fulfill</span>
+                  {isActionBeta && (
+                    <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-5 py-0.5 px-1">Beta</span>
+                  )}
                 </button>
               )
             }
@@ -331,7 +338,7 @@ export default function Transaction({ data, className = '' }) {
           icon={<FaClock className="w-4 h-4 stroke-current mr-2" />}
           closeDisabled={true}
         >
-          <span>Wait for Confirmation</span>
+          <span>Wait for Confirmation.</span>
         </Alert>
       </div>}
       confirmButtonTitle="Ok"
@@ -485,7 +492,7 @@ export default function Transaction({ data, className = '' }) {
                 {canDoAction && (
                   <Wallet
                     hidden={web3_provider && !mustSwitchNetwork ? true : false}
-                    chainIdToConnect={mustSwitchNetwork && receiver?./*sendingChainId*/receivingChainId}
+                    chainIdToConnect={mustSwitchNetwork && receiver?.receivingChainId}
                   />
                 )}
                 {actionButtons}

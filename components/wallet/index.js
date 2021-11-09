@@ -97,12 +97,13 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
           disconnect()
         }
         else {
-          dispatch({
-            type: WALLET_DATA,
-            value: {
-              chain_id: Number(chainId),
-            },
-          })
+          // dispatch({
+          //   type: WALLET_DATA,
+          //   value: {
+          //     chain_id: Number(chainId),
+          //   },
+          // })
+          connect()
         }
       }
 
