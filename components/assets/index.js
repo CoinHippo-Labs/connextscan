@@ -13,7 +13,7 @@ import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
-export default function Assets({ data, assetBy = 'max_transfer_size', className = '' }) {
+export default function Assets({ data, assetBy = 'assets', className = '' }) {
   const { ens } = useSelector(state => ({ ens: state.ens }), shallowEqual)
   const { ens_data } = { ...ens }
 
@@ -22,7 +22,7 @@ export default function Assets({ data, assetBy = 'max_transfer_size', className 
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
-  const maxTransfers = data?.chain_id === chain_id && data?.data && _.orderBy(Object.values(_.groupBy(data.data.flatMap(_router => _router?.assetBalances), 'data.contract_address')).map(_assets => _.maxBy(_assets, 'normalize_amount')), ['value'], ['desc'])
+  const maxTransfers = data?.chain_id === chain_id && data?.data && _.orderBy(Object.values(_.groupBy(data.data.flatMap(_router => _router?.assetBalances), 'data.contract_address')).map(_assets => { return { ..._.maxBy(_assets, 'normalize_amount'), total_amount: _.sumBy(_assets, 'amount'), total_normalize_amount: _.sumBy(_assets, 'normalize_amount'), total_value: _.sumBy(_assets, 'value') } }), ['value'], ['desc'])
 
   return (
     <>
@@ -195,16 +195,24 @@ export default function Assets({ data, assetBy = 'max_transfer_size', className 
                   )}
                 </div>
                 <div className="mt-4">
-                  <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>
+                  <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Max Transfer Size</div>
                   <div>
                     <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.normalize_amount ? numberFormat(assetBalance.normalize_amount, '0,0') : assetBalance?.amount && !(assetBalance?.data) ? numberFormat(assetBalance.amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
                     <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>
                   </div>
                   <div className="text-gray-500 dark:text-gray-400 font-medium">~{currency_symbol}{typeof assetBalance?.value === 'number' ? numberFormat(assetBalance.value, '0,0') : ' -'}</div>
                 </div>
+                <div className="mt-4">
+                  <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Total Liquidity</div>
+                  <div>
+                    <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.total_normalize_amount ? numberFormat(assetBalance.total_normalize_amount, '0,0') : assetBalance?.total_amount && !(assetBalance?.data) ? numberFormat(assetBalance.total_amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
+                    <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>
+                  </div>
+                  <div className="text-gray-500 dark:text-gray-400 font-medium">~{currency_symbol}{typeof assetBalance?.total_value === 'number' ? numberFormat(assetBalance.total_value, '0,0') : ' -'}</div>
+                </div>
               </div>
               :
-              <div key={i} className="skeleton h-44" style={{ borderRadius: '1rem' }} />
+              <div key={i} className="skeleton h-60" style={{ borderRadius: '1rem' }} />
           ))}
         </div>
       }

@@ -29,7 +29,7 @@ export default function Chain() {
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)]
 
-  const [assetBy, setAssetBy] = useState('max_transfer_size')
+  const [assetBy, setAssetBy] = useState('assets')
   const [routers, setRouters] = useState(null)
   const [hourlyData, setHourlyData] = useState(null)
 
@@ -180,19 +180,16 @@ export default function Chain() {
       <div className="max-w-6xl my-4 mx-auto pb-2">
         <div>
           <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
-            <div className="space-y-0.5">
-              <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Assets</span>
-              <div className="flex items-center space-x-1">
-                {['max_transfer_size', 'routers'].map((_assetBy, i) => (
-                  <div
-                    key={i}
-                    onClick={() => setAssetBy(_assetBy)}
-                    className={`btn btn-default btn-rounded cursor-pointer whitespace-nowrap bg-trasparent ${_assetBy === assetBy ? 'bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 text-white dark:hover:text-gray-100'}`}
-                  >
-                    {getName(_assetBy)}
-                  </div>
-                ))}
-              </div>
+            <div className="flex items-center space-x-1 mt-auto">
+              {['assets', 'routers'].map((_assetBy, i) => (
+                <div
+                  key={i}
+                  onClick={() => setAssetBy(_assetBy)}
+                  className={`btn btn-lg btn-rounded cursor-pointer whitespace-nowrap bg-trasparent ${_assetBy === assetBy ? 'bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 text-white dark:hover:text-gray-100'}`}
+                >
+                  {getName(_assetBy)}
+                </div>
+              ))}
             </div>
             <span className="ml-0 sm:ml-auto" />
             <span className="sm:text-right mb-auto ml-0 sm:ml-4">
