@@ -15,7 +15,7 @@ import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
 import { hourly_time_range } from '../../lib/object/timely'
-import { numberFormat } from '../../lib/utils'
+import { numberFormat, getName } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
 
@@ -29,6 +29,7 @@ export default function Chain() {
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)]
 
+  const [assetBy, setAssetBy] = useState('max_transfer_size')
   const [routers, setRouters] = useState(null)
   const [hourlyData, setHourlyData] = useState(null)
 
@@ -179,10 +180,23 @@ export default function Chain() {
       <div className="max-w-6xl my-4 mx-auto pb-2">
         <div>
           <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
-            <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Assets</span>
+            <div className="space-y-0.5">
+              <span className="uppercase text-gray-900 dark:text-white text-lg font-semibold mt-3">Assets</span>
+              <div className="flex items-center space-x-1">
+                {['max_transfer_size', 'routers'].map((_assetBy, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setAssetBy(_assetBy)}
+                    className={`btn btn-default btn-rounded cursor-pointer whitespace-nowrap bg-trasparent ${_assetBy === assetBy ? 'bg-gray-200 dark:bg-gray-900 text-gray-900 dark:text-white font-semibold' : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 text-white dark:hover:text-gray-100'}`}
+                  >
+                    {getName(_assetBy)}
+                  </div>
+                ))}
+              </div>
+            </div>
             <span className="ml-0 sm:ml-auto" />
             <span className="sm:text-right mb-auto ml-0 sm:ml-4">
-              <div className="h-full uppercase text-gray-400 dark:text-gray-500">Available Liquidity</div>
+              <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">Available Liquidity</div>
               {chain_id && routers?.chain_id === chain_id ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}
@@ -197,7 +211,7 @@ export default function Chain() {
               }
             </span>
             <span className="sm:text-right mb-auto ml-0 sm:ml-16">
-              <div className="h-full uppercase text-gray-400 dark:text-gray-500">Volume {hourly_time_range}h</div>
+              <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">Volume {hourly_time_range}h</div>
               {chain_id && hourlyData?.chain_id === chain_id ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}
@@ -212,7 +226,7 @@ export default function Chain() {
               }
             </span>
             <span className="sm:text-right mb-auto ml-0 sm:ml-16">
-              <div className="h-full uppercase text-gray-400 dark:text-gray-500">TX {hourly_time_range}h</div>
+              <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">TX {hourly_time_range}h</div>
               {chain_id && hourlyData?.chain_id === chain_id ?
                 <div className="text-xl font-semibold">
                   {hourlyData?.data?.findIndex(timely => typeof timely?.txCount === 'number') > -1 ?
@@ -226,7 +240,7 @@ export default function Chain() {
               }
             </span>
           </div>
-          <Assets data={routers} className="mt-4" />
+          <Assets data={routers} assetBy={assetBy} className="mt-4" />
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light mx-3">Latest Transactions</span>
