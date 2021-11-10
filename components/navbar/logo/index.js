@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export default function Logo() {
   return (
-    <div className="logo ml-2.5 mr-1 sm:mx-3">
+    <div className="hidden sm:block logo ml-2.5 mr-1 sm:mx-3">
       <Link href="/">
         <a className="w-full flex items-center space-x-0 sm:space-x-3 lg:space-x-2.5">
           <img
