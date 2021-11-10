@@ -225,14 +225,14 @@ export default function RouterAddress() {
                               <div className="min-w-max flex items-center space-x-1">
                                 <Copy
                                   size={14}
-                                  text={asset.id.replace(`-${router.router_id}`, '')}
+                                  text={asset.id.replace(`-${routerAssets.router_id}`, '')}
                                   copyTitle={<span className="text-2xs font-medium">
-                                    {ellipseAddress(asset.id.replace(`-${router.router_id}`, ''), 5)}
+                                    {ellipseAddress(asset.id.replace(`-${routerAssets.router_id}`, ''), 5)}
                                   </span>}
                                 />
                                 {asset?.chain_data?.explorer?.url && (
                                   <a
-                                    href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${router.router_id}`, ''))}`}
+                                    href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${routerAssets.router_id}`, ''))}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-indigo-600 dark:text-white "

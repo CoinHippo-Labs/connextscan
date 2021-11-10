@@ -19,7 +19,7 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 const SYMBOL_LOOKUP = {
   weth: 'ETH',
   xdai: 'DAI',
-  oai: 'OMN',
+  omn: 'OAI',
 }
 
 const COLLAPSE_CHAINS_SIZE = 3

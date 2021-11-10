@@ -22,7 +22,7 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
-  const maxTransfers = data?.chain_id === chain_id && data?.data && _.orderBy(Object.values(_.groupBy(data.data.flatMap(_router => _router?.assetBalances), 'data.contract_address')).map(_assets => { return { ..._.maxBy(_assets, 'normalize_amount'), total_amount: _.sumBy(_assets, 'amount'), total_normalize_amount: _.sumBy(_assets, 'normalize_amount'), total_value: _.sumBy(_assets, 'value') } }), ['value'], ['desc'])
+  const maxTransfers = data?.chain_id === chain_id && data?.data && _.orderBy(Object.values(_.groupBy(data.data.flatMap(_router => _router?.assetBalances.map(_asset => { return { ..._asset, router_id: _router.id } })), 'data.contract_address')).map(_assets => { return { ..._.maxBy(_assets, 'normalize_amount'), total_amount: _.sumBy(_assets, 'amount'), total_normalize_amount: _.sumBy(_assets, 'normalize_amount'), total_value: _.sumBy(_assets, 'value') } }), ['value'], ['desc'])
 
   return (
     <>
@@ -168,14 +168,14 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                   {assetBalance?.id && (
                     <div className="flex items-center space-x-1">
                       <Copy
-                        text={assetBalance.id.replace(`-${router.id}`, '')}
+                        text={assetBalance.id.replace(`-${assetBalance.router_id}`, '')}
                         copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium">
-                          {ellipseAddress(assetBalance.id.replace(`-${router.id}`, ''), 6)}
+                          {ellipseAddress(assetBalance.id.replace(`-${assetBalance.router_id}`, ''), 6)}
                         </span>}
                       />
                       {network?.explorer?.url && (
                         <a
-                          href={`${network.explorer.url}${network.explorer.contract_path?.replace('{address}', assetBalance.id.replace(`-${router.id}`, ''))}`}
+                          href={`${network.explorer.url}${network.explorer.contract_path?.replace('{address}', assetBalance.id.replace(`-${assetBalance.router_id}`, ''))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-indigo-600 dark:text-white"
