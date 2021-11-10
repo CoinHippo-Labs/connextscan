@@ -233,13 +233,37 @@ export default function Transaction({ data, className = '' }) {
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
                     <div className="flex items-center text-gray-400 dark:text-gray-500">
-                      Amount
+                      Amount Sent
                       <span className="hidden sm:block">:</span>
                     </div>
-                    {general?.normalize_amount && (
+                    {sender?.normalize_amount && (
                       <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                        <span className="font-semibold">{numberFormat(general.normalize_amount, '0,0.00000000')}</span>
-                        <span className="uppercase text-gray-600 dark:text-gray-400">{general.sendingAsset?.contract_ticker_symbol || general.receivingAsset?.contract_ticker_symbol}</span>
+                        <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000')}</span>
+                        <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                    <div className="flex items-center text-gray-400 dark:text-gray-500">
+                      Amount Received
+                      <span className="hidden sm:block">:</span>
+                    </div>
+                    {receiver?.normalize_amount && (
+                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                        <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000')}</span>
+                        <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                    <div className="flex items-center text-gray-400 dark:text-gray-500">
+                      Fees
+                      <span className="hidden sm:block">:</span>
+                    </div>
+                    {receiver?.normalize_amount && sender?.normalize_amount && (
+                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                        <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000')}</span>
+                        <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
                       </div>
                     )}
                   </div>
@@ -332,13 +356,37 @@ export default function Transaction({ data, className = '' }) {
                     </div>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
                       <div className="flex items-center text-gray-400 dark:text-gray-500">
-                        Amount
+                        Amount Sent
                         <span className="hidden sm:block">:</span>
                       </div>
-                      {general?.normalize_amount && (
+                      {sender?.normalize_amount && (
                         <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                          <span className="font-semibold">{numberFormat(general.normalize_amount, '0,0.00000000')}</span>
-                          <span className="uppercase text-gray-600 dark:text-gray-400">{general.sendingAsset?.contract_ticker_symbol || general.receivingAsset?.contract_ticker_symbol}</span>
+                          <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000')}</span>
+                          <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                      <div className="flex items-center text-gray-400 dark:text-gray-500">
+                        Amount Received
+                        <span className="hidden sm:block">:</span>
+                      </div>
+                      {receiver?.normalize_amount && (
+                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                          <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000')}</span>
+                          <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                      <div className="flex items-center text-gray-400 dark:text-gray-500">
+                        Fees
+                        <span className="hidden sm:block">:</span>
+                      </div>
+                      {receiver?.normalize_amount && sender?.normalize_amount && (
+                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                          <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000')}</span>
+                          <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
                         </div>
                       )}
                     </div>
@@ -648,12 +696,20 @@ export default function Transaction({ data, className = '' }) {
                     <span className="text-gray-400 dark:text-gray-600 font-light">-</span>
                   }
                 </div>
-                {general?.normalize_amount && (
-                  <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 mt-2 mb-1 ml-auto py-1 px-2">
-                    <span className="font-semibold">{numberFormat(general.normalize_amount, '0,0.00000000')}</span>
-                    <span className="uppercase text-gray-600 dark:text-gray-400">{general.sendingAsset?.contract_ticker_symbol || general.receivingAsset?.contract_ticker_symbol}</span>
-                  </div>
-                )}
+                <div className="flex items-center">
+                  {sender?.normalize_amount && (
+                    <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 mt-2 mb-1 py-1 px-2">
+                      <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000')}</span>
+                      <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
+                    </div>
+                  )}
+                  {receiver?.normalize_amount && (
+                    <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 mt-2 mb-1 ml-auto py-1 px-2">
+                      <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000')}</span>
+                      <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                    </div>
+                  )}
+                </div>
               </>
               :
               <>
