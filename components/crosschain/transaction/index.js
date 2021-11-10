@@ -1,14 +1,16 @@
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import { NxtpSdk } from '@connext/nxtp-sdk'
-import { signCancelTransactionPayload } from '@connext/nxtp-utils'
+import { signCancelTransactionPayload, decodeAuctionBid } from '@connext/nxtp-utils'
 import { providers } from 'ethers'
 import moment from 'moment'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
+import Switch from 'react-switch'
 import { MdOutlineRouter, MdPending, MdInfoOutline } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
@@ -17,6 +19,7 @@ import { BsFileEarmarkX } from 'react-icons/bs'
 import Copy from '../../copy'
 import Widget from '../../widget'
 import Modal from '../../modals/modal-info'
+import ModalConfirm from '../../modals/modal-confirm'
 import Notification from '../../notifications'
 import Alert from '../../alerts'
 import Wallet from '../../wallet'
@@ -24,7 +27,7 @@ import { ProgressBar } from '../../progress-bars'
 
 import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
-import { numberFormat, ellipseAddress } from '../../../lib/utils'
+import { numberFormat, ellipseAddress, convertToJson } from '../../../lib/utils'
 
 export default function Transaction({ data, className = '' }) {
   const { preferences, wallet, ens } = useSelector(state => ({ preferences: state.preferences, wallet: state.wallet, ens: state.ens }), shallowEqual)
@@ -40,9 +43,19 @@ export default function Transaction({ data, className = '' }) {
   const [transfering, setTransfering] = useState(null)
   const [result, setResult] = useState(null)
   const [startTransferTime, setStartTransferTime] = useState(null)
+  const [decoded, setDecoded] = useState(false)
+  const [decodedBid, setDecodedBid] = useState(null)
 
   const { sender, receiver } = { ...data?.data }
   const general = receiver || sender
+
+  useEffect(() => {
+    if (general && !decodedBid && convertToJson(decodeAuctionBid(general.encodedBid))) {
+      const ReactJson = typeof window !== 'undefined' && dynamic(import('react-json-view'))
+
+      setDecodedBid(<ReactJson src={convertToJson(decodeAuctionBid(general.encodedBid))} collapsed={false} theme={theme === 'dark' ? 'shapeshifter' : 'rjv-default'} />)
+    }
+  }, [general, decodedBid])
 
   const transfer = async (action, txData) => {
     if (chain_id && signer && txData) {
@@ -135,7 +148,7 @@ export default function Transaction({ data, className = '' }) {
 
   const canDoAction = process.env.NEXT_PUBLIC_NETWORK === 'testnet' && receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
-  const isActionBeta = canDoAction && !process.env.NEXT_PUBLIC_NETWORK
+  const isActionBeta = canDoAction// && !process.env.NEXT_PUBLIC_NETWORK
   let mustSwitchNetwork = false
 
   const actionButtons = []
@@ -172,36 +185,200 @@ export default function Transaction({ data, className = '' }) {
           }
           else {
             actionButtons.push(
-              <button
+              <ModalConfirm
                 key={actionButtons.length}
-                onClick={() => transfer('cancel', receiver)}
-                className={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
-              >
-                {transfering === 'cancel' && (
-                  <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
-                )}
-                <span>Cancel</span>
-                {isActionBeta && (
-                  <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-7 py-0.5 px-1">Beta</span>
-                )}
-              </button>
+                buttonTitle={<>
+                  {transfering === 'cancel' && (
+                    <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
+                  )}
+                  <span>Cancel</span>
+                  {isActionBeta && (
+                    <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-7 py-0.5 px-1">Beta</span>
+                  )}
+                </>}
+                buttonClassName={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
+                title="Cancel Transaction"
+                body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                    <div className="flex items-center text-gray-400 dark:text-gray-500">
+                      Address
+                      <span className="hidden sm:block">:</span>
+                    </div>
+                    {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                      <Link href={`/address/${general.receivingAddress}`}>
+                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                          {ellipseAddress(general.receivingAddress, 10)}
+                        </a>
+                      </Link>
+                      <Copy size={18} text={general.receivingAddress} />
+                      {general.receivingChain?.explorer?.url && (
+                        <a
+                          href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-indigo-600 dark:text-white"
+                        >
+                          {general.receivingChain.explorer.icon ?
+                            <img
+                              src={general.receivingChain.explorer.icon}
+                              alt=""
+                              className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                            />
+                            :
+                            <TiArrowRight size={20} className="transform -rotate-45" />
+                          }
+                        </a>
+                      )}
+                    </div>)}
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                    <div className="flex items-center text-gray-400 dark:text-gray-500">
+                      Amount
+                      <span className="hidden sm:block">:</span>
+                    </div>
+                    {general?.normalize_amount && (
+                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                        <span className="font-semibold">{numberFormat(general.normalize_amount, '0,0.00000000')}</span>
+                        <span className="uppercase text-gray-600 dark:text-gray-400">{general.sendingAsset?.contract_ticker_symbol || general.receivingAsset?.contract_ticker_symbol}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-2 mx-auto py-2">
+                    {data ?
+                      general?.sendingChain && (
+                        <img
+                          src={general.sendingChain.icon}
+                          alt=""
+                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        />
+                      )
+                      :
+                      <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                    }
+                    <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+                    <img
+                      src={networks.find(network => network.id === '')?.icon}
+                      alt=""
+                      className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                    />
+                    <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+                    {data ?
+                      general?.receivingChain && (
+                        <img
+                          src={general.receivingChain.icon}
+                          alt=""
+                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        />
+                      )
+                      :
+                      <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                    }
+                  </div>
+                  <div>Do you want to cancel this transaction?</div>
+                </div>}
+                cancelButtonTitle="No"
+                confirmButtonTitle="Yes, cancel it"
+                onConfirm={() => transfer('cancel', receiver)}
+              />
             )
 
             if (canFulfill) {
               actionButtons.push(
-                <button
+                <ModalConfirm
                   key={actionButtons.length}
-                  onClick={() => transfer('fulfill', receiver)}
-                  className={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
-                >
-                  {transfering === 'fulfill' && (
-                    <Loader type="Oval" color="white" width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
-                  )}
-                  <span>Fulfill</span>
-                  {isActionBeta && (
-                    <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-5 py-0.5 px-1">Beta</span>
-                  )}
-                </button>
+                  buttonTitle={<>
+                    {transfering === 'fulfill' && (
+                      <Loader type="Oval" color="white" width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
+                    )}
+                    <span>Fulfill</span>
+                    {isActionBeta && (
+                      <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-5 py-0.5 px-1">Beta</span>
+                    )}
+                  </>}
+                  buttonClassName={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
+                  title="Fulfill Confirmation"
+                  body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                      <div className="flex items-center text-gray-400 dark:text-gray-500">
+                        Address
+                        <span className="hidden sm:block">:</span>
+                      </div>
+                      {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                        <Link href={`/address/${general.receivingAddress}`}>
+                          <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                            {ellipseAddress(general.receivingAddress, 10)}
+                          </a>
+                        </Link>
+                        <Copy size={18} text={general.receivingAddress} />
+                        {general.receivingChain?.explorer?.url && (
+                          <a
+                            href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 dark:text-white"
+                          >
+                            {general.receivingChain.explorer.icon ?
+                              <img
+                                src={general.receivingChain.explorer.icon}
+                                alt=""
+                                className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                              />
+                              :
+                              <TiArrowRight size={20} className="transform -rotate-45" />
+                            }
+                          </a>
+                        )}
+                      </div>)}
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                      <div className="flex items-center text-gray-400 dark:text-gray-500">
+                        Amount
+                        <span className="hidden sm:block">:</span>
+                      </div>
+                      {general?.normalize_amount && (
+                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                          <span className="font-semibold">{numberFormat(general.normalize_amount, '0,0.00000000')}</span>
+                          <span className="uppercase text-gray-600 dark:text-gray-400">{general.sendingAsset?.contract_ticker_symbol || general.receivingAsset?.contract_ticker_symbol}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2 mx-auto py-2">
+                      {data ?
+                        general?.sendingChain && (
+                          <img
+                            src={general.sendingChain.icon}
+                            alt=""
+                            className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                          />
+                        )
+                        :
+                        <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                      }
+                      <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+                      <img
+                        src={networks.find(network => network.id === '')?.icon}
+                        alt=""
+                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                      />
+                      <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+                      {data ?
+                        general?.receivingChain && (
+                          <img
+                            src={general.receivingChain.icon}
+                            alt=""
+                            className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                          />
+                        )
+                        :
+                        <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                      }
+                    </div>
+                    <div>Are you sure you want to fulfill?</div>
+                  </div>}
+                  cancelButtonTitle="No"
+                  confirmButtonTitle="Yes"
+                  onConfirm={() => transfer('fulfill', receiver)}
+                />
               )
             }
           }
@@ -996,7 +1173,7 @@ export default function Transaction({ data, className = '' }) {
                     :
                     <span className="text-xs lg:text-base">-</span>
                   :
-                  <div className="skeleton w-96 h-4 lg:h-6 mt-1" />
+                  <div className="skeleton w-full sm:w-96 h-4 lg:h-6 mt-1" />
                 }
               </div>
               <div className="flex flex-col space-y-2">
@@ -1010,17 +1187,47 @@ export default function Transaction({ data, className = '' }) {
                     :
                     <span className="text-xs lg:text-base">-</span>
                   :
-                  <div className="skeleton w-96 h-4 lg:h-6 mt-1" />
+                  <div className="skeleton w-full sm:w-96 h-4 lg:h-6 mt-1" />
                 }
               </div>
             </div>
             <div className="flex flex-col space-y-2 mt-4">
-              <span className="text-xs lg:text-base font-semibold">Encoded Bid:</span>
+              <div className="flex items-center">
+                <span className="text-xs lg:text-base font-semibold">Encoded Bid:</span>
+                <div className={`space-x-2 ml-auto mr-${data ? 8 : 0}`}>
+                  <Switch
+                    checked={decoded}
+                    onChange={() => setDecoded(!decoded)}
+                    onColor="#10B981"
+                    onHandleColor="#A7F3D0"
+                    offColor="#E5E7EB"
+                    offHandleColor="#F9FAFB"
+                    handleDiameter={24}
+                    uncheckedIcon={false}
+                    checkedIcon={false}
+                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.2)"
+                    activeBoxShadow="0px 1px 5px rgba(0, 0, 0, 0.2)"
+                    height={20}
+                    width={48}
+                    className="react-switch"
+                  />
+                  <span className={`${decoded ? 'text-green-500 dark:text-green-500' : ''} font-medium`}>Decode{decoded ? 'd' : ''}</span>
+                </div>
+              </div>
               {data ?
                 general?.encodedBid ?
                   <div className="flex items-start">
-                    <div className="bg-gray-100 dark:bg-gray-800 break-all rounded-xl text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-2 p-4">{general.encodedBid}</div>
-                    <Copy size={20} text={general.encodedBid} className="mt-4" />
+                    <div className="w-full bg-gray-100 dark:bg-gray-800 break-all rounded-xl text-gray-400 dark:text-gray-600 text-xs lg:text-base mr-2 p-4">
+                      {decoded ?
+                        convertToJson(decodeAuctionBid(general.encodedBid)) ?
+                          decodedBid
+                          :
+                          decodeAuctionBid(general.encodedBid)
+                        :
+                        general.encodedBid
+                      }
+                    </div>
+                    <Copy size={20} text={decoded ? JSON.stringify(convertToJson(decodeAuctionBid(general.encodedBid))) : general.encodedBid} className="mt-4" />
                   </div>
                   :
                   <span className="text-xs lg:text-base">-</span>
