@@ -146,9 +146,9 @@ export default function Transaction({ data, className = '' }) {
     }
   }
 
-  const canDoAction = process.env.NEXT_PUBLIC_NETWORK === 'testnet' && receiver?.status === 'Prepared' && !(result && !result.error)
+  const canDoAction = /*process.env.NEXT_PUBLIC_NETWORK === 'testnet' && */receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
-  const isActionBeta = canDoAction// && !process.env.NEXT_PUBLIC_NETWORK
+  const isActionBeta = canDoAction && !process.env.NEXT_PUBLIC_NETWORK
   let mustSwitchNetwork = false
 
   const actionButtons = []
