@@ -193,17 +193,19 @@ export default function Transactions({ useData, n, className = '' }) {
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
-                  {props.value === 'Fulfilled' ?
-                    <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
-                    :
-                    props.value === 'Prepared' ?
-                      <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                <Link href={`/tx/${props.row.original.transactionId}`}>
+                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                    {props.value === 'Fulfilled' ?
+                      <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                       :
-                      <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
-                  }
-                  <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
-                </div>
+                      props.value === 'Prepared' ?
+                        <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                        :
+                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                    }
+                    <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
+                  </a>
+                </Link>
                 :
                 <div className="skeleton w-20 h-6" />
             ),
