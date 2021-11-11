@@ -353,7 +353,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
           },
         ].filter(column => !isAggs ? !(['assets'].includes(column.accessor)) : !(['chain_data.short_name', 'router.id'].includes(column.accessor)))}
         data={assetBalances?.data && !(assetBalances?.data?.findIndex(assetBalance => assetBalance?.data) < 0) ?
-          (assetBalances.data || []).map((assetBalance, i) => { return { ...assetBalance, i } })
+          (assetBalances.data.filter(asset => asset?.data?.contract_address) || []).map((assetBalance, i) => { return { ...assetBalance, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
