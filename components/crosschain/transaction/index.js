@@ -117,14 +117,14 @@ export default function Transaction({ data, className = '' }) {
           }, 0, false)
         }
 
-        if (response?.fulfillResponse?.hash || response?.hash) {
+        if (response?.transactionHash || response?.fulfillResponse?.hash || response?.hash) {
           response = {
             ...response,
             message: <div className="flex items-center space-x-1.5">
               <span>Wait for Confirmation.</span>
               {txData.receivingChain?.explorer?.url && (
                 <a
-                  href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response?.fulfillResponse?.hash || response?.hash)}`}
+                  href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response?.transactionHash || response?.fulfillResponse?.hash || response?.hash)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center font-semibold"
