@@ -117,7 +117,7 @@ export default function Chain() {
                 let [key, value] = contract
                 key = Number(key)
 
-                const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                const resContracts = await getContracts(key, value?.map(_contract => _.last(_contract.id?.split('-') || [])).join(','))
 
                 if (resContracts?.data) {
                   new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')

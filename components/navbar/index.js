@@ -27,8 +27,8 @@ export default function Navbar() {
     <div className="navbar dark:bg-gray-900 border-b">
       <div className="navbar-inner w-full flex items-center">
         <Logo />
-        {network?.id === '' && (<DropdownNavigation />)}
-        {network?.id === '' && (<Navigation />)}
+        {(true || network?.id === '') && (<DropdownNavigation />)}
+        {(true || network?.id === '') && (<Navigation />)}
         <div className="flex items-center ml-auto">
           <Search />
           <Network />
