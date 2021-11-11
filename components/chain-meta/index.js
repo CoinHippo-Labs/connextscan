@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { IoRadioButtonOnOutline } from 'react-icons/io5'
 import { RiGasStationFill } from 'react-icons/ri'
 import { TiArrowRight } from 'react-icons/ti'
+import { FaDiscord } from 'react-icons/fa'
 
 import { graphql, assetBalances } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
@@ -385,6 +386,17 @@ export default function ChainMeta() {
           >
             <span>{network.explorer.name || 'Explorer'}</span>
             <TiArrowRight size={16} className="transform -rotate-45" />
+          </a>
+        )}
+        {process.env.NEXT_PUBLIC_DISCORD_URL && (
+          <a
+            href={process.env.NEXT_PUBLIC_DISCORD_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center text-indigo-600 dark:text-white text-2xs font-semibold space-x-1"
+          >
+            <FaDiscord size={16} />
+            <span>Discord</span>
           </a>
         )}
       </div>
