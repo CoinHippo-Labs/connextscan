@@ -7,6 +7,7 @@ import contracts_sync from './contracts-sync'
 import assets from './assets'
 import assets_sync from './assets-sync'
 import ens from './ens'
+import router_balances_sync from './router-balances-sync'
 import timely from './timely'
 import timely_sync from './timely-sync'
 import total from './total'
@@ -20,6 +21,7 @@ export default combineReducers({
   assets,
   assets_sync,
   ens,
+  router_balances_sync,
   timely,
   timely_sync,
   total,

@@ -14,26 +14,29 @@ import Copy from '../../components/copy'
 import Widget from '../../components/widget'
 
 import { transactions as getTransactions } from '../../lib/api/subgraph'
-import { contracts as getContracts } from '../../lib/api/covalent'
+import { contracts as getContracts, balances } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { type } from '../../lib/object/id'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
-import { CONTRACTS_DATA } from '../../reducers/types'
+import { CONTRACTS_DATA, ROUTER_BALANCES_SYNC_DATA } from '../../reducers/types'
 
 export default function RouterAddress() {
   const dispatch = useDispatch()
-  const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
+  const { contracts, assets, ens, router_balances_sync } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens, router_balances_sync: state.router_balances_sync }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
   const { ens_data } = { ...ens }
+  const { router_balances_sync_data } = { ...router_balances_sync }
 
   const router = useRouter()
   const { query } = { ...router }
   const { address } = { ...query }
 
   const [routerAssets, setRouterAssets] = useState(null)
+  const [routerChains, setRouterChains] = useState(null)
+  const [routerGasOnChains, setRouterGasOnChains] = useState(null)
   const [transactions, setTransactions] = useState(null)
 
   useEffect(() => {
@@ -80,6 +83,77 @@ export default function RouterAddress() {
       setRouterAssets(data)
     }
   }, [contracts_data, assets_data])
+
+  useEffect(() => {
+    if (address && type(address) !== 'router' && ens_data && routerAssets?.assets && Object.values(routerAssets.assets).filter(_assets => _assets?.length > 0).length > 0) {
+      const _routerChains = {
+        id: routerAssets.router_id,
+        chains: Object.entries(routerAssets.assets).filter(([key, value]) => key && value?.length > 0).map(([key, value]) => {
+          return {
+            id: key,
+            chain_id: networks.find(_network => _network?.id === key && _network?.network_id)?.network_id,
+          }
+        })
+      }
+
+      if (!_.isEqual({ ..._routerChains, chains: _.orderBy(_routerChains?.chains, 'chain_id') }, { ...routerChains, chains: _.orderBy(routerChains?.chains, 'chain_id') })) {
+        setRouterChains(_routerChains)
+      }
+    }
+  }, [address, ens_data, routerAssets, routerChains])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const getDataSync = async chains => {
+      if (chains) {
+        let balancesData
+
+        for (let i = 0; i < chains.length; i++) {
+          if (!controller.signal.aborted) {
+            const chain = chains[i]
+
+            const response = await balances(chain.chain_id, routerChains?.id)
+
+            balancesData = _.concat(balancesData || [], response?.data?.items?.map(_balance => { return { ..._balance, order: networks.findIndex(_network => _network.id === chain.id), chain_data: networks.find(_network => _network.id === chain.id) } }).filter(_balance => _balance?.contract_ticker_symbol?.toLowerCase() === networks.find(_network => _network?.network_id === chain.chain_id)?.currency?.gas_symbol?.toLowerCase()) || [])
+          }
+        }
+
+        if (!controller.signal.aborted) {
+          dispatch({
+            type: ROUTER_BALANCES_SYNC_DATA,
+            value: Object.fromEntries(chains.map(_chain => [_chain.id, balancesData?.length > 0 ? balancesData.filter(_balance => _balance?.chain_data?.id === _chain.id) : null])),
+          })
+        }
+      }
+    }
+
+    const getData = async isInterval => {
+      if (routerChains?.chains && (!routerGasOnChains || isInterval)) {
+        dispatch({
+          type: ROUTER_BALANCES_SYNC_DATA,
+          value: null,
+        })
+
+        const chunkSize = _.head([...Array(routerChains.chains.length).keys()].map(i => i + 1).filter(i => Math.ceil(routerChains.chains.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || routerChains.chains.length
+        _.chunk([...Array(routerChains.chains.length).keys()], chunkSize).forEach(chunk => getDataSync(routerChains.chains.filter((_c, i) => chunk.includes(i))))
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
+  }, [routerChains, routerGasOnChains])
+
+  useEffect(() => {
+    if (router_balances_sync_data && Object.keys(router_balances_sync_data).length === routerChains?.chains?.length) {
+      setRouterGasOnChains(_.orderBy(Object.values(router_balances_sync_data).flatMap(value => value).filter(value => value), ['order'], ['asc']))
+    }
+  }, [routerChains, router_balances_sync_data])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -205,43 +279,133 @@ export default function RouterAddress() {
           </div>
           <div className="h-3" />
           <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-0 mx-1.5 md:mx-3 lg:mx-1 xl:mx-3">
-            {routerAssets?.assets && Object.values(routerAssets.assets).flatMap(assets => assets).map((asset, j) => (
-              <div key={j}>
-                {asset?.data ?
-                  <div className={`min-h-full border ${asset?.chain_data?.color?.border} p-2 sm:p-3`}>
+            {routerAssets?.assets ?
+              Object.values(routerAssets.assets).flatMap(assets => assets).map((asset, i) => (
+                <div key={i}>
+                  {asset?.data ?
+                    <div className={`min-h-full border ${asset?.chain_data?.color?.border} p-2 sm:p-3`}>
+                      <div className="space-y-0.5">
+                        {asset?.data && (
+                          <div className="flex">
+                            {asset.data.logo_url && (
+                              <Img
+                                src={asset.data.logo_url}
+                                alt=""
+                                className="w-5 h-5 rounded-full mr-2"
+                              />
+                            )}
+                            <div>
+                              <div className="sm:hidden text-2xs font-medium">{asset.data.contract_name}</div>
+                              <div className="hidden sm:block text-xs font-semibold">{asset.data.contract_name}</div>
+                              {/*<div className="text-gray-600 dark:text-gray-400 text-2xs font-normal">{asset.data.contract_ticker_symbol}</div>*/}
+                              {asset?.id && (
+                                <div className="min-w-max flex items-center space-x-1">
+                                  <Copy
+                                    size={14}
+                                    text={asset.id.replace(`-${routerAssets.router_id}`, '')}
+                                    copyTitle={<span className="text-2xs font-medium">
+                                      {ellipseAddress(asset.id.replace(`-${routerAssets.router_id}`, ''), 5)}
+                                    </span>}
+                                  />
+                                  {asset?.chain_data?.explorer?.url && (
+                                    <a
+                                      href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${routerAssets.router_id}`, ''))}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-indigo-600 dark:text-white "
+                                    >
+                                      {asset.chain_data.explorer.icon ?
+                                        <img
+                                          src={asset.chain_data.explorer.icon}
+                                          alt=""
+                                          className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                                        />
+                                        :
+                                        <TiArrowRight size={16} className="transform -rotate-45" />
+                                      }
+                                    </a>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            {asset?.chain_data?.icon && (
+                              <Link href={`/${asset.chain_data.id}`}>
+                                <a className="hidden sm:block min-w-max w-3 sm:w-4 h-3 sm:h-4 relative -top-2 -right-2 ml-auto">
+                                  <img
+                                    src={asset.chain_data.icon}
+                                    alt=""
+                                    className="w-3 sm:w-4 h-3 sm:h-4 rounded-full"
+                                  />
+                                </a>
+                              </Link>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-center my-3">
+                        {/*<div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>*/}
+                        <div>
+                          <span className="font-mono text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
+                          <span className="text-gray-600 dark:text-gray-400 text-sm">{asset?.data?.contract_ticker_symbol}</span>
+                        </div>
+                        <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
+                      </div>
+                    </div>
+                    :
+                    <div className="skeleton w-full" style={{ height: '8rem', borderRadius: 0 }} />
+                  }
+                </div>
+              ))
+              :
+              [...Array(3).keys()].map(i => (
+                <div key={i} className="skeleton w-full" style={{ height: '8rem', borderRadius: 0 }} />
+              ))
+            }
+          </div>
+        </div>
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 p-4 pb-6">
+          <div className="flex items-center mx-3">
+            <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Available Gas</span>
+          </div>
+          <div className="h-3" />
+          <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-0 mx-1.5 md:mx-3 lg:mx-1 xl:mx-3">
+            {routerGasOnChains ?
+              routerGasOnChains.map((_balance, i) => (
+                <div key={i}>
+                  <div className={`min-h-full border ${_balance?.chain_data?.color?.border} p-2 sm:p-3`}>
                     <div className="space-y-0.5">
-                      {asset?.data && (
+                      {_balance && (
                         <div className="flex">
-                          {asset.data.logo_url && (
+                          {_balance.logo_url && (
                             <Img
-                              src={asset.data.logo_url}
+                              src={_balance.logo_url}
                               alt=""
                               className="w-5 h-5 rounded-full mr-2"
                             />
                           )}
                           <div>
-                            <div className="sm:hidden text-2xs font-medium">{asset.data.contract_name}</div>
-                            <div className="hidden sm:block text-xs font-semibold">{asset.data.contract_name}</div>
-                            {/*<div className="text-gray-600 dark:text-gray-400 text-2xs font-normal">{asset.data.contract_ticker_symbol}</div>*/}
-                            {asset?.id && (
+                            <div className="sm:hidden text-2xs font-medium">{_balance.contract_name}</div>
+                            <div className="hidden sm:block text-xs font-semibold">{_balance.contract_name}</div>
+                            {/*<div className="text-gray-600 dark:text-gray-400 text-2xs font-normal">{_balance.contract_ticker_symbol}</div>*/}
+                            {/*_balance.contract_address && (
                               <div className="min-w-max flex items-center space-x-1">
                                 <Copy
                                   size={14}
-                                  text={asset.id.replace(`-${routerAssets.router_id}`, '')}
+                                  text={_balance.contract_address}
                                   copyTitle={<span className="text-2xs font-medium">
-                                    {ellipseAddress(asset.id.replace(`-${routerAssets.router_id}`, ''), 5)}
+                                    {ellipseAddress(_balance.contract_address, 5)}
                                   </span>}
                                 />
-                                {asset?.chain_data?.explorer?.url && (
+                                {_balance?.chain_data?.explorer?.url && (
                                   <a
-                                    href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${routerAssets.router_id}`, ''))}`}
+                                    href={`${_balance.chain_data.explorer.url}${_balance.chain_data.explorer.contract_path?.replace('{address}', _balance.contract_address)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-indigo-600 dark:text-white "
                                   >
-                                    {asset.chain_data.explorer.icon ?
+                                    {_balance.chain_data.explorer.icon ?
                                       <img
-                                        src={asset.chain_data.explorer.icon}
+                                        src={_balance.chain_data.explorer.icon}
                                         alt=""
                                         className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                                       />
@@ -251,13 +415,13 @@ export default function RouterAddress() {
                                   </a>
                                 )}
                               </div>
-                            )}
+                            )*/}
                           </div>
-                          {asset?.chain_data?.icon && (
-                            <Link href={`/${asset.chain_data.id}`}>
+                          {_balance?.chain_data?.icon && (
+                            <Link href={`/${_balance.chain_data.id}`}>
                               <a className="hidden sm:block min-w-max w-3 sm:w-4 h-3 sm:h-4 relative -top-2 -right-2 ml-auto">
                                 <img
-                                  src={asset.chain_data.icon}
+                                  src={_balance.chain_data.icon}
                                   alt=""
                                   className="w-3 sm:w-4 h-3 sm:h-4 rounded-full"
                                 />
@@ -268,19 +432,20 @@ export default function RouterAddress() {
                       )}
                     </div>
                     <div className="text-center my-3">
-                      {/*<div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>*/}
                       <div>
-                        <span className="font-mono text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
-                        <span className="text-gray-600 dark:text-gray-400 text-sm">{asset?.data?.contract_ticker_symbol}</span>
+                        <span className="font-mono text-base font-semibold mr-1.5">{_balance?.balance ? numberFormat(_balance.balance / Math.pow(10, _balance.contract_decimals), '0,0.00000000') : '-'}</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-sm">{_balance?.contract_ticker_symbol}</span>
                       </div>
-                      <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
+                      {/*<div className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">~{currency_symbol}{typeof _balance?.quote === 'number' ? numberFormat(_balance.quote, '0,0') : ' -'}</div>*/}
                     </div>
                   </div>
-                  :
-                  <div className="skeleton w-full" style={{ height: '9.5rem', borderRadius: 0 }} />
-                }
-              </div>
-            ))}
+                </div>
+              ))
+              :
+              [...Array(3).keys()].map(i => (
+                <div key={i} className="skeleton w-full" style={{ height: '6rem', borderRadius: 0 }} />
+              ))
+            }
           </div>
         </div>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">

@@ -200,7 +200,7 @@ export default function ChainMeta() {
 
     const interval = setInterval(() => getData(true), 30 * 1000)
     return () => clearInterval(interval)
-  }, [assetsLoaded, pathname. assets_data])
+  }, [assetsLoaded, pathname, assets_data])
 
   useEffect(async () => {
     const getContractsSync = async _contracts => {

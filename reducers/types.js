@@ -12,8 +12,11 @@ export const CONTRACTS_SYNC_DATA = 'contracts_sync_data'
 export const ASSETS_DATA = 'assets_data'
 export const ASSETS_SYNC_DATA = 'assets_sync_data'
 
-// assets
+// routers
 export const ENS_DATA = 'ens_data'
+
+// router
+export const ROUTER_BALANCES_SYNC_DATA = 'router_balances_sync_data'
 
 // timely
 export const TIMELY_DATA = 'timely_data'
