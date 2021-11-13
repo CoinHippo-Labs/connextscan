@@ -192,14 +192,16 @@ export default function RouterAddress() {
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 p-4 pb-6">
           <div className="flex items-center mx-3">
             <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Assets</span>
-            {typeof routerAssets?.liquidity === 'number' && routerAssets.liquidity > 0 && (
-              <div className="flex flex-col justify-end space-y-1 ml-auto">
-                <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
-                <div className="font-mono sm:text-base font-semibold text-right">
-                  {currency_symbol}{numberFormat(routerAssets.liquidity, '0,0')}
+            <div className="ml-auto">
+              {typeof routerAssets?.liquidity === 'number' && routerAssets.liquidity > 0 && (
+                <div className="flex flex-col justify-end space-y-1">
+                  <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
+                  <div className="font-mono sm:text-base font-semibold text-right">
+                    {currency_symbol}{numberFormat(routerAssets.liquidity, '0,0')}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <div className="h-3" />
           <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-0 mx-1.5 md:mx-3 lg:mx-1 xl:mx-3">
@@ -214,7 +216,7 @@ export default function RouterAddress() {
                             <Img
                               src={asset.data.logo_url}
                               alt=""
-                              className="w-5 h-5 rounded-full mr-1"
+                              className="w-5 h-5 rounded-full mr-2"
                             />
                           )}
                           <div>
@@ -253,13 +255,11 @@ export default function RouterAddress() {
                           </div>
                           {asset?.chain_data?.icon && (
                             <Link href={`/${asset.chain_data.id}`}>
-                              <a
-                                className="hidden sm:block min-w-max w-3 sm:w-5 h-3 sm:h-5 relative -top-2 -right-2 ml-auto"
-                              >
+                              <a className="hidden sm:block min-w-max w-3 sm:w-4 h-3 sm:h-4 relative -top-2 -right-2 ml-auto">
                                 <img
                                   src={asset.chain_data.icon}
                                   alt=""
-                                  className="w-3 sm:w-5 h-3 sm:h-5 rounded-full"
+                                  className="w-3 sm:w-4 h-3 sm:h-4 rounded-full"
                                 />
                               </a>
                             </Link>
