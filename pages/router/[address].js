@@ -152,6 +152,11 @@ export default function RouterAddress() {
   useEffect(() => {
     if (router_balances_sync_data && Object.keys(router_balances_sync_data).length === routerChains?.chains?.length) {
       setRouterGasOnChains(_.orderBy(Object.values(router_balances_sync_data).flatMap(value => value).filter(value => value), ['order'], ['asc']))
+    
+      dispatch({
+        type: ROUTER_BALANCES_SYNC_DATA,
+        value: null,
+      })
     }
   }, [routerChains, router_balances_sync_data])
 
