@@ -161,7 +161,7 @@ export default function Transaction({ data, className = '' }) {
     }
   }
 
-  const canCancelSender = sender?.status && !['Cancelled', 'Fulfilled'].includes(sender.status) && moment().valueOf() >= sender.expiry && !(result && !result.error)
+  const canCancelSender = sender?.status === 'Prepared' && moment().valueOf() >= sender.expiry && !(result && !result.error)
   const canDoAction = !canCancelSender && receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
   const isActionBeta = canCancelSender
