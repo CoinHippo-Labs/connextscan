@@ -268,7 +268,7 @@ export default function RouterAddress() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
-        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 p-4 pb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 pt-4 pb-6 px-2 sm:px-4">
           <div className="flex items-center mx-3">
             <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Assets</span>
             <div className="ml-auto">
@@ -350,10 +350,10 @@ export default function RouterAddress() {
                       <div className="text-center my-3">
                         {/*<div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>*/}
                         <div>
-                          <span className="font-mono text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
-                          <span className="text-gray-600 dark:text-gray-400 text-sm">{asset?.data?.contract_ticker_symbol}</span>
+                          <span className="font-mono text-2xs sm:text-sm lg:text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
+                          <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-sm">{asset?.data?.contract_ticker_symbol}</span>
                         </div>
-                        <div className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
+                        <div className="text-gray-500 dark:text-gray-400 text-2xs sm:text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
                       </div>
                     </div>
                     :
@@ -368,12 +368,12 @@ export default function RouterAddress() {
             }
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 p-4 pb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 pt-4 pb-6 px-2 sm:px-4">
           <div className="flex items-center mx-3">
             <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Available Gas</span>
           </div>
           <div className="h-3" />
-          <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-0 mx-1.5 md:mx-3 lg:mx-1 xl:mx-3">
+          <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 sm:grid-cols-4 lg:grid-cols-5 gap-0 mx-1.5 md:mx-3 lg:mx-1 xl:mx-3">
             {routerGasOnChains ?
               routerGasOnChains.map((_balance, i) => (
                 <div key={i}>
@@ -437,9 +437,27 @@ export default function RouterAddress() {
                       )}
                     </div>
                     <div className="text-center my-3">
-                      <div>
-                        <span className="font-mono text-base font-semibold mr-1.5">{_balance?.balance ? numberFormat(_balance.balance / Math.pow(10, _balance.contract_decimals), '0,0.00000000') : '-'}</span>
-                        <span className="text-gray-600 dark:text-gray-400 text-sm">{_balance?.contract_ticker_symbol}</span>
+                      <div className="flex items-center justify-center">
+                        <span className="font-mono text-2xs sm:text-sm lg:text-base font-semibold mr-1.5">{_balance?.balance ? numberFormat(_balance.balance / Math.pow(10, _balance.contract_decimals), '0,0.00000000') : '-'}</span>
+                        <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-sm mr-1.5">{_balance?.contract_ticker_symbol}</span>
+                        {_balance.chain_data?.explorer?.url && (
+                          <a
+                            href={`${_balance.chain_data.explorer.url}${_balance.chain_data.explorer.address_path?.replace('{address}', address)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-indigo-600 dark:text-white"
+                          >
+                            {_balance.chain_data.explorer.icon ?
+                              <img
+                                src={_balance.chain_data.explorer.icon}
+                                alt=""
+                                className="min-w-max w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                              />
+                              :
+                              <TiArrowRight size={16} className="transform -rotate-45" />
+                            }
+                          </a>
+                        )}
                       </div>
                       {/*<div className="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">~{currency_symbol}{typeof _balance?.quote === 'number' ? numberFormat(_balance.quote, '0,0') : ' -'}</div>*/}
                     </div>
