@@ -5,6 +5,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
+import Loader from 'react-loader-spinner'
 import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 
@@ -37,6 +38,7 @@ export default function RouterAddress() {
   const [routerAssets, setRouterAssets] = useState(null)
   const [routerChains, setRouterChains] = useState(null)
   const [routerGasOnChains, setRouterGasOnChains] = useState(null)
+  const [retryGas, setRetryGas] = useState(null)
   const [transactions, setTransactions] = useState(null)
 
   useEffect(() => {
@@ -115,7 +117,9 @@ export default function RouterAddress() {
 
             const response = await balances(chain.chain_id, routerChains?.id)
 
-            balancesData = _.concat(balancesData || [], response?.data?.items?.map(_balance => { return { ..._balance, order: networks.findIndex(_network => _network.id === chain.id), chain_data: networks.find(_network => _network.id === chain.id) } }).filter(_balance => _balance?.contract_ticker_symbol?.toLowerCase() === networks.find(_network => _network?.network_id === chain.chain_id)?.currency?.gas_symbol?.toLowerCase()) || [])
+            const network = networks.find(_network => _network.id === chain.id)
+
+            balancesData = _.concat(balancesData || [], (response?.data?.items || [{ logo_url: network?.icon, contract_name: network?.currency?.name, contract_ticker_symbol: network?.currency?.gas_symbol }]).map(_balance => { return { ..._balance, order: networks.findIndex(_network => _network.id === chain.id), chain_data: network } }).filter(_balance => _balance?.contract_ticker_symbol?.toLowerCase() === network?.currency?.gas_symbol?.toLowerCase()) || [])
           }
         }
 
@@ -129,14 +133,16 @@ export default function RouterAddress() {
     }
 
     const getData = async isInterval => {
-      if (routerChains?.chains && (!routerGasOnChains || isInterval)) {
+      if (routerChains?.chains && (!routerGasOnChains || retryGas || isInterval)) {
         dispatch({
           type: ROUTER_BALANCES_SYNC_DATA,
           value: null,
         })
 
-        const chunkSize = _.head([...Array(routerChains.chains.length).keys()].map(i => i + 1).filter(i => Math.ceil(routerChains.chains.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || routerChains.chains.length
-        _.chunk([...Array(routerChains.chains.length).keys()], chunkSize).forEach(chunk => getDataSync(routerChains.chains.filter((_c, i) => chunk.includes(i))))
+        const _chains = routerChains.chains.filter(_chain => retryGas && routerGasOnChains ? routerGasOnChains.findIndex(__chain => __chain?.chain_data?.id === _chain?.id && !__chain.balance) > -1 : true)
+
+        const chunkSize = _.head([...Array(_chains.length).keys()].map(i => i + 1).filter(i => Math.ceil(_chains.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _chains.length
+        _.chunk([...Array(_chains.length).keys()], chunkSize).forEach(chunk => getDataSync(_chains.filter((_c, i) => chunk.includes(i))))
       }
     }
 
@@ -147,16 +153,23 @@ export default function RouterAddress() {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [routerChains, routerGasOnChains])
+  }, [routerChains, routerGasOnChains, retryGas])
 
   useEffect(() => {
     if (router_balances_sync_data && Object.keys(router_balances_sync_data).length === routerChains?.chains?.length) {
+      setRetryGas(false)
+
       setRouterGasOnChains(_.orderBy(Object.values(router_balances_sync_data).flatMap(value => value).filter(value => value), ['order'], ['asc']))
-    
-      dispatch({
-        type: ROUTER_BALANCES_SYNC_DATA,
-        value: null,
-      })
+
+      if (Object.values(router_balances_sync_data).findIndex(_balance => !_balance?.balance) > -1) {
+        setRetryGas(true)
+      }
+      else {
+        dispatch({
+          type: ROUTER_BALANCES_SYNC_DATA,
+          value: null,
+        })
+      }
     }
   }, [routerChains, router_balances_sync_data])
 
@@ -438,7 +451,7 @@ export default function RouterAddress() {
                     </div>
                     <div className="text-center my-3">
                       <div className="flex items-center justify-center">
-                        <span className="font-mono text-2xs sm:text-sm lg:text-base font-semibold mr-1.5">{_balance?.balance ? numberFormat(_balance.balance / Math.pow(10, _balance.contract_decimals), '0,0.00000000') : '-'}</span>
+                        <span className="font-mono text-2xs sm:text-sm lg:text-base font-semibold mr-1.5">{_balance?.balance ? numberFormat(_balance.balance / Math.pow(10, _balance.contract_decimals), '0,0.00000000') : retryGas ? <Loader type="Oval" color="gray" width="16" height="16" className="mb-0.5" /> : '-'}</span>
                         <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-sm mr-1.5">{_balance?.contract_ticker_symbol}</span>
                         {_balance.chain_data?.explorer?.url && (
                           <a
@@ -465,7 +478,7 @@ export default function RouterAddress() {
                 </div>
               ))
               :
-              [...Array(3).keys()].map(i => (
+              [...Array(routerChains?.chains?.length || 3).keys()].map(i => (
                 <div key={i} className="skeleton w-full" style={{ height: '6rem', borderRadius: 0 }} />
               ))
             }
