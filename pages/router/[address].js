@@ -134,14 +134,16 @@ export default function RouterAddress() {
 
     const getData = async isInterval => {
       if (routerChains?.chains && (!routerGasOnChains || retryGas || isInterval)) {
-        dispatch({
-          type: ROUTER_BALANCES_SYNC_DATA,
-          value: null,
-        })
+        if (!retryGas) {
+          dispatch({
+            type: ROUTER_BALANCES_SYNC_DATA,
+            value: null,
+          })
+        }
 
         const _chains = routerChains.chains.filter(_chain => retryGas && routerGasOnChains ? routerGasOnChains.findIndex(__chain => __chain?.chain_data?.id === _chain?.id && !__chain.balance) > -1 : true)
 
-        const chunkSize = _.head([...Array(_chains.length).keys()].map(i => i + 1).filter(i => Math.ceil(_chains.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _chains.length
+        const chunkSize = _.head([...Array(_chains.length).keys()].map(i => i + 1).filter(i => Math.ceil(_chains.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK * 2))) || _chains.length
         _.chunk([...Array(_chains.length).keys()], chunkSize).forEach(chunk => getDataSync(_chains.filter((_c, i) => chunk.includes(i))))
       }
     }

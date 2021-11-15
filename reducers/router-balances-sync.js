@@ -1,5 +1,3 @@
-import _ from 'lodash'
-
 import { ROUTER_BALANCES_SYNC_DATA } from './types'
 
 export default function data(
@@ -12,7 +10,7 @@ export default function data(
     case ROUTER_BALANCES_SYNC_DATA:
       return {
         ...state,
-        [`${ROUTER_BALANCES_SYNC_DATA}`]: action.value ? { ...state[`${ROUTER_BALANCES_SYNC_DATA}`], ..._.cloneDeep(action.value) } : null
+        [`${ROUTER_BALANCES_SYNC_DATA}`]: action.value ? { ...state[`${ROUTER_BALANCES_SYNC_DATA}`], ...action.value } : null
       }
     default:
       return state
