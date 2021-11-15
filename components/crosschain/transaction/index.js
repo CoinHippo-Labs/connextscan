@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import { NxtpSdk } from '@connext/nxtp-sdk'
-import { signCancelTransactionPayload, decodeAuctionBid } from '@connext/nxtp-utils'
+import { decodeAuctionBid } from '@connext/nxtp-utils'
 import { providers } from 'ethers'
 import moment from 'moment'
 import { Img } from 'react-image'
@@ -57,7 +57,7 @@ export default function Transaction({ data, className = '' }) {
     }
   }, [general, decodedBid])
 
-  const transfer = async (action, txData) => {
+  const transfer = async (action, txData, side) => {
     if (chain_id && signer && txData) {
       const chainConfig = {}
 
@@ -89,7 +89,7 @@ export default function Transaction({ data, className = '' }) {
 
       try {
         if (action === 'cancel') {
-          const signature = '0x'//await signCancelTransactionPayload(txData.transactionId, chain_id, txData.receivingChainTxManagerAddress, signer)
+          const signature = '0x'
 
           response = await sdk.cancel({
             txData: {
@@ -100,7 +100,7 @@ export default function Transaction({ data, className = '' }) {
               expiry: txData.expiry / 1000,
             },
             signature,
-          }, txData.receivingChainId)
+          }, side === 'sender' ? txData.sendingChainId : txData.receivingChainId)
         }
         else {
           response = await sdk.fulfillTransfer({
@@ -122,18 +122,33 @@ export default function Transaction({ data, className = '' }) {
             ...response,
             message: <div className="flex items-center space-x-1.5">
               <span>Wait for Confirmation.</span>
-              {txData.receivingChain?.explorer?.url && (
-                <a
-                  href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response?.transactionHash || response?.fulfillResponse?.hash || response?.hash)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center font-semibold"
-                >
-                  <span>View on {txData.receivingChain.explorer.name}</span>
-                  <TiArrowRight size={20} className="transform -rotate-45" />
-                </a>
-              )}
+              {side === 'sender' ?
+                txData.sendingChain?.explorer?.url && (
+                  <a
+                    href={`${txData.sendingChain.explorer.url}${txData.sendingChain.explorer.transaction_path?.replace('{tx}', response?.transactionHash || response?.fulfillResponse?.hash || response?.hash)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center font-semibold"
+                  >
+                    <span>View on {txData.sendingChain.explorer.name}</span>
+                    <TiArrowRight size={20} className="transform -rotate-45" />
+                  </a>
+                )
+                :
+                txData.receivingChain?.explorer?.url && (
+                  <a
+                    href={`${txData.receivingChain.explorer.url}${txData.receivingChain.explorer.transaction_path?.replace('{tx}', response?.transactionHash || response?.fulfillResponse?.hash || response?.hash)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center font-semibold"
+                  >
+                    <span>View on {txData.receivingChain.explorer.name}</span>
+                    <TiArrowRight size={20} className="transform -rotate-45" />
+                  </a>
+                )
+              }
             </div>,
+            side,
           }
         }
       } catch (error) {
@@ -146,16 +161,17 @@ export default function Transaction({ data, className = '' }) {
     }
   }
 
-  const canDoAction = /*process.env.NEXT_PUBLIC_NETWORK === 'testnet' && */receiver?.status === 'Prepared' && !(result && !result.error)
+  const canCancelSender = sender?.status && !['Cancelled', 'Fulfilled'].includes(sender.status) && moment().valueOf() >= sender.expiry && !(result && !result.error)
+  const canDoAction = !canCancelSender && receiver?.status === 'Prepared' && !(result && !result.error)
   const canFulfill = canDoAction && moment().valueOf() < receiver.expiry
-  const isActionBeta = canDoAction && !process.env.NEXT_PUBLIC_NETWORK
+  const isActionBeta = canCancelSender
   let mustSwitchNetwork = false
 
   const actionButtons = []
 
-  if (canDoAction) {
+  if (canCancelSender || canDoAction) {
     if (web3_provider) {
-      if (address?.toLowerCase() !== receiver?.receivingAddress?.toLowerCase()) {
+      if (address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.receivingAddress?.toLowerCase())) {
         actionButtons.push(
           <span key={actionButtons.length} className="min-w-max text-gray-400 dark:text-gray-500 text-xs font-light">
             address not match.
@@ -163,7 +179,7 @@ export default function Transaction({ data, className = '' }) {
         )
       }
       else {
-        if (typeof chain_id === 'number' && chain_id !== receiver?.receivingChainId) {
+        if (typeof chain_id === 'number' && chain_id !== (canCancelSender ? sender?.sendingChainId : receiver?.receivingChainId)) {
           mustSwitchNetwork = true
         }
         else {
@@ -243,30 +259,34 @@ export default function Transaction({ data, className = '' }) {
                       </div>
                     )}
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                    <div className="flex items-center text-gray-400 dark:text-gray-500">
-                      Amount Received
-                      <span className="hidden sm:block">:</span>
-                    </div>
-                    {receiver?.normalize_amount && (
-                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                        <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000')}</span>
-                        <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                  {receiver && (
+                    <>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                        <div className="flex items-center text-gray-400 dark:text-gray-500">
+                          Amount Received
+                          <span className="hidden sm:block">:</span>
+                        </div>
+                        {receiver?.normalize_amount && (
+                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                            <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000')}</span>
+                            <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                    <div className="flex items-center text-gray-400 dark:text-gray-500">
-                      Fees
-                      <span className="hidden sm:block">:</span>
-                    </div>
-                    {receiver?.normalize_amount && sender?.normalize_amount && (
-                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                        <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000')}</span>
-                        <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                        <div className="flex items-center text-gray-400 dark:text-gray-500">
+                          Fees
+                          <span className="hidden sm:block">:</span>
+                        </div>
+                        {receiver?.normalize_amount && sender?.normalize_amount && (
+                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                            <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000')}</span>
+                            <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </>
+                  )}
                   <div className="flex items-center space-x-2 mx-auto py-2">
                     {data ?
                       general?.sendingChain && (
@@ -302,7 +322,7 @@ export default function Transaction({ data, className = '' }) {
                 </div>}
                 cancelButtonTitle="No"
                 confirmButtonTitle="Yes, cancel it"
-                onConfirm={() => transfer('cancel', receiver)}
+                onConfirm={() => transfer('cancel', canCancelSender ? sender : receiver, canCancelSender ? 'sender' : 'receiver')}
               />
             )
 
@@ -448,15 +468,15 @@ export default function Transaction({ data, className = '' }) {
     }
   }
 
-  const tipsButton = canDoAction && (
+  const tipsButton = (canCancelSender || canDoAction) && (
     <Modal
       buttonTitle={<MdInfoOutline size={24} className="stroke-current" />}
       buttonClassName="bg-white hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-full text-gray-400 dark:text-gray-500 p-1 sm:p-1.5"
-      title={<div className="text-left text-sm sm:text-lg">Instructions to fulfill or cancel your transaction</div>}
+      title={<div className="text-left text-sm sm:text-lg">Instructions to {canFulfill ? 'fulfill or ' : ''}cancel your transaction</div>}
       body={<div className="space-y-3">
         <div className="flex text-left text-sm sm:text-base space-x-2 my-1">
           <span>1.</span>
-          <span>Connect your Metamask with the address and the network of the receiver side.</span>
+          <span>Connect your Metamask with the address and the network of the {canCancelSender ? 'sender' : 'receiver'} side.</span>
         </div>
         <button
           className="bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 pointer-events-none rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
@@ -475,52 +495,92 @@ export default function Transaction({ data, className = '' }) {
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
           <Copy
             size={18}
-            text={receiver?.receivingAddress}
+            text={canCancelSender ? sender?.sendingAddress : receiver?.receivingAddress}
             copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-              {ellipseAddress(receiver?.receivingAddress, 6)}
+              {ellipseAddress(canCancelSender ? sender?.sendingAddress : receiver?.receivingAddress, 6)}
             </span>}
           />
-          {receiver?.receivingChain?.explorer?.url && (
-            <a
-              href={`${receiver.receivingChain.explorer.url}${receiver.receivingChain.explorer.address_path?.replace('{address}', receiver.receivingAddress)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 dark:text-white"
-            >
-              {receiver.receivingChain.explorer.icon ?
-                <img
-                  src={receiver.receivingChain.explorer.icon}
-                  alt=""
-                  className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
-                />
-                :
-                <TiArrowRight size={20} className="transform -rotate-45" />
-              }
-            </a>
-          )}
+          {canCancelSender ?
+            sender?.sendingChain?.explorer?.url && (
+              <a
+                href={`${sender.sendingChain.explorer.url}${sender.sendingChain.explorer.address_path?.replace('{address}', sender.sendingAddress)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-white"
+              >
+                {sender.sendingChain.explorer.icon ?
+                  <img
+                    src={sender.sendingChain.explorer.icon}
+                    alt=""
+                    className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                  />
+                  :
+                  <TiArrowRight size={20} className="transform -rotate-45" />
+                }
+              </a>
+            )
+            :
+            receiver?.receivingChain?.explorer?.url && (
+              <a
+                href={`${receiver.receivingChain.explorer.url}${receiver.receivingChain.explorer.address_path?.replace('{address}', receiver.receivingAddress)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-white"
+              >
+                {receiver.receivingChain.explorer.icon ?
+                  <img
+                    src={receiver.receivingChain.explorer.icon}
+                    alt=""
+                    className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                  />
+                  :
+                  <TiArrowRight size={20} className="transform -rotate-45" />
+                }
+              </a>
+            )
+          }
         </div>
-        {receiver?.receivingChain && (
-          <div className="flex items-center justify-center space-x-2 mt-1.5">
-            {receiver.receivingChain.icon && (
-              <img
-                src={receiver.receivingChain.icon}
-                alt=""
-                className="w-6 h-6 rounded-full"
-              />
-            )}
-            <span className="text-gray-700 dark:text-gray-300 text-base font-semibold">{receiver.receivingChain.title || receiver.receivingChain.short_name}</span>
-          </div>
-        )}
+        {canCancelSender ?
+          sender?.sendingChain && (
+            <div className="flex items-center justify-center space-x-2 mt-1.5">
+              {sender.sendingChain.icon && (
+                <img
+                  src={sender.sendingChain.icon}
+                  alt=""
+                  className="w-6 h-6 rounded-full"
+                />
+              )}
+              <span className="text-gray-700 dark:text-gray-300 text-base font-semibold">{sender.sendingChain.title || sender.sendingChain.short_name}</span>
+            </div>
+          )
+          :
+          receiver?.receivingChain && (
+            <div className="flex items-center justify-center space-x-2 mt-1.5">
+              {receiver.receivingChain.icon && (
+                <img
+                  src={receiver.receivingChain.icon}
+                  alt=""
+                  className="w-6 h-6 rounded-full"
+                />
+              )}
+              <span className="text-gray-700 dark:text-gray-300 text-base font-semibold">{receiver.receivingChain.title || receiver.receivingChain.short_name}</span>
+            </div>
+          )
+        }
         <div className="flex text-left text-gray-400 dark:text-gray-500 text-xs font-light space-x-2 my-1">
           <span>If the address does not match, the dashboard will show 'Address not match' status. Likewise, if the network does not match, there will be a 'Wrong Network' status. Then you need to switch it to the correct one.</span>
         </div>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <div className="flex text-left text-sm sm:text-base space-x-2 mt-2 mb-1">
           <span>2.</span>
-          <span>Once connected, the Fulfill button and Cancel button will appear.</span>
+          <span>Once connected, the buttons will appear.</span>
         </div>
         <div className="flex text-left text-gray-400 dark:text-gray-500 text-xs font-light space-x-2 my-1">
-          <span>The fulfill action can be processed when the receiver transaction is prepared and has not expired yet. While the cancel action does not consider the expiry date, only prepared status is required.</span>
+          {canCancelSender ?
+            <span><span className="font-semibold">Cancel Button for Sender:</span> The button can be processed when the sender transaction is prepared and expired.</span>
+            :
+            <span><span className="font-semibold">Fulfill and Cancel Button for Receiver:</span> The fulfill action can be processed when the receiver transaction is prepared and has not expired yet. While the cancel action does not consider the expiry date, only prepared status is required.</span>
+          }
         </div>
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
           <button
@@ -722,10 +782,10 @@ export default function Transaction({ data, className = '' }) {
             title={<div className="uppercase text-gray-600 dark:text-gray-400 text-sm sm:text-base font-semibold mb-2">Token Transfers</div>}
             right={<div className="flex items-center space-x-0.5 mb-2 lg:mb-0.5 -mr-1 sm:-mr-2">
               <div className="flex items-center space-x-1.5 sm:space-x-2">
-                {canDoAction && (
+                {(canCancelSender || canDoAction) && (
                   <Wallet
                     hidden={web3_provider && !mustSwitchNetwork ? true : false}
-                    chainIdToConnect={mustSwitchNetwork && receiver?.receivingChainId}
+                    chainIdToConnect={mustSwitchNetwork && (canCancelSender ? sender?.sendingChainId : receiver?.receivingChainId)}
                   />
                 )}
                 {actionButtons}
@@ -797,7 +857,10 @@ export default function Transaction({ data, className = '' }) {
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                           :
                           ['Prepared'].includes(sender.status) ?
-                            <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                            result && !result.error && ['sender'].includes(result.side) ?
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mr-0.5" />
+                              :
+                              <MdPending size={14} className="text-yellow-500 dark:text-white" />
                             :
                             <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                         :
@@ -931,7 +994,7 @@ export default function Transaction({ data, className = '' }) {
                           <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                           :
                           ['Prepared'].includes(receiver.status) ?
-                            result && !result.error ?
+                            result && !result.error && !['sender'].includes(result.side) ?
                               <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mr-0.5" />
                               :
                               <MdPending size={14} className="text-yellow-500 dark:text-white" />
@@ -1144,7 +1207,10 @@ export default function Transaction({ data, className = '' }) {
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                             :
                             ['Prepared'].includes(transaction.status) ?
-                              <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                              result && !result.error && ['sender'].includes(result.side) ?
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mr-0.5" />
+                                :
+                                <MdPending size={14} className="text-yellow-500 dark:text-white" />
                               :
                               <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                           :
@@ -1162,7 +1228,7 @@ export default function Transaction({ data, className = '' }) {
                             <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                             :
                             ['Prepared'].includes(transaction.status) ?
-                              result && !result.error ?
+                              result && !result.error && !['sender'].includes(result.side) ?
                                 <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mr-0.5" />
                                 :
                                 <MdPending size={14} className="text-yellow-500 dark:text-white" />
