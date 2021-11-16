@@ -346,7 +346,7 @@ export default function Index() {
           </Link>
           <div className="h-3" />
           <Widget className="min-h-full contents p-0">
-            <Transactions n={10} />
+            <Transactions n={10} event={true} />
           </Widget>
         </div>
       </div>

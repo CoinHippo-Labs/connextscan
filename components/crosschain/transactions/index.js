@@ -20,7 +20,7 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../../reducers/types'
 
-export default function Transactions({ useData, n, className = '' }) {
+export default function Transactions({ useData, n, event, className = '' }) {
   const dispatch = useDispatch()
   const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
   const { contracts_data } = { ...contracts }
@@ -36,69 +36,87 @@ export default function Transactions({ useData, n, className = '' }) {
     const controller = new AbortController()
 
     const getData = async isInterval => {
-      if (!useData && (!loaded || isInterval)) {
+      if (event && !useData && (!loaded || isInterval)) {
         let data, allTransactions, _contracts_data = _.cloneDeep(contracts_data)
         let txsSet = false
 
         const _networks = networks.filter(_network => _network?.id && typeof _network.network_id === 'number' && !_network.disabled)
 
-        for (let i = 0; i < _networks.length; i++) {
-          if (!controller.signal.aborted) {
-            const network = _networks[i]
+        const filterStatuses = typeof event !== 'boolean' ? event.split('_') : []
 
-            const response = await getTransactions({ chain_id: network.id }, _contracts_data)
+        if (typeof event !== 'boolean') {
+          console.log(`Start query ${event}`)
+        }
 
-            if (response) {
-              const _data = response.data || []
+        for (let h = 0; h < (typeof event !== 'boolean' ? filterStatuses.length : 1); h++) {
+          for (let i = 0; i < _networks.length; i++) {
+            if (!controller.signal.aborted) {
+              const network = _networks[i]
 
-              const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
-
-              let new_contracts
-
-              for (let j = 0; j < Object.entries(_contracts).length; j++) {
-                if (!controller.signal.aborted) {
-                  const contract = Object.entries(_contracts)[j]
-                  let [key, value] = contract
-                  key = Number(key)
-
-                  const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
-
-                  if (resContracts?.data) {
-                    new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
-                  }
-                }
+              if (typeof event !== 'boolean') {
+                console.log(`querying ... status "${filterStatuses[h]}" on "${network.id}"`)
               }
 
-              new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
+              const response = await getTransactions(typeof event !== 'boolean' ? { chain_id: network.id, where: `{ status: "${filterStatuses[h]}" }`, size: 100, max_size: 1000 } : { chain_id: network.id }, _contracts_data)
 
-              allTransactions = _.concat(allTransactions || [], _data)
+              if (response) {
+                const _data = response.data || []
 
-              data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat(data || [], allTransactions.map(tx => {
-                return {
-                  ...tx,
-                  sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
-                  receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
+                const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
+
+                let new_contracts
+
+                if (typeof event === 'boolean') {
+                  for (let j = 0; j < Object.entries(_contracts).length; j++) {
+                    if (!controller.signal.aborted) {
+                      const contract = Object.entries(_contracts)[j]
+                      let [key, value] = contract
+                      key = Number(key)
+
+                      const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+
+                      if (resContracts?.data) {
+                        new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                      }
+                    }
+                  }
                 }
-              }).map(tx => {
-                return {
-                  ...tx,
-                  normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
-                }
-              })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
 
-              _contracts_data = new_contracts
-            
-              if ((!transactions || !isInterval) && !loaded && !txsSet) {
-                if (i === _networks.length - 1) {
-                  txsSet = true
-                }
+                new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
 
-                if (data.length > 0) {
-                  setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
+                allTransactions = _.concat(allTransactions || [], _data)
+
+                data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat(data || [], allTransactions.map(tx => {
+                  return {
+                    ...tx,
+                    sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
+                    receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
+                  }
+                }).map(tx => {
+                  return {
+                    ...tx,
+                    normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
+                  }
+                })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId, status: tx.status } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc']).filter(tx => typeof event !== 'boolean' && h > 0 ? _.isEqual(tx.txs?.map(_tx => _tx.status), filterStatuses) || tx.txs?.length === 1 && tx.txs[0]?.status?.toLowerCase() === filterStatuses[h]?.status?.toLowerCase() : true)
+
+                _contracts_data = new_contracts
+              
+                if ((!transactions || !isInterval) && !loaded && !txsSet && typeof event === 'boolean') {
+                  if (i === _networks.length - 1) {
+                    txsSet = true
+                  }
+
+                  if (data.length > 0) {
+                    setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
+                  }
                 }
               }
             }
           }
+        }
+
+        if (typeof event !== 'boolean') {
+          console.log(`End query ${event}`)
         }
 
         if (!loaded && txsSet) {
@@ -120,12 +138,12 @@ export default function Transactions({ useData, n, className = '' }) {
 
     getData()
 
-    const interval = setInterval(() => getData(true), (loaded ? 1 : 1.5) * 30 * 1000)
+    const interval = setInterval(() => getData(true), (typeof event !== 'boolean' ? 120 : loaded ? 1 : 1.5) * 30 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [loaded])
+  }, [loaded, event])
 
   useEffect(() => {
     if (useData?.address) {

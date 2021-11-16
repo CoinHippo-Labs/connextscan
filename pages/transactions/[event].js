@@ -1,15 +1,15 @@
 import { useRouter } from 'next/router'
 
-import ChainInfo from '../components/crosschain/chain-info'
-import Transactions from '../components/crosschain/transactions'
-import SectionTitle from '../components/section-title'
+import ChainInfo from '../../components/crosschain/chain-info'
+import Transactions from '../../components/crosschain/transactions'
+import SectionTitle from '../../components/section-title'
 
-import { networks } from '../lib/menus'
+import { networks } from '../../lib/menus'
 
-export default function TransactionsIndex() {
+export default function TransactionsEvent() {
   const router = useRouter()
   const { pathname, query } = { ...router }
-  const { chain_id } = { ...query }
+  const { chain_id, event } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
   return (
@@ -21,7 +21,7 @@ export default function TransactionsIndex() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
-        <Transactions event={true} />
+        <Transactions event={event} />
       </div>
     </>
   )
