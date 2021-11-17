@@ -102,7 +102,7 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                             />
                             {network?.explorer?.url && (
                               <a
-                                href={`${network.explorer.url}${network.explorer.contract_path?.replace('{address}', assetBalance.id.replace(`-${router.id}`, ''))}`}
+                                href={`${network.explorer.url}${network.explorer[`contract${assetBalance.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.id.replace(`-${router.id}`, ''))}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-indigo-600 dark:text-white"
@@ -175,7 +175,7 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                       />
                       {network?.explorer?.url && (
                         <a
-                          href={`${network.explorer.url}${network.explorer.contract_path?.replace('{address}', assetBalance.id.replace(`-${assetBalance.router_id}`, ''))}`}
+                          href={`${network.explorer.url}${network.explorer[`contract${assetBalance.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.id.replace(`-${assetBalance.router_id}`, ''))}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-indigo-600 dark:text-white"

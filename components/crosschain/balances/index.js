@@ -62,7 +62,7 @@ export default function Balances({ data, className = '' }) {
                       />
                       {props.row.original.chain_data?.explorer?.url && (
                         <a
-                          href={`${props.row.original.chain_data.explorer.url}${props.row.original.chain_data.explorer.contract_path?.replace('{address}', props.row.original.contract_address)}`}
+                          href={`${props.row.original.chain_data.explorer.url}${props.row.original.chain_data.explorer[`contract${props.row.original.contract_address?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.contract_address)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-indigo-600 dark:text-white"

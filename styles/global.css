@@ -135,7 +135,7 @@ body {
 }
 
 .recharts-cartesian-axis-tick-value {
-  @apply fill-current text-gray-900 dark:text-white font-medium;
+  @apply fill-current text-gray-900 dark:text-white text-3xs sm:text-sm md:text-sm lg:text-sm xl:text-sm font-medium;
 }
 
 .mobile-hidden-x .recharts-cartesian-axis-tick-value {

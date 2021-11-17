@@ -301,7 +301,7 @@ export default function Transactions({ className = '' }) {
                       <div className="flex flex-col">
                         {props.row.original.sendingAsset && (
                           <a
-                            href={`${props.row.original.sendingChain?.explorer?.url}${props.row.original.sendingChain?.explorer?.contract_path?.replace('{address}', props.row.original.sendingAssetId)}`}
+                            href={`${props.row.original.sendingChain?.explorer?.url}${props.row.original.sendingChain?.explorer?.[`contract${props.row.original.sendingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center space-x-1.5"
@@ -326,7 +326,7 @@ export default function Transactions({ className = '' }) {
                           />
                           {!props.row.original.sendingAsset && props.row.original.sendingChain?.explorer?.url && (
                             <a
-                              href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.contract_path?.replace('{address}', props.row.original.sendingAssetId)}`}
+                              href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer[`contract${props.row.original.sendingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-indigo-600 dark:text-white"
@@ -352,7 +352,7 @@ export default function Transactions({ className = '' }) {
                       <div className="flex flex-col">
                         {props.row.original.receivingAsset && (
                           <a
-                            href={`${props.row.original.receivingChain?.explorer?.url}${props.row.original.receivingChain?.explorer?.contract_path?.replace('{address}', props.row.original.receivingAssetId)}`}
+                            href={`${props.row.original.receivingChain?.explorer?.url}${props.row.original.receivingChain?.explorer?.[`contract${props.row.original.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center space-x-1.5"
@@ -377,7 +377,7 @@ export default function Transactions({ className = '' }) {
                           />
                           {!props.row.original.receivingAsset && props.row.original.receivingChain?.explorer?.url && (
                             <a
-                              href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.contract_path?.replace('{address}', props.row.original.receivingAssetId)}`}
+                              href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer[`contract${props.row.original.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-indigo-600 dark:text-white"

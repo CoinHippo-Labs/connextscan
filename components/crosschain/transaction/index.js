@@ -658,7 +658,7 @@ export default function Transaction({ data, className = '' }) {
                     <div className="flex flex-col">
                       {general.sendingAsset && (
                         <a
-                          href={`${general.sendingChain?.explorer?.url}${general.sendingChain?.explorer?.contract_path?.replace('{address}', general.sendingAssetId)}`}
+                          href={`${general.sendingChain?.explorer?.url}${general.sendingChain?.explorer?.[`contract${general.sendingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', general.sendingAssetId)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center space-x-2"
@@ -683,7 +683,7 @@ export default function Transaction({ data, className = '' }) {
                         />
                         {!general.sendingAsset && general.sendingChain?.explorer?.url && (
                           <a
-                            href={`${general.sendingChain.explorer.url}${general.sendingChain.explorer.contract_path?.replace('{address}', general.sendingAssetId)}`}
+                            href={`${general.sendingChain.explorer.url}${general.sendingChain.explorer[`contract${general.sendingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', general.sendingAssetId)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-indigo-600 dark:text-white"
@@ -709,7 +709,7 @@ export default function Transaction({ data, className = '' }) {
                     <div className="flex flex-col">
                       {general.receivingAsset && (
                         <a
-                          href={`${general.receivingChain?.explorer?.url}${general.receivingChain?.explorer?.contract_path?.replace('{address}', general.receivingAssetId)}`}
+                          href={`${general.receivingChain?.explorer?.url}${general.receivingChain?.explorer?.[`contract${general.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', general.receivingAssetId)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center space-x-2"
@@ -734,7 +734,7 @@ export default function Transaction({ data, className = '' }) {
                         />
                         {!general.receivingAsset && general.receivingChain?.explorer?.url && (
                           <a
-                            href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.contract_path?.replace('{address}', general.receivingAssetId)}`}
+                            href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer[`contract${general.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', general.receivingAssetId)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-indigo-600 dark:text-white"

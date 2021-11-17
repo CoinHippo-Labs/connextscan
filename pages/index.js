@@ -72,6 +72,9 @@ export default function Index() {
                       txs: {
                         sum: { field: 'txCount' },
                       },
+                      sending_txs: {
+                        sum: { field: 'sendingTxCount' },
+                      },
                     },
                   },
                 },

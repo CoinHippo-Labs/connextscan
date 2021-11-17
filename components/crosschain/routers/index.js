@@ -151,7 +151,7 @@ export default function Routers() {
                             />
                             {asset?.chain_data?.explorer?.url && (
                               <a
-                                href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${router.router_id}`, ''))}`}
+                                href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer[`contract${asset.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', asset.id.replace(`-${router.router_id}`, ''))}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-indigo-600 dark:text-white "

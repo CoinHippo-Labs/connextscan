@@ -329,7 +329,7 @@ export default function RouterAddress() {
                                   />
                                   {asset?.chain_data?.explorer?.url && (
                                     <a
-                                      href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer.contract_path?.replace('{address}', asset.id.replace(`-${routerAssets.router_id}`, ''))}`}
+                                      href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer[`contract${asset.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', asset.id.replace(`-${routerAssets.router_id}`, ''))}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="text-indigo-600 dark:text-white "
@@ -418,7 +418,7 @@ export default function RouterAddress() {
                                 />
                                 {_balance?.chain_data?.explorer?.url && (
                                   <a
-                                    href={`${_balance.chain_data.explorer.url}${_balance.chain_data.explorer.contract_path?.replace('{address}', _balance.contract_address)}`}
+                                    href={`${_balance.chain_data.explorer.url}${_balance.chain_data.explorer[`contract${_balance.contract_address?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', _balance.contract_address)}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-indigo-600 dark:text-white "
