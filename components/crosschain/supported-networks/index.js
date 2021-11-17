@@ -9,7 +9,7 @@ export default function SupportedNetworks() {
       <div className="overflow-x-auto flex flex-row items-center justify-center space-x-2 mt-6 mb-1">
         {networks.filter(network => network?.id && !(network?.disabled)).map((network, i) => (
           <Link key={i} href={network.url}>
-            <a className={`-ml-${i === 0 && networks.filter(network => network?.id && !(network?.disabled)).length > 10 ? 0 : 2} sm:ml-0`}>
+            <a className={`-ml-${i === 0 && networks.filter(network => network?.id && !(network?.disabled)).length > 10 ? 0 : 0} sm:ml-0`}>
               <img
                 src={network.icon}
                 alt=""

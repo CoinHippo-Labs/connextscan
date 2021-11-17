@@ -956,7 +956,7 @@ export default function Transaction({ data, className = '' }) {
                           </a>
                         </Link>
                       </div>
-                      <div className="flex justify-center">
+                      <div className="flex justify-start sm:justify-center">
                         <Copy
                           text={general.router.id}
                           copyTitle={<span className="text-gray-400 dark:text-gray-500 text-xs font-normal">
