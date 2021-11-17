@@ -161,7 +161,7 @@ export default function RouterAddress() {
     if (router_balances_sync_data && Object.keys(router_balances_sync_data).length === routerChains?.chains?.length) {
       setRetryGas(false)
 
-      setRouterGasOnChains(_.orderBy(Object.values(router_balances_sync_data).flatMap(value => value).filter(value => value), ['order'], ['asc']))
+      setRouterGasOnChains(_.uniqBy(_.orderBy(Object.values(router_balances_sync_data).flatMap(value => value).filter(value => value), ['order'], ['asc']), 'chain_data.id'))
 
       if (Object.values(router_balances_sync_data).findIndex(_balance => !_balance?.balance) > -1) {
         setRetryGas(true)
