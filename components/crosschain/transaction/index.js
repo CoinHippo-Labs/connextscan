@@ -171,7 +171,7 @@ export default function Transaction({ data, className = '' }) {
 
   if (canCancelSender || canDoAction) {
     if (web3_provider) {
-      if (address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.receivingAddress?.toLowerCase())) {
+      if (address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.sendingAddress?.toLowerCase())) {
         actionButtons.push(
           <span key={actionButtons.length} className="min-w-max text-gray-400 dark:text-gray-500 text-xs font-light">
             address not match.
@@ -495,9 +495,9 @@ export default function Transaction({ data, className = '' }) {
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
           <Copy
             size={18}
-            text={canCancelSender ? sender?.sendingAddress : receiver?.receivingAddress}
+            text={canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress}
             copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-              {ellipseAddress(canCancelSender ? sender?.sendingAddress : receiver?.receivingAddress, 6)}
+              {ellipseAddress(canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress, 6)}
             </span>}
           />
           {canCancelSender ?
