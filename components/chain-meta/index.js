@@ -87,7 +87,7 @@ export default function ChainMeta() {
       getData()
     }
 
-    const interval = setInterval(() => getData(), 15 * 1000)
+    const interval = setInterval(() => getData(), 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
@@ -198,7 +198,7 @@ export default function ChainMeta() {
 
     getData()
 
-    const interval = setInterval(() => getData(true), 30 * 1000)
+    const interval = setInterval(() => getData(true), 2 * 60 * 1000)
     return () => clearInterval(interval)
   }, [assetsLoaded, pathname, assets_data])
 

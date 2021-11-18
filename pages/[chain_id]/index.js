@@ -152,7 +152,7 @@ export default function Chain() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 30 * 1000)
+    const interval = setInterval(() => getData(), 2 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)

@@ -150,7 +150,7 @@ export default function RouterAddress() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 3 * 60 * 1000)
+    const interval = setInterval(() => getData(), 5 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
@@ -254,7 +254,7 @@ export default function RouterAddress() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 45 * 1000)
+    const interval = setInterval(() => getData(), 2 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)

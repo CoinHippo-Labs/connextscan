@@ -178,7 +178,7 @@ export default function CrosschainAddress() {
 
     getData()
 
-    const interval = setInterval(() => getData(true), 15 * 1000)
+    const interval = setInterval(() => getData(true), 0.5 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
