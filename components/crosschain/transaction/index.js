@@ -186,8 +186,8 @@ export default function Transaction({ data, className = '' }) {
           if (transfering && startTransferTime) {
             actionButtons.push(
               <div key={actionButtons.length} className="w-32 sm:w-40 space-y-1">
-                <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
-                  <span className="capitalize font-semibold">{/*transfering*/}Wating to Sign</span>
+                <div className="w-full flex items-center justify-center text-blue-500 dark:text-blue-400 space-x-1">
+                  <span className="font-semibold">{/*transfering*/}Waiting to Sign</span>
                   <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
                 </div>
                 {/*<ProgressBar
@@ -602,8 +602,8 @@ export default function Transaction({ data, className = '' }) {
         </div>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <div className="w-32 sm:w-40 space-y-1 mx-auto">
-          <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
-            <span className="capitalize font-semibold">{/*canFulfill ? 'Fulfilling' : 'Canceling'*/}Waiting to Sign</span>
+          <div className="w-full flex items-center justify-center text-blue-500 dark:text-blue-400 space-x-1">
+            <span className="font-semibold">{/*canFulfill ? 'Fulfilling' : 'Canceling'*/}Waiting to Sign</span>
             <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
           </div>
           {/*<ProgressBar
