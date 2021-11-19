@@ -187,10 +187,10 @@ export default function RouterAddress() {
             const network = networks[i]
 
             if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-              const response = await getTransactions({ chain_id: network.id, where: `{ router: "${address}" }` }, _contracts_data)
+              const response = await getTransactions({ chain_id: network.id, where: `{ router: "${address}" }`, max_size: 500 }, _contracts_data)
 
               if (response) {
-                const _data = response.data || []
+                const _data = Array.isArray(response.data) ? response.data : []
 
                 const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
 

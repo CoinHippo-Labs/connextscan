@@ -187,15 +187,15 @@ export default function Transaction({ data, className = '' }) {
             actionButtons.push(
               <div key={actionButtons.length} className="w-32 sm:w-40 space-y-1">
                 <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
-                  <span className="capitalize font-semibold">{transfering}ing</span>
+                  <span className="capitalize font-semibold">{/*transfering*/}Wating to Sign</span>
                   <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
                 </div>
-                <ProgressBar
+                {/*<ProgressBar
                   width={moment().diff(moment(startTransferTime), 'seconds') * 100 / 300}
                   color="bg-blue-500 dark:bg-blue-400"
                   backgroundClassName="bg-gray-50 dark:bg-gray-800"
                   className="h-1"
-                />
+                />*/}
               </div>
             )
           }
@@ -603,15 +603,15 @@ export default function Transaction({ data, className = '' }) {
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />
         <div className="w-32 sm:w-40 space-y-1 mx-auto">
           <div className="w-full flex items-center capitalize text-blue-500 dark:text-blue-400 space-x-1">
-            <span className="capitalize font-semibold">{canFulfill ? 'Fulfilling' : 'Canceling'}</span>
+            <span className="capitalize font-semibold">{/*canFulfill ? 'Fulfilling' : 'Canceling'*/}Waiting to Sign</span>
             <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
           </div>
-          <ProgressBar
+          {/*<ProgressBar
             width={100 / 3}
             color="bg-blue-500 dark:bg-blue-400"
             backgroundClassName="bg-gray-50 dark:bg-gray-800"
             className="h-1"
-          />
+          />*/}
         </div>
         <div className="flex text-left text-sm sm:text-base space-x-2 mt-2 mb-1">
           <span>4.</span>
