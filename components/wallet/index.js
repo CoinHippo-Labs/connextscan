@@ -148,12 +148,14 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
     <>
       {web3_provider ?
         chainIdToConnect ?
-          <button
-            onClick={switchNetwork}
-            className={buttonDisconnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-2xl whitespace-nowrap font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
-          >
-            {buttonDisconnectTitle || 'Wrong Network'}
-          </button>
+          <HeadShake duration={1500} forever>
+            <button
+              onClick={switchNetwork}
+              className={buttonDisconnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-2xl whitespace-nowrap font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
+            >
+              {buttonDisconnectTitle || 'Wrong Network'}
+            </button>
+          </HeadShake>
           :
           <button
             onClick={disconnect}
