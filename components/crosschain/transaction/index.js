@@ -173,9 +173,9 @@ export default function Transaction({ data, className = '' }) {
     if (web3_provider) {
       if (address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.sendingAddress?.toLowerCase())) {
         actionButtons.push(
-          <span key={actionButtons.length} className="min-w-max flex flex-col text-gray-400 dark:text-gray-500 text-xs font-light">
+          <span key={actionButtons.length} className="min-w-max flex flex-col text-gray-400 dark:text-gray-500 text-xs font-light text-right">
             <span>address not match.</span>
-            <span>(Your: {ellipseAddress(address, 6)})</span>
+            <span className="flex items-center">(Your<span className="hidden sm:block ml-1">connected addr</span>: {ellipseAddress(address, 6)})</span>
           </span>
         )
       }
