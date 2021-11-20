@@ -173,8 +173,9 @@ export default function Transaction({ data, className = '' }) {
     if (web3_provider) {
       if (address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.sendingAddress?.toLowerCase())) {
         actionButtons.push(
-          <span key={actionButtons.length} className="min-w-max text-gray-400 dark:text-gray-500 text-xs font-light">
-            address not match.
+          <span key={actionButtons.length} className="min-w-max flex flex-col text-gray-400 dark:text-gray-500 text-xs font-light">
+            <span>address not match.</span>
+            <span>(Your: {ellipseAddress(address, 6)})</span>
           </span>
         )
       }
