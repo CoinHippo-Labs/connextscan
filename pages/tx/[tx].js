@@ -181,7 +181,7 @@ export default function CrosschainTx() {
     }
     else {
       tip = (
-        <span className="flex items-center justify-end text-xs space-x-1.5 mt-1">
+        <span className="flex items-center justify-end text-xs space-x-1.5">
           <span className="text-blue-600 dark:text-blue-400 font-semibold">Processing</span>
           <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
         </span>
