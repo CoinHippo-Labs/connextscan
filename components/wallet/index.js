@@ -3,6 +3,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import Web3Modal from 'web3modal'
 import { providers, utils } from 'ethers'
+import HeadShake from 'react-reveal/HeadShake'
 
 import { networks } from '../../lib/menus'
 import { WALLET_DATA, WALLET_RESET } from '../../reducers/types'
@@ -161,22 +162,24 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
             {buttonDisconnectTitle || 'Disconnect'}
           </button>
         :
-        <button
-          onClick={connect}
-          className={buttonConnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
-          style={{ width: 'max-content' }}
-        >
-          {buttonConnectTitle || (
-            <div className="flex items-center space-x-2">
-              <span>Connect</span>
-              <img
-                src="/logos/wallets/metamask.png"
-                alt=""
-                className="w-4 h-4 -mr-1 mb-0.5"
-              />
-            </div>
-          )}
-        </button>
+        <HeadShake duration={1500} forever>
+          <button
+            onClick={connect}
+            className={buttonConnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
+            style={{ width: 'max-content' }}
+          >
+            {buttonConnectTitle || (
+              <div className="flex items-center space-x-2">
+                <span>Connect</span>
+                <img
+                  src="/logos/wallets/metamask.png"
+                  alt=""
+                  className="w-4 h-4 -mr-1 mb-0.5"
+                />
+              </div>
+            )}
+          </button>
+        </HeadShake>
       }
     </>
   )

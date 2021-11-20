@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
+import Loader from 'react-loader-spinner'
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { MdPending } from 'react-icons/md'
 
@@ -18,7 +19,8 @@ import { CONTRACTS_DATA } from '../../reducers/types'
 
 export default function CrosschainTx() {
   const dispatch = useDispatch()
-  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
+  const { preferences, contracts } = useSelector(state => ({ preferences: state.preferences, contracts: state.contracts }), shallowEqual)
+  const { theme } = { ...preferences }
   const { contracts_data } = { ...contracts }
 
   const router = useRouter()
@@ -166,6 +168,35 @@ export default function CrosschainTx() {
 
   const status = tx && transaction?.tx === tx && ((transaction?.data && _.head(_.orderBy(Object.values(transaction.data), ['order', 'preparedTimestamp'], ['desc', 'desc']))?.status) || 'Not Found')
 
+  let tip
+
+  if (status === 'Prepared') {
+    if (transaction?.data && (Object.keys(transaction.data).length > 1 || transaction.data.receiver)) {
+      tip = (
+        <div className="flex items-center justify-end text-xs space-x-1.5 mt-1">
+          <span className="text-blue-600 dark:text-blue-400 font-semibold">Ready to Claim / Cancel</span>
+          <Loader type="Puff" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" />
+        </div>
+      )
+    }
+    else {
+      tip = (
+        <span className="flex items-center justify-end text-xs space-x-1.5 mt-1">
+          <span className="text-blue-600 dark:text-blue-400 font-semibold">Processing</span>
+          <Loader type="ThreeDots" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" className="mt-1" />
+        </span>
+      )
+    }
+  }
+  else if (status === 'Not Found') {
+    tip = (
+      <div className="flex items-center justify-end text-xs space-x-1.5 mt-1">
+        <span className="text-blue-600 dark:text-blue-400 font-semibold">Maybe Subgraph Unsynced</span>
+        <Loader type="Grid" color={theme === 'dark' ? '#60A5FA' : '#3B82F6'} width="16" height="16" />
+      </div>
+    )
+  }
+
   return (
     <>
       <SectionTitle
@@ -187,7 +218,7 @@ export default function CrosschainTx() {
         right={<div className="sm:text-right mt-1 sm:mt-0">
           <div className="uppercase text-gray-400 dark:text-gray-400 text-xs mb-1.5">Status</div>
           {status ?
-            <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+            <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 sm:ml-auto py-1 px-1.5`}>
               {status === 'Fulfilled' ?
                 <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                 :
@@ -201,6 +232,7 @@ export default function CrosschainTx() {
             :
             <div className="skeleton w-24 h-7" />
           }
+          {tip}
         </div>}
         className="xl:max-w-7xl flex-col sm:flex-row items-start sm:items-center xl:my-4 mx-auto"
       />
