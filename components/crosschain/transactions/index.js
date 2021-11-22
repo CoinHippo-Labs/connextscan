@@ -20,6 +20,13 @@ import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../../reducers/types'
 
+const filter_statuses = [
+  { status: 'Preparing', color: 'blue' },
+  { status: 'Prepared', color: 'yellow' },
+  { status: 'Fulfilled', color: 'green' },
+  { status: 'Cancelled', color: 'red' },
+]
+
 export default function Transactions({ useData, n, event, className = '' }) {
   const dispatch = useDispatch()
   const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
@@ -31,6 +38,7 @@ export default function Transactions({ useData, n, event, className = '' }) {
 
   const [transactions, setTransactions] = useState(null)
   const [loaded, setLoaded] = useState(false)
+  const [statuses, setStatuses] = useState(filter_statuses.map(({ status }) => status))
 
   useEffect(() => {
     const controller = new AbortController()
@@ -97,7 +105,9 @@ export default function Transactions({ useData, n, event, className = '' }) {
                     ...tx,
                     normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
                   }
-                })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId, status: tx.status } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc']).filter(tx => typeof event !== 'boolean' && h > 0 ? _.isEqual(tx.txs?.map(_tx => _tx.status), filterStatuses) || tx.txs?.length === 1 && tx.txs[0]?.status?.toLowerCase() === filterStatuses[h]?.status?.toLowerCase() : true)
+                })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId, status: tx.status } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
+                .map(tx => { return { ...tx, crosschain_status: tx.status === 'Prepared' && tx.txs?.length === 1 && tx.txs[0]?.chain_id === tx.sendingChainId ? 'Preparing' : tx.status } })
+                .filter(tx => typeof event !== 'boolean' && h > 0 ? _.isEqual(tx.txs?.map(_tx => _tx.status), filterStatuses) || tx.txs?.length === 1 && tx.txs[0]?.status?.toLowerCase() === filterStatuses[h]?.status?.toLowerCase() : true)
 
                 _contracts_data = new_contracts
               
@@ -153,6 +163,18 @@ export default function Transactions({ useData, n, event, className = '' }) {
 
   return (
     <>
+      <div className="flex items-center sm:justify-end mb-2">
+        <span className="hidden sm:block text-gray-400 dark:text-gray-500 font-medium">Filter:</span>
+        {filter_statuses.map(({ status, color }, i) => (
+          <button
+            key={i}
+            onClick={() => setStatuses(_.uniq(statuses.includes(status) ? statuses.filter(_status => _status !== status) : _.concat(statuses, status)))}
+            className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-500 text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-${color}-600 dark:text-white dark:hover:text-gray-200`} text-xs my-1 ml-${i === 0 ? 0 : 2} md:ml-3 p-2`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
       <Datatable
         columns={[
           {
@@ -207,24 +229,24 @@ export default function Transactions({ useData, n, event, className = '' }) {
           },
           {
             Header: 'Status',
-            accessor: 'status',
+            accessor: 'crosschain_status',
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
                 <Link href={`/tx/${props.row.original.transactionId}`}>
-                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? props.row.original.txs?.length === 1 && props.row.original.txs[0]?.chain_id === props.row.original.sendingChainId ? 'blue-600' : 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'yellow-500' : props.value === 'Preparing' ? 'blue-600' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                     {props.value === 'Fulfilled' ?
                       <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                       :
                       props.value === 'Prepared' ?
-                        props.row.original.txs?.length === 1 && props.row.original.txs[0]?.chain_id === props.row.original.sendingChainId ?
+                        <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                        :
+                        props.value === 'Preparing' ?
                           <FaClock size={14} className="text-blue-600 dark:text-white" />
                           :
-                          <MdPending size={14} className="text-yellow-500 dark:text-white" />
-                        :
-                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                     }
-                    <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value === 'Prepared' && props.row.original.txs?.length === 1 && props.row.original.txs[0]?.chain_id === props.row.original.sendingChainId ? 'Preparing' : props.value}</div>
+                    <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
                   </a>
                 </Link>
                 :
@@ -490,15 +512,15 @@ export default function Transactions({ useData, n, event, className = '' }) {
           },
         ]}
         data={transactions && !(useData && transactions.address !== address) ?
-          (transactions.data || []).map((transaction, i) => { return { ...transaction, i } })
+          (transactions.data?.filter(tx => statuses.length < 1 || statuses.includes(tx.crosschain_status)) || []).map((transaction, i) => { return { ...transaction, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
-        noPagination={!transactions || (useData && transactions.address !== address) || transactions.data?.length <= 10 ? true : false}
+        noPagination={!transactions || (useData && transactions.address !== address) || transactions.data?.filter(tx => statuses.length < 1 || statuses.includes(tx.crosschain_status)).length <= 10 ? true : false}
         defaultPageSize={100}
         className={`min-h-full ${className}`}
       />
-      {transactions && !(transactions.data?.length > 0) && (
+      {transactions && !(transactions.data?.filter(tx => statuses.length < 1 || statuses.includes(tx.crosschain_status)).length > 0) && (
         <div className="bg-white dark:bg-gray-900 text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 py-2">
           No Transactions
         </div>
