@@ -212,19 +212,19 @@ export default function Transactions({ useData, n, event, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 <Link href={`/tx/${props.row.original.transactionId}`}>
-                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? props.row.original.txs?.length === 1 ? 'blue-600' : 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? props.row.original.txs?.length === 1 && props.row.original.txs[0]?.chain_id === props.row.original.sendingChainId ? 'blue-600' : 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                     {props.value === 'Fulfilled' ?
                       <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                       :
                       props.value === 'Prepared' ?
-                        props.row.original.txs?.length === 1 ?
+                        props.row.original.txs?.length === 1 && props.row.original.txs[0]?.chain_id === props.row.original.sendingChainId ?
                           <FaClock size={14} className="text-blue-600 dark:text-white" />
                           :
                           <MdPending size={14} className="text-yellow-500 dark:text-white" />
                         :
                         <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                     }
-                    <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value === 'Prepared' && props.row.original.txs?.length === 1 ? 'Preparing' : props.value}</div>
+                    <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value === 'Prepared' && props.row.original.txs?.length === 1 && props.row.original.txs[0]?.chain_id === props.row.original.sendingChainId ? 'Preparing' : props.value}</div>
                   </a>
                 </Link>
                 :
