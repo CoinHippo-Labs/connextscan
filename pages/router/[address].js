@@ -460,13 +460,13 @@ export default function RouterAddress() {
                             href={`${_balance.chain_data.explorer.url}${_balance.chain_data.explorer.address_path?.replace('{address}', address)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-indigo-600 dark:text-white"
+                            className="min-w-max text-indigo-600 dark:text-white"
                           >
                             {_balance.chain_data.explorer.icon ?
                               <img
                                 src={_balance.chain_data.explorer.icon}
                                 alt=""
-                                className="min-w-max w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                                className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
                               />
                               :
                               <TiArrowRight size={16} className="transform -rotate-45" />
