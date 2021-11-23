@@ -79,6 +79,19 @@ export default function Transaction({ data, className = '' }) {
         )
       }
 
+      if (chainConfig?.[networks?.find(_network => _network.id === 'opt')?.network_id]) {
+        const _network = networks?.find(_network => _network.id === 'eth')
+
+        chainConfig[_network.network_id] = {
+          provider: new providers.FallbackProvider(
+            _network?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+              .map(rpc => new providers.JsonRpcProvider(rpc))
+            ||
+            []
+          )
+        }
+      }
+
       const sdk = new NxtpSdk({ chainConfig, signer })
 
       let response
