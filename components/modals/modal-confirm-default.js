@@ -4,8 +4,8 @@ import Portal from '../portal'
 import { FiX } from 'react-icons/fi'
 
 export default function Modal({ buttonTitle, buttonClassName, title, body, cancelButtonTitle, onCancel, confirmButtonTitle, onConfirm, confirmButtonClassName }) {
-  const { theme } = useSelector(state => ({ theme: state.theme }), shallowEqual)
-  const { background } = { ...theme }
+  const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
+  const { theme } = { ...preferences }
 
   const modalRef = useRef(null)
 
@@ -44,7 +44,7 @@ export default function Modal({ buttonTitle, buttonClassName, title, body, cance
       {open && (
         <Portal selector="#portal">
           <div className="modal-backdrop fade-in" />
-          <div data-background={background} className={`modal show ${background === 'dark' ? 'dark' : ''}`}>
+          <div data-background={theme} className={`modal show ${theme === 'dark' ? 'dark' : ''}`}>
             <div ref={modalRef} className="w-auto min-w-sm lg:max-w-lg relative mx-auto">
               <div className="modal-content">
                 <div className="modal-header">
