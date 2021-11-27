@@ -63,7 +63,7 @@ export default function Transaction({ data, className = '' }) {
 
       chainConfig[txData.sendingChainId] = {
         provider: new providers.FallbackProvider(
-          networks.find(_network => _network.network_id === txData.sendingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+          networks.find(_network => _network.network_id === txData.sendingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://'))
             .map(rpc => new providers.JsonRpcProvider(rpc))
           ||
           []
@@ -72,7 +72,7 @@ export default function Transaction({ data, className = '' }) {
 
       chainConfig[txData.receivingChainId] = {
         provider: new providers.FallbackProvider(
-          networks.find(_network => _network.network_id === txData.receivingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+          networks.find(_network => _network.network_id === txData.receivingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://'))
             .map(rpc => new providers.JsonRpcProvider(rpc))
           ||
           []
@@ -84,7 +84,7 @@ export default function Transaction({ data, className = '' }) {
 
         chainConfig[_network.network_id] = {
           provider: new providers.FallbackProvider(
-            _network?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://'))
+            _network?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://'))
               .map(rpc => new providers.JsonRpcProvider(rpc))
             ||
             []
