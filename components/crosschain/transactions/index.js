@@ -7,7 +7,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import { Img } from 'react-image'
 import { TiArrowRight } from 'react-icons/ti'
-import { FaCheckCircle, FaTimesCircle, FaClock } from 'react-icons/fa'
+import { FaCheckCircle, FaDotCircle, FaTimesCircle, FaClock } from 'react-icons/fa'
 import { MdPending } from 'react-icons/md'
 
 import Datatable from '../../datatable'
@@ -23,6 +23,7 @@ import { CONTRACTS_DATA } from '../../../reducers/types'
 const filter_statuses = [
   { status: 'Preparing', color: 'blue' },
   { status: 'Prepared', color: 'yellow' },
+  { status: 'Fulfilling', color: 'green' },
   { status: 'Fulfilled', color: 'green' },
   { status: 'Cancelled', color: 'red' },
 ]
@@ -106,7 +107,7 @@ export default function Transactions({ useData, n, event, className = '' }) {
                     normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
                   }
                 })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId, status: tx.status } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
-                .map(tx => { return { ...tx, crosschain_status: tx.status === 'Prepared' && tx.txs?.length === 1 && tx.txs[0]?.chain_id === tx.sendingChainId ? 'Preparing' : tx.status } })
+                .map(tx => { return { ...tx, crosschain_status: tx.status === 'Prepared' && tx.txs?.length === 1 && tx.txs[0]?.chain_id === tx.sendingChainId ? 'Preparing' : tx.status === 'Fulfilled' && tx.txs?.findIndex(_tx => _tx?.status === 'Prepared') > -1 ? 'Fulfilling' : tx.status } })
                 .filter(tx => typeof event !== 'boolean' && h > 0 ? _.isEqual(tx.txs?.map(_tx => _tx.status), filterStatuses) || tx.txs?.length === 1 && tx.txs[0]?.status?.toLowerCase() === filterStatuses[h]?.status?.toLowerCase() : true)
 
                 _contracts_data = new_contracts
@@ -170,7 +171,7 @@ export default function Transactions({ useData, n, event, className = '' }) {
             <button
               key={i}
               onClick={() => setStatuses(_.uniq(statuses.includes(status) ? statuses.filter(_status => _status !== status) : _.concat(statuses, status)))}
-              className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-500 text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-${color}-600 dark:text-white dark:hover:text-gray-200`} text-xs my-1 ml-${i === 0 ? 0 : 2} md:ml-3 p-2`}
+              className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-${status?.endsWith('ing') ? 400 : 500} text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-${color}-600 dark:text-white dark:hover:text-gray-200`} text-xs my-1 ml-${i === 0 ? 0 : 2} md:ml-3 p-2`}
             >
               {status}
             </button>
@@ -236,17 +237,20 @@ export default function Transactions({ useData, n, event, className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 <Link href={`/tx/${props.row.original.transactionId}`}>
-                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'yellow-500' : props.value === 'Preparing' ? 'blue-600' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Fulfilling' ? 'green-400' : props.value === 'Prepared' ? 'yellow-500' : props.value === 'Preparing' ? 'blue-600' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                     {props.value === 'Fulfilled' ?
                       <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                       :
-                      props.value === 'Prepared' ?
-                        <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                      props.value === 'Fulfilling' ?
+                        <FaDotCircle size={14} className="text-green-400 dark:text-white" />
                         :
-                        props.value === 'Preparing' ?
-                          <FaClock size={14} className="text-blue-600 dark:text-white" />
+                        props.value === 'Prepared' ?
+                          <MdPending size={14} className="text-yellow-500 dark:text-white" />
                           :
-                          <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                          props.value === 'Preparing' ?
+                            <FaClock size={14} className="text-blue-600 dark:text-white" />
+                            :
+                            <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
                     }
                     <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
                   </a>

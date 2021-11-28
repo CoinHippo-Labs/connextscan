@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import Loader from 'react-loader-spinner'
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import { FaCheckCircle, FaDotCircle, FaTimesCircle } from 'react-icons/fa'
 import { MdPending } from 'react-icons/md'
 
 import Transaction from '../../components/crosschain/transaction'
@@ -166,7 +166,7 @@ export default function CrosschainTx() {
     }
   }, [tx])
 
-  const status = tx && transaction?.tx === tx && ((transaction?.data && _.head(_.orderBy(Object.values(transaction.data), ['order', 'preparedTimestamp'], ['desc', 'desc']))?.status) || 'Not Found')
+  let status = tx && transaction?.tx === tx && ((transaction?.data && _.head(_.orderBy(Object.values(transaction.data), ['order', 'preparedTimestamp'], ['desc', 'desc']))?.status) || 'Not Found')
 
   let tip
 
@@ -196,6 +196,11 @@ export default function CrosschainTx() {
       </div>
     )
   }
+  else if (status === 'Fulfilled') {
+    if (transaction?.data && Object.keys(transaction.data).length > 1 && transaction.data.sender?.status === 'Prepared') {
+      status = 'Fulfilling'
+    }
+  }
 
   return (
     <>
@@ -218,14 +223,17 @@ export default function CrosschainTx() {
         right={<div className="sm:text-right mt-1 sm:mt-0">
           <div className="uppercase text-gray-400 dark:text-gray-400 text-xs mb-1.5">Status</div>
           {status ?
-            <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 sm:ml-auto py-1 px-1.5`}>
+            <div className={`min-w-max max-w-min bg-gray-200 dark:bg-${status === 'Fulfilled' ? 'green-600' : status === 'Fulfilling' ? 'green-400' : status === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 sm:ml-auto py-1 px-1.5`}>
               {status === 'Fulfilled' ?
                 <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
                 :
-                status === 'Prepared' ?
-                  <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                status === 'Fulfilling' ?
+                  <FaDotCircle size={14} className="text-green-400 dark:text-white" />
                   :
-                  <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                  status === 'Prepared' ?
+                    <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                    :
+                    <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
               }
               <div className="uppercase text-gray-900 dark:text-white font-semibold">{status}</div>
             </div>
