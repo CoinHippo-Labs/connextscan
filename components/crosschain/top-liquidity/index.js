@@ -20,6 +20,7 @@ const SYMBOL_LOOKUP = {
   weth: 'ETH',
   xdai: 'DAI',
   omn: 'OAI',
+  wbtc: 'BTC',
 }
 
 const COLLAPSE_CHAINS_SIZE = 3
