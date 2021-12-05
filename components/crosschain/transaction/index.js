@@ -67,7 +67,8 @@ export default function Transaction({ data, className = '' }) {
             .map(rpc => new providers.JsonRpcProvider(rpc))
           ||
           []
-        )
+        ),
+        providers: networks.find(_network => _network.network_id === txData.sendingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')) || []
       }
 
       chainConfig[txData.receivingChainId] = {
@@ -76,7 +77,8 @@ export default function Transaction({ data, className = '' }) {
             .map(rpc => new providers.JsonRpcProvider(rpc))
           ||
           []
-        )
+        ),
+        providers: networks.find(_network => _network.network_id === txData.receivingChainId)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')) || []
       }
 
       if (chainConfig?.[networks?.find(_network => _network.id === 'opt')?.network_id]) {
@@ -88,7 +90,8 @@ export default function Transaction({ data, className = '' }) {
               .map(rpc => new providers.JsonRpcProvider(rpc))
             ||
             []
-          )
+          ),
+          providers: _network?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')) || []
         }
       }
 
