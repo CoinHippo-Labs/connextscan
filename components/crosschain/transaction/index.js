@@ -187,7 +187,7 @@ export default function Transaction({ data, className = '' }) {
 
   if (canCancelSender || canDoAction) {
     if (web3_provider) {
-      if (address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.sendingAddress?.toLowerCase())) {
+      if (false && address?.toLowerCase() !== (canCancelSender ? sender?.sendingAddress?.toLowerCase() : receiver?.sendingAddress?.toLowerCase())) {
         actionButtons.push(
           <span key={actionButtons.length} className="min-w-max flex flex-col text-gray-400 dark:text-gray-500 text-xs font-light text-right">
             <span>address not match.</span>
@@ -295,10 +295,10 @@ export default function Transaction({ data, className = '' }) {
                           Fees
                           <span className="hidden sm:block">:</span>
                         </div>
-                        {receiver?.normalize_amount && sender?.normalize_amount && (
+                        {receiver?.value && sender?.value && (
                           <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                            <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000')}</span>
-                            <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                            <span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000')}</span>
+                            {/*<span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>*/}
                           </div>
                         )}
                       </div>
@@ -420,10 +420,10 @@ export default function Transaction({ data, className = '' }) {
                         Fees
                         <span className="hidden sm:block">:</span>
                       </div>
-                      {receiver?.normalize_amount && sender?.normalize_amount && (
+                      {receiver?.value && sender?.value && (
                         <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                          <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000')}</span>
-                          <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+                          <span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000')}</span>
+                          {/*<span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>*/}
                         </div>
                       )}
                     </div>

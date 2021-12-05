@@ -118,18 +118,16 @@ export default function Routers() {
       </div>}
       right={typeof router.liquidity === 'number' && router.liquidity > 0 && (
         <div className="block sm:flex items-center ml-2">
-          {typeof router?.liquidity_locked === 'number' && (
-            <div className="flex flex-col justify-end space-y-1 mb-2 sm:mb-0 mr-0 sm:mr-8">
-              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Available Liquidity</div>
-              <div className="font-mono sm:text-base font-semibold text-right">
-                {currency_symbol}{numberFormat(router.liquidity - router.liquidity_locked, '0,0')}
-              </div>
+          <div className="flex flex-col justify-end space-y-1 mb-2 sm:mb-0 mr-0 sm:mr-8">
+            <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Available Liquidity</div>
+            <div className="font-mono sm:text-base font-semibold text-right">
+              {currency_symbol}{numberFormat(router.liquidity, '0,0')}
             </div>
-          )}
+          </div>
           <div className="flex flex-col justify-end space-y-1">
             <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Total Liquidity</div>
             <div className="font-mono sm:text-base font-semibold text-right">
-              {currency_symbol}{numberFormat(router.liquidity, '0,0')}
+              {currency_symbol}{numberFormat(router.liquidity + (router.liquidity_locked || 0), '0,0')}
             </div>
           </div>
           {typeof router?.liquidity_locked === 'number' && typeof router?.liquidity_supplied === 'number' && (

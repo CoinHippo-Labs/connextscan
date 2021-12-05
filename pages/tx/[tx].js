@@ -80,6 +80,11 @@ export default function CrosschainTx() {
                     normalize_amount: ((_data.sendingChainId === network.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === network.network_id && _data.receivingAsset?.contract_decimals)) && (_data.amount / Math.pow(10, (_data.sendingChainId === network.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === network.network_id && _data.receivingAsset?.contract_decimals))),
                   }
 
+                  _data = {
+                    ..._data,
+                    value: typeof _data?.normalize_amount === 'number' && typeof _data?.[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset']?.prices?.[0]?.price === 'number' && (_data.normalize_amount * _data[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset'].prices[0].price),
+                  }
+
                   data = {
                     ...data,
                     [`${_data.chainId === _data.sendingChainId ? 'sender' : 'receiver'}`]: { ..._data },
@@ -125,6 +130,11 @@ export default function CrosschainTx() {
                         _data = {
                           ..._data,
                           normalize_amount: ((_data.sendingChainId === next_chain.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === next_chain.network_id && _data.receivingAsset?.contract_decimals)) && (_data.amount / Math.pow(10, (_data.sendingChainId === next_chain.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === next_chain.network_id && _data.receivingAsset?.contract_decimals))),
+                        }
+
+                        _data = {
+                          ..._data,
+                          value: typeof _data?.normalize_amount === 'number' && typeof _data?.[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset']?.prices?.[0]?.price === 'number' && (_data.normalize_amount * _data[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset'].prices[0].price),
                         }
 
                         data = {
