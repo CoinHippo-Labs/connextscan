@@ -75,6 +75,12 @@ export default function Index() {
                       sending_txs: {
                         sum: { field: 'sendingTxCount' },
                       },
+                      receiving_txs: {
+                        sum: { field: 'receivingTxCount' },
+                      },
+                      cancel_txs: {
+                        sum: { field: 'cancelTxCount' },
+                      },
                     },
                   },
                 },

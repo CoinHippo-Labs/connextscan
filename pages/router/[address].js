@@ -63,11 +63,15 @@ export default function RouterAddress() {
           return {
             ...asset,
             normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
+            normalize_locked: asset?.data?.contract_decimals && ((asset.locked || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_supplied: asset?.data?.contract_decimals && ((asset.supplied || 0) / Math.pow(10, asset.data.contract_decimals)),
           }
         }).map(asset => {
           return {
             ...asset,
             value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
+            value_locked: typeof asset?.normalize_locked === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_locked * asset.data.prices[0].price),
+            value_supplied: typeof asset?.normalize_supplied === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_supplied * asset.data.prices[0].price),
           }
         })), 'router.id')
       ).filter(([key, value]) => key === address?.toLowerCase()).map(([key, value]) => {
@@ -79,6 +83,8 @@ export default function RouterAddress() {
         return {
           ...assets,
           liquidity: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value'),
+          liquidity_locked: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_locked'),
+          liquidity_supplied: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_supplied'),
         }
       }))
 
@@ -287,14 +293,32 @@ export default function RouterAddress() {
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 pt-4 pb-6 px-2 sm:px-4">
           <div className="flex items-center mx-3">
             <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light">Assets</span>
-            <div className="ml-auto">
+            <div className="block sm:flex items-center ml-auto">
               {typeof routerAssets?.liquidity === 'number' && routerAssets.liquidity > 0 && (
-                <div className="flex flex-col justify-end space-y-1">
-                  <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal">Available Liquidity</div>
-                  <div className="font-mono sm:text-base font-semibold text-right">
-                    {currency_symbol}{numberFormat(routerAssets.liquidity, '0,0')}
+                <>
+                  {typeof routerAssets?.liquidity_locked === 'number' && (
+                    <div className="flex flex-col justify-end space-y-1 mb-2 sm:mb-0 mr-0 sm:mr-8">
+                      <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal text-right">Available Liquidity</div>
+                      <div className="font-mono sm:text-base font-semibold text-right">
+                        {currency_symbol}{numberFormat(routerAssets.liquidity - routerAssets.liquidity_locked, '0,0')}
+                      </div>
+                    </div>
+                  )}
+                  <div className="flex flex-col justify-end space-y-1">
+                    <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal text-right">Total Liquidity</div>
+                    <div className="font-mono sm:text-base font-semibold text-right">
+                      {currency_symbol}{numberFormat(routerAssets.liquidity, '0,0')}
+                    </div>
                   </div>
-                </div>
+                  {typeof routerAssets?.liquidity_locked === 'number' && typeof routerAssets?.liquidity_supplied === 'number' && (
+                    <div className="flex flex-col justify-end space-y-1 mt-2 sm:mt-0 ml-0 sm:ml-8">
+                      <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal text-right">% ROI</div>
+                      <div className="font-mono sm:text-base font-semibold text-right">
+                        {numberFormat((routerAssets.liquidity + routerAssets.liquidity_locked - routerAssets.liquidity_supplied) * 100 / routerAssets.liquidity_supplied, '0,0.00')}%
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -363,13 +387,24 @@ export default function RouterAddress() {
                           </div>
                         )}
                       </div>
-                      <div className="text-center my-3">
+                      <div className="text-center mt-3 mb-2">
                         {/*<div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>*/}
                         <div>
                           <span className="font-mono text-2xs sm:text-sm lg:text-base font-semibold mr-1.5">{asset?.normalize_amount ? numberFormat(asset.normalize_amount, '0,0') : asset?.amount && !(asset?.data) ? numberFormat(asset.amount / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
                           <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-sm">{asset?.data?.contract_ticker_symbol}</span>
                         </div>
                         <div className="text-gray-500 dark:text-gray-400 text-2xs sm:text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-gray-400 dark:text-gray-600 text-xs">Locked</div>
+                          <span className="font-mono text-2xs sm:text-xs lg:text-sm font-semibold mr-1.5">{asset?.normalize_locked ? numberFormat(asset.normalize_locked, '0,0') : asset?.locked && !(asset?.data) ? numberFormat(asset.locked / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
+                          <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-xs">{asset?.data?.contract_ticker_symbol}</span>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-gray-400 dark:text-gray-600 text-xs">% ROI</div>
+                          <span className="font-mono text-2xs sm:text-xs lg:text-sm font-semibold">{asset?.normalize_amount && asset?.normalize_supplied ? numberFormat((asset.normalize_amount + (asset.normalize_locked || 0) - asset.normalize_supplied) * 100 / asset.normalize_supplied, '0,0.00') : asset?.amount && asset?.supplied && !(asset?.data) ? numberFormat((asset.amount + (asset.locked || 0) - asset.supplied) * 100 / asset.supplied / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0.00') : '-'}%</span>
+                        </div>
                       </div>
                     </div>
                     :

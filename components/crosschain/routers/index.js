@@ -37,11 +37,15 @@ export default function Routers() {
           return {
             ...asset,
             normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
+            normalize_locked: asset?.data?.contract_decimals && ((asset.locked || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_supplied: asset?.data?.contract_decimals && ((asset.supplied || 0) / Math.pow(10, asset.data.contract_decimals)),
           }
         }).map(asset => {
           return {
             ...asset,
             value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
+            value_locked: typeof asset?.normalize_locked === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_locked * asset.data.prices[0].price),
+            value_supplied: typeof asset?.normalize_supplied === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_supplied * asset.data.prices[0].price),
           }
         })), 'router.id')
       ).map(([key, value]) => {
@@ -53,6 +57,8 @@ export default function Routers() {
         return {
           ...assets,
           liquidity: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value'),
+          liquidity_locked: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_locked'),
+          liquidity_supplied: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_supplied'),
         }
       }), ['liquidity'], ['desc'])
 
@@ -76,7 +82,7 @@ export default function Routers() {
       key={i}
       title={<div className={`flex items-${ens_data?.[router.router_id.toLowerCase()]?.name ? 'start' : 'center'} font-medium space-x-1`}>
         <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-500 mb-0.5" />
-        {!ens_data?.[router.router_id.toLowerCase()]?.name && (
+        {false && !ens_data?.[router.router_id.toLowerCase()]?.name && (
           <span className="hidden sm:block text-gray-400 dark:text-gray-500">Router:</span>
         )}
         {router?.router_id && (
@@ -111,13 +117,29 @@ export default function Routers() {
         )}
       </div>}
       right={typeof router.liquidity === 'number' && router.liquidity > 0 && (
-        <div className="ml-2">
+        <div className="block sm:flex items-center ml-2">
+          {typeof router?.liquidity_locked === 'number' && (
+            <div className="flex flex-col justify-end space-y-1 mb-2 sm:mb-0 mr-0 sm:mr-8">
+              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Available Liquidity</div>
+              <div className="font-mono sm:text-base font-semibold text-right">
+                {currency_symbol}{numberFormat(router.liquidity - router.liquidity_locked, '0,0')}
+              </div>
+            </div>
+          )}
           <div className="flex flex-col justify-end space-y-1">
-            <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal">Available Liquidity</div>
+            <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Total Liquidity</div>
             <div className="font-mono sm:text-base font-semibold text-right">
               {currency_symbol}{numberFormat(router.liquidity, '0,0')}
             </div>
           </div>
+          {typeof router?.liquidity_locked === 'number' && typeof router?.liquidity_supplied === 'number' && (
+            <div className="flex flex-col justify-end space-y-1 mt-2 sm:mt-0 ml-0 sm:ml-8">
+              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">% ROI</div>
+              <div className="font-mono sm:text-base font-semibold text-right">
+                {numberFormat((router.liquidity + router.liquidity_locked - router.liquidity_supplied) * 100 / router.liquidity_supplied, '0,0.00')}%
+              </div>
+            </div>
+          )}
         </div>
       )}
     >
@@ -140,18 +162,18 @@ export default function Routers() {
                         <div className="sm:hidden text-2xs font-medium">{asset.data.contract_name}</div>
                         <div className="hidden sm:block text-xs font-semibold">{asset.data.contract_name}</div>
                         {/*<div className="text-gray-600 dark:text-gray-400 text-2xs font-normal">{asset.data.contract_ticker_symbol}</div>*/}
-                        {asset?.id && (
+                        {asset?.assetId && (
                           <div className="min-w-max flex items-center space-x-1">
                             <Copy
                               size={14}
-                              text={asset.id.replace(`-${router.router_id}`, '')}
+                              text={asset.assetId}
                               copyTitle={<span className="text-2xs font-medium">
-                                {ellipseAddress(asset.id.replace(`-${router.router_id}`, ''), 5)}
+                                {ellipseAddress(asset.assetId, 5)}
                               </span>}
                             />
                             {asset?.chain_data?.explorer?.url && (
                               <a
-                                href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer[`contract${asset.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', asset.id.replace(`-${router.router_id}`, ''))}`}
+                                href={`${asset.chain_data.explorer.url}${asset.chain_data.explorer[`contract${asset.assetId.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', asset.assetId)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-indigo-600 dark:text-white "

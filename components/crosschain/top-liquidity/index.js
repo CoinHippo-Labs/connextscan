@@ -183,7 +183,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
               !props.row.original.skeleton && props.row.original.data ?
                 <div className="space-y-1.5 mr-4">
                   {_.slice(_.orderBy(Object.entries(props.value).filter(([key, value]) => value?.length > 0), _entry => -1 * _.maxBy(_entry[1], 'normalize_amount')?.normalize_amount), 0, symbolsSeeMore.includes(props.row.original._symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_CHAINS_SIZE).map(([key, value]) => (
-                    <Link key={key} href={`/router/${props.row.original.router?.id}`}>
+                    <Link key={key} href={`/router/${_.maxBy(value, 'normalize_amount')?.router?.id}`}>
                       <a className="flex items-center justify-end space-x-2">
                         <span className="font-mono font-semibold">
                           {numberFormat(_.maxBy(value, 'normalize_amount')?.normalize_amount, '0,0')}

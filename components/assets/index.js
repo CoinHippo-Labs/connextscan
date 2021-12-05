@@ -92,17 +92,17 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                             </div>
                           </div>
                         )}
-                        {assetBalance?.id && (
+                        {assetBalance?.assetId && (
                           <div className="flex items-center space-x-1">
                             <Copy
-                              text={assetBalance.id.replace(`-${router.id}`, '')}
+                              text={assetBalance.assetId}
                               copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium">
-                                {ellipseAddress(assetBalance.id.replace(`-${router.id}`, ''), 6)}
+                                {ellipseAddress(assetBalance.assetId, 6)}
                               </span>}
                             />
                             {network?.explorer?.url && (
                               <a
-                                href={`${network.explorer.url}${network.explorer[`contract${assetBalance.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.id.replace(`-${router.id}`, ''))}`}
+                                href={`${network.explorer.url}${network.explorer[`contract${assetBalance.assetId.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.assetId)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-indigo-600 dark:text-white"
@@ -165,17 +165,17 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                       </div>
                     </div>
                   )}
-                  {assetBalance?.id && (
+                  {assetBalance?.assetId && (
                     <div className="flex items-center space-x-1">
                       <Copy
-                        text={assetBalance.id.replace(`-${assetBalance.router_id}`, '')}
+                        text={assetBalance.assetId}
                         copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium">
-                          {ellipseAddress(assetBalance.id.replace(`-${assetBalance.router_id}`, ''), 6)}
+                          {ellipseAddress(assetBalance.assetId, 6)}
                         </span>}
                       />
                       {network?.explorer?.url && (
                         <a
-                          href={`${network.explorer.url}${network.explorer[`contract${assetBalance.id.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.id.replace(`-${assetBalance.router_id}`, ''))}`}
+                          href={`${network.explorer.url}${network.explorer[`contract${assetBalance.assetId.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.assetId)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-indigo-600 dark:text-white"

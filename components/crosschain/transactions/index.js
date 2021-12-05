@@ -165,13 +165,13 @@ export default function Transactions({ useData, n, event, className = '' }) {
   return (
     <>
       {!n && (
-        <div className="flex items-center sm:justify-end mb-2">
-          <span className="hidden sm:block text-gray-400 dark:text-gray-500 font-medium">Filter:</span>
+        <div className="flex flex-wrap items-center sm:justify-end mb-2">
+          <span className="hidden sm:block text-gray-400 dark:text-gray-500 font-medium mr-3">Filter:</span>
           {filter_statuses.map(({ status, color }, i) => (
             <button
               key={i}
               onClick={() => setStatuses(_.uniq(statuses.includes(status) ? statuses.filter(_status => _status !== status) : _.concat(statuses, status)))}
-              className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-${status?.endsWith('ing') ? 400 : 500} text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-${color}-600 dark:text-white dark:hover:text-gray-200`} text-xs my-1 ml-${i === 0 ? 0 : 2} md:ml-3 p-2`}
+              className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-${status?.endsWith('ing') ? 400 : 500} text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-${color}-600 dark:text-white dark:hover:text-gray-200`} text-xs my-1 mr-${i === filter_statuses.length - 1 ? 0 : '2 md:mr-3'} p-2`}
             >
               {status}
             </button>
