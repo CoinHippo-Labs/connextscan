@@ -43,7 +43,7 @@ export default function Search() {
         searchType = 'router'
       }
 
-      router.push(`/${searchType}/${_inputSearch}`)
+      router.push(`/${searchType}/${_inputSearch}${['tx'].includes(searchType) ? '?source=search' : ''}`)
 
       setInputSearch('')
 

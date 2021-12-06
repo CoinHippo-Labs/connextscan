@@ -25,7 +25,7 @@ export default function CrosschainTx() {
 
   const router = useRouter()
   const { query } = { ...router }
-  const { tx } = { ...query }
+  const { tx, source } = { ...query }
 
   const [transaction, setTransaction] = useState(null)
 
@@ -46,117 +46,143 @@ export default function CrosschainTx() {
               if (!controller.signal.aborted) {
                 response = await getTransactions({ chain_id: network.id }, _contracts_data, tx)
 
-                if (response?.data?.[0]) {
-                  let _data = response.data[0]
+                if (!(response?.data?.[0]) && ['search'].includes(source)) {
+                  const txHashFields = ['prepareTransactionHash', 'fulfillTransactionHash', 'cancelTransactionHash']
 
-                  let _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)), 'chain_id')
+                  for (let j = 0; j < txHashFields.length; j++) {
+                    const _response = await getTransactions({ chain_id: network.id, where: `{ ${txHashFields[j]}: "${tx.toLowerCase()}" }`, size: 1 }, _contracts_data)
 
-                  let new_contracts
+                    if (_response?.data?.[0]) {
+                      const _data = _response.data[0]
 
-                  for (let j = 0; j < Object.entries(_contracts).length; j++) {
-                    if (!controller.signal.aborted) {
-                      const contract = Object.entries(_contracts)[j]
-                      let [key, value] = contract
-                      key = Number(key)
+                      if (txHashFields.map(_field => _data[_field]).includes(tx.toLowerCase()) && _data.transactionId) {
+                        // response = _response
 
-                      const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                        router.push(`/tx/${_data.transactionId.toLowerCase()}`)
 
-                      if (resContracts?.data) {
-                        new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                        break
                       }
                     }
                   }
+                }
 
-                  new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
+                if (!controller.signal.aborted) {
+                  if (response?.data?.[0]) {
+                    let _data = response.data[0]
 
-                  _data = {
-                    ..._data,
-                    sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.sendingChainId)?.id}-`, '') === _data.sendingAssetId && contract.data)?.data,
-                    receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.receivingChainId)?.id}-`, '') === _data.receivingAssetId && contract.data)?.data,
-                  }
+                    let _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)), 'chain_id')
 
-                  _data = {
-                    ..._data,
-                    normalize_amount: ((_data.sendingChainId === network.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === network.network_id && _data.receivingAsset?.contract_decimals)) && (_data.amount / Math.pow(10, (_data.sendingChainId === network.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === network.network_id && _data.receivingAsset?.contract_decimals))),
-                  }
+                    let new_contracts
 
-                  _data = {
-                    ..._data,
-                    value: typeof _data?.normalize_amount === 'number' && typeof _data?.[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset']?.prices?.[0]?.price === 'number' && (_data.normalize_amount * _data[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset'].prices[0].price),
-                  }
+                    for (let j = 0; j < Object.entries(_contracts).length; j++) {
+                      if (!controller.signal.aborted) {
+                        const contract = Object.entries(_contracts)[j]
+                        let [key, value] = contract
+                        key = Number(key)
 
-                  data = {
-                    ...data,
-                    [`${_data.chainId === _data.sendingChainId ? 'sender' : 'receiver'}`]: { ..._data },
-                  }
+                        const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
-                  _contracts_data = new_contracts
+                        if (resContracts?.data) {
+                          new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                        }
+                      }
+                    }
 
-                  const next_chain = networks.find(_network => _network.network_id === (_data.chainId === _data.sendingChainId ? _data.receivingChainId : _data.sendingChainId))
+                    new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
 
-                  if (!controller.signal.aborted) {
-                    if (next_chain && next_chain.id) {
-                      response = await getTransactions({ chain_id: next_chain.id }, _contracts_data, tx)
-                    
-                      if (response?.data?.[0]) {
-                        _data = response.data[0]
+                    _data = {
+                      ..._data,
+                      sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.sendingChainId)?.id}-`, '') === _data.sendingAssetId && contract.data)?.data,
+                      receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.receivingChainId)?.id}-`, '') === _data.receivingAssetId && contract.data)?.data,
+                    }
 
-                        _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)), 'chain_id')
+                    _data = {
+                      ..._data,
+                      normalize_amount: ((_data.sendingChainId === network.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === network.network_id && _data.receivingAsset?.contract_decimals)) && (_data.amount / Math.pow(10, (_data.sendingChainId === network.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === network.network_id && _data.receivingAsset?.contract_decimals))),
+                    }
 
-                        new_contracts = null
+                    _data = {
+                      ..._data,
+                      value: typeof _data?.normalize_amount === 'number' && typeof _data?.[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset']?.prices?.[0]?.price === 'number' && (_data.normalize_amount * _data[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset'].prices[0].price),
+                    }
 
-                        for (let j = 0; j < Object.entries(_contracts).length; j++) {
-                          if (!controller.signal.aborted) {
-                            const contract = Object.entries(_contracts)[j]
-                            let [key, value] = contract
-                            key = Number(key)
+                    data = {
+                      ...data,
+                      [`${_data.chainId === _data.sendingChainId ? 'sender' : 'receiver'}`]: { ..._data },
+                    }
 
-                            const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+                    _contracts_data = new_contracts
 
-                            if (resContracts?.data) {
-                              new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                    const next_chain = networks.find(_network => _network.network_id === (_data.chainId === _data.sendingChainId ? _data.receivingChainId : _data.sendingChainId))
+
+                    if (!controller.signal.aborted) {
+                      if (next_chain && next_chain.id) {
+                        response = await getTransactions({ chain_id: next_chain.id }, _contracts_data, tx)
+                      
+                        if (response?.data?.[0]) {
+                          _data = response.data[0]
+
+                          _contracts = _.groupBy([{ id: _data.sendingAssetId, chain_id: _data.sendingChainId, data: _data.sendingAsset }, { id: _data.receivingAssetId, chain_id: _data.receivingChainId, data: _data.receivingAsset }].filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)), 'chain_id')
+
+                          new_contracts = null
+
+                          for (let j = 0; j < Object.entries(_contracts).length; j++) {
+                            if (!controller.signal.aborted) {
+                              const contract = Object.entries(_contracts)[j]
+                              let [key, value] = contract
+                              key = Number(key)
+
+                              const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+
+                              if (resContracts?.data) {
+                                new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+                              }
                             }
                           }
+
+                          new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
+
+                          _data = {
+                            ..._data,
+                            sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.sendingChainId)?.id}-`, '') === _data.sendingAssetId && contract.data)?.data,
+                            receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.receivingChainId)?.id}-`, '') === _data.receivingAssetId && contract.data)?.data,
+                          }
+
+                          _data = {
+                            ..._data,
+                            normalize_amount: ((_data.sendingChainId === next_chain.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === next_chain.network_id && _data.receivingAsset?.contract_decimals)) && (_data.amount / Math.pow(10, (_data.sendingChainId === next_chain.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === next_chain.network_id && _data.receivingAsset?.contract_decimals))),
+                          }
+
+                          _data = {
+                            ..._data,
+                            value: typeof _data?.normalize_amount === 'number' && typeof _data?.[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset']?.prices?.[0]?.price === 'number' && (_data.normalize_amount * _data[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset'].prices[0].price),
+                          }
+
+                          data = {
+                            ...data,
+                            [`${_data.chainId === _data.sendingChainId ? 'sender' : 'receiver'}`]: { ..._data },
+                          }
+
+                          _contracts_data = new_contracts
                         }
-
-                        new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
-
-                        _data = {
-                          ..._data,
-                          sendingAsset: _data.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.sendingChainId)?.id}-`, '') === _data.sendingAssetId && contract.data)?.data,
-                          receivingAsset: _data.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === _data.receivingChainId)?.id}-`, '') === _data.receivingAssetId && contract.data)?.data,
-                        }
-
-                        _data = {
-                          ..._data,
-                          normalize_amount: ((_data.sendingChainId === next_chain.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === next_chain.network_id && _data.receivingAsset?.contract_decimals)) && (_data.amount / Math.pow(10, (_data.sendingChainId === next_chain.network_id && _data.sendingAsset?.contract_decimals) || (_data.receivingChainId === next_chain.network_id && _data.receivingAsset?.contract_decimals))),
-                        }
-
-                        _data = {
-                          ..._data,
-                          value: typeof _data?.normalize_amount === 'number' && typeof _data?.[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset']?.prices?.[0]?.price === 'number' && (_data.normalize_amount * _data[_data.chainId === _data.sendingChainId ? 'sendingAsset' : 'receivingAsset'].prices[0].price),
-                        }
-
-                        data = {
-                          ...data,
-                          [`${_data.chainId === _data.sendingChainId ? 'sender' : 'receiver'}`]: { ..._data },
-                        }
-
-                        _contracts_data = new_contracts
                       }
                     }
-                  }
 
-                  break
+                    break
+                  }
                 }
               }
             }
           }
         }
 
-        setTransaction({ data, tx })
-
         if (!controller.signal.aborted) {
+          if (['search'].includes(source)) {
+            router.push(`/tx/${tx}`)
+          }
+
+          setTransaction({ data, tx })
+
           if (_contracts_data) {
             dispatch({
               type: CONTRACTS_DATA,
