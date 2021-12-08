@@ -5,17 +5,20 @@ import _ from 'lodash'
 import moment from 'moment'
 import {
   ResponsiveContainer,
+  // AreaChart,
   BarChart,
   linearGradient,
   stop,
   XAxis,
+  // Area,
   Bar,
   Cell,
 } from 'recharts'
 
+import { currency_symbol } from '../../../../lib/object/currency'
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
 
-export default function TimelyTransaction({ theTransaction, setTheTransaction, setTheVolume, setTheFees }) {
+export default function TimelyFees({ theFees, setTheFees, setTheVolume, setTheTransaction }) {
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
 
@@ -34,7 +37,6 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
         fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
       }
     }), ['time'], ['asc'])
-    .filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
 
     const __data = _data && _.cloneDeep(_data)
 
@@ -48,6 +50,7 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
       _data = _data.map((timely, i) => {
         return {
           ...timely,
+          fees: timely.volumeIn - timely.volume,
           day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD'),
           volume_percentage_change: _data[i - 1]?.volume > 0 && (timely.volume - _data[i - 1].volume) * 100 / _data[i - 1].volume,
           tx_count_percentage_change: _data[i - 1]?.tx_count > 0 && (timely.tx_count - _data[i - 1].tx_count) * 100 / _data[i - 1].tx_count,
@@ -58,14 +61,14 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
     
       setData(_data)
 
-      if (setTheTransaction) {
-        setTheTransaction(_.last(_data))
+      if (setTheFees) {
+        setTheFees(_.last(_data))
       }
       if (setTheVolume) {
         setTheVolume(_.last(_data))
       }
-      if (setTheFees) {
-        setTheFees(_.last(_data))
+      if (setTheTransaction) {
+        setTheTransaction(_.last(_data))
       }
     }
   }, [timely_data])
@@ -76,44 +79,45 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
     <div className={`w-full h-56 bg-white dark:bg-gray-900 rounded-lg mt-2 ${loaded ? 'sm:pt-5 pb-0' : 'mb-2 px-7 sm:px-3'}`}>
       {loaded ?
         <ResponsiveContainer>
+          {/*<AreaChart*/}
           <BarChart
             data={data}
             onMouseEnter={event => {
               if (event) {
-                if (setTheTransaction) {
-                  setTheTransaction(event?.activePayload?.[0]?.payload)
+                if (setTheFees) {
+                  setTheFees(event?.activePayload?.[0]?.payload)
                 }
                 if (setTheVolume) {
                   setTheVolume(event?.activePayload?.[0]?.payload)
                 }
-                if (setTheFees) {
-                  setTheFees(event?.activePayload?.[0]?.payload)
+                if (setTheTransaction) {
+                  setTheTransaction(event?.activePayload?.[0]?.payload)
                 }
               }
             }}
             onMouseMove={event => {
               if (event) {
-                if (setTheTransaction) {
-                  setTheTransaction(event?.activePayload?.[0]?.payload)
+                if (setTheFees) {
+                  setTheFees(event?.activePayload?.[0]?.payload)
                 }
                 if (setTheVolume) {
                   setTheVolume(event?.activePayload?.[0]?.payload)
                 }
-                if (setTheFees) {
-                  setTheFees(event?.activePayload?.[0]?.payload)
+                if (setTheTransaction) {
+                  setTheTransaction(event?.activePayload?.[0]?.payload)
                 }
               }
             }}
             onMouseLeave={() => {
               if (event) {
-                if (setTheTransaction) {
-                  setTheTransaction(_.last(data))
+                if (setTheFees) {
+                  setTheFees(_.last(data))
                 }
                 if (setTheVolume) {
                   setTheVolume(_.last(data))
                 }
-                if (setTheFees) {
-                  setTheFees(_.last(data))
+                if (setTheTransaction) {
+                  setTheTransaction(_.last(data))
                 }
               }
             }}
@@ -121,16 +125,18 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
             className="mobile-hidden-x"
           >
             <defs>
-              <linearGradient id="gradient-tx" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="50%" stopColor="#60A5FA" stopOpacity={0.95} />
-                <stop offset="100%" stopColor="#60A5FA" stopOpacity={0.75} />
+              <linearGradient id="gradient-fees" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="50%" stopColor="#34D399" stopOpacity={0.95} />
+                <stop offset="100%" stopColor="#34D399" stopOpacity={0.75} />
               </linearGradient>
             </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
-            <Bar dataKey="tx_count" minPointSize={5}>
-              {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-tx)" />))}
+            <Bar dataKey="fees" minPointSize={5}>
+              {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-fees)" />))}
             </Bar>
+            {/*<Area type="basis" dataKey="fees" stroke="#047857" fillOpacity={1} fill="url(#gradient-fees)" />*/}
           </BarChart>
+          {/*</AreaChart>*/}
         </ResponsiveContainer>
         :
         <div className="skeleton h-full" />

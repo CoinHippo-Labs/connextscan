@@ -12,10 +12,13 @@ import TimeRange from '../components/time-range'
 import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
 import TotalVolume from '../components/crosschain/summary/total-volume'
 import TotalTransaction from '../components/crosschain/summary/total-transaction'
+import TotalFees from '../components/crosschain/summary/total-fees'
 import TimelyVolume from '../components/crosschain/charts/timely-volume'
 import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
+import TimelyFees from '../components/crosschain/charts/timely-fees'
 import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
 import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
+import FeesByChain from '../components/crosschain/charts/fees-by-chain'
 import TopLiquidity from '../components/crosschain/top-liquidity'
 import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/crosschain/supported-networks'
@@ -51,6 +54,7 @@ export default function Index() {
   const [timelyData, setTimelyData] = useState(null)
   const [theVolume, setTheVolume] = useState(null)
   const [theTransaction, setTheTransaction] = useState(null)
+  const [theFees, setTheFees] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -197,11 +201,13 @@ export default function Index() {
             return {
               ...timely,
               normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
+              normalize_volumeIn: timely?.data?.contract_decimals && (timely.volumeIn / Math.pow(10, timely.data.contract_decimals)),
             }
           }).map(timely => {
             return {
               ...timely,
               normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
+              normalize_volumeIn: typeof timely?._normalize_volumeIn === 'number' ? timely._normalize_volumeIn : typeof timely?.normalize_volumeIn === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volumeIn * timely.data.prices[0].price),
             }
           }).filter(timely => timely?.data)
         ]
@@ -266,8 +272,8 @@ export default function Index() {
         }
         className="flex-col sm:flex-row items-start sm:items-center"
       />
-      <div className="max-w-6xl mt-4 mb-6 mx-auto pb-2">
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
+      <div className="max-w-7xl mt-4 mb-6 mx-auto pb-2">
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
           >
@@ -284,11 +290,19 @@ export default function Index() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Transactions</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Txs</div>}
             right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
           >
             <div className="mx-3">
               <TotalTransaction />
+            </div>
+          </Widget>
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Fees</div>}
+            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+          >
+            <div className="mx-3">
+              <TotalFees />
             </div>
           </Widget>
         </div>
@@ -313,7 +327,7 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
+              <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheFees={_theFees => setTheFees(_theFees)} />
             </div>
           </Widget>
         </div>
@@ -339,7 +353,33 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
+              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheFees={_theFees => setTheFees(_theFees)} />
+            </div>
+          </Widget>
+        </div>
+        <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Fees by Chain</div>}
+            right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+            className="lg:col-span-2 px-0 sm:px-4"
+          >
+            <div>
+              <FeesByChain />
+            </div>
+          </Widget>
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees</div>}
+            right={theVolume && (
+              <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
+                <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theFees.fees === 'number' ? numberFormat(theFees.fees, '0,0') : ' -'}</div>
+                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theFees.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+              </div>
+            )}
+            contentClassName="items-start"
+            className="lg:col-span-2 px-0 sm:px-4"
+          >
+            <div>
+              <TimelyFees timeRange={timeRange} theFees={theFees} setTheFees={_theFees => setTheFees(_theFees)} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
             </div>
           </Widget>
         </div>

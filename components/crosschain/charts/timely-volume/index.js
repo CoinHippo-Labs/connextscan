@@ -17,11 +17,10 @@ import {
 
 import { currency_symbol } from '../../../../lib/object/currency'
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
-import { networks } from '../../../../lib/menus'
 
 import { TOTAL_DATA } from '../../../../reducers/types'
 
-export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTheTransaction }) {
+export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTheTransaction, setTheFees }) {
   const dispatch = useDispatch()
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
@@ -37,6 +36,8 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
         time: Number(key),
         volume: _.sumBy(value, 'normalize_volume'),
         tx_count: _.sumBy(value, 'txCount'),
+        volumeIn: _.sumBy(value, 'normalize_volumeIn'),
+        fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
       }
     }), ['time'], ['asc'])
 
@@ -46,7 +47,7 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, tx_count: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, tx_count: 0, volumeIn: 0, fees: 0 })
       }
 
       _data = _data.map((timely, i) => {
@@ -55,6 +56,8 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
           day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD'),
           volume_percentage_change: _data[i - 1]?.volume > 0 && (timely.volume - _data[i - 1].volume) * 100 / _data[i - 1].volume,
           tx_count_percentage_change: _data[i - 1]?.tx_count > 0 && (timely.tx_count - _data[i - 1].tx_count) * 100 / _data[i - 1].tx_count,
+          volumeIn_percentage_change: _data[i - 1]?.volumeIn > 0 && (timely.volumeIn - _data[i - 1].volumeIn) * 100 / _data[i - 1].volumeIn,
+          fees_percentage_change: _data[i - 1]?.fees > 0 && (timely.fees - _data[i - 1].fees) * 100 / _data[i - 1].fees,
         }
       })
 
@@ -81,6 +84,8 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
           time: _.head(data_time_range)?.time,
           volume: _.sumBy(data_time_range, 'volume'),
           tx_count: _.sumBy(data_time_range, 'tx_count'),
+          volumeIn: _.sumBy(data_time_range, 'volumeIn'),
+          fees: _.sumBy(data_time_range, 'fees'),
           day_string: _.head(data_time_range)?.time && moment(_.head(data_time_range)?.time * 1000).utc().format('MMM D, YYYY [(UTC)]'),
         },
       })
@@ -92,6 +97,9 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
       }
       if (setTheTransaction) {
         setTheTransaction(_.last(_data))
+      }
+      if (setTheFees) {
+        setTheFees(_.last(_data))
       }
     }
   }, [timeRange, timely_data])
@@ -113,6 +121,9 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
                 if (setTheTransaction) {
                   setTheTransaction(event?.activePayload?.[0]?.payload)
                 }
+                if (setTheFees) {
+                  setTheFees(event?.activePayload?.[0]?.payload)
+                }
               }
             }}
             onMouseMove={event => {
@@ -123,6 +134,9 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
                 if (setTheTransaction) {
                   setTheTransaction(event?.activePayload?.[0]?.payload)
                 }
+                if (setTheFees) {
+                  setTheFees(event?.activePayload?.[0]?.payload)
+                }
               }
             }}
             onMouseLeave={() => {
@@ -132,6 +146,9 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
                 }
                 if (setTheTransaction) {
                   setTheTransaction(_.last(data))
+                }
+                if (setTheFees) {
+                  setTheFees(_.last(data))
                 }
               }
             }}

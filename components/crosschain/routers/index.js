@@ -141,7 +141,7 @@ export default function Routers() {
           </div>
           {typeof router?.liquidity_volume === 'number' && typeof router?.liquidity_volumeIn === 'number' && (
             <div className="flex flex-col justify-end space-y-1 mt-2 sm:mt-0 ml-0 sm:ml-8">
-              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Fees</div>
+              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Accumulated Fees</div>
               <div className="font-mono sm:text-base font-semibold text-right">
                 {currency_symbol}{numberFormat(router.liquidity_volumeIn - router.liquidity_volume, '0,0.00')}
               </div>
