@@ -81,6 +81,9 @@ export default function Index() {
                       cancel_txs: {
                         sum: { field: 'cancelTxCount' },
                       },
+                      volume_ins: {
+                        sum: { field: 'normalize_volumeIn' },
+                      },
                     },
                   },
                 },
