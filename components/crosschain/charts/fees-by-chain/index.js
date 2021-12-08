@@ -62,14 +62,26 @@ export default function FeesByChain() {
       }).map(asset => {
         return {
           ...asset,
-          normalize_volume: asset._normalize_volume,
-          normalize_volumeIn: asset._normalize_volumeIn,
+          normalize_volume: asset?.data?.contract_decimals && (asset.volume / Math.pow(10, asset.data.contract_decimals)),
+          normalize_volumeIn: asset?.data?.contract_decimals && (asset.volumeIn / Math.pow(10, asset.data.contract_decimals)),
         }
       }).map(asset => {
         return {
           ...asset,
+          normalize_volume: typeof asset?._normalize_volume === 'number' ? asset._normalize_volume : typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
+          normalize_volumeIn: typeof asset?._normalize_volumeIn === 'number' ? asset._normalize_volumeIn : typeof asset?.normalize_volumeIn === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volumeIn * asset.data.prices[0].price),
+        }
+      // }).map(asset => {
+      //   return {
+      //     ...asset,
+      //     normalize_volume: asset._normalize_volume,
+      //     normalize_volumeIn: asset._normalize_volumeIn,
+      //   }
+      }).map(asset => {
+        return {
+          ...asset,
           value_volume: asset.normalize_volume,
-          value_volumeIn: asset.normalize_volumeIn,
+          value_volumeIn: asset.version === 'v0' ? asset.normalize_volume : asset.normalize_volumeIn,
         }
       }),
       'chain_data.id'

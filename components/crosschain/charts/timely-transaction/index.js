@@ -30,8 +30,8 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
         time: Number(key),
         volume: _.sumBy(value, 'normalize_volume'),
         tx_count: _.sumBy(value, 'txCount'),
-        volumeIn: _.sumBy(value, 'normalize_volumeIn'),
-        fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
+        volumeIn: _.sumBy(value, 'normalize_volumeIn') + _.sumBy(value.filter(v => v.version === 'v0'), 'normalize_volume'),
+        fees: _.sumBy(value, 'normalize_volumeIn') + _.sumBy(value.filter(v => v.version === 'v0'), 'normalize_volume') - _.sumBy(value, 'normalize_volume'),
       }
     }), ['time'], ['asc'])
     .filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)

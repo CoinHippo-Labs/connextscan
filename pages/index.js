@@ -44,7 +44,7 @@ export default function Index() {
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
-  const { chain_id } = { ...query }
+  const { chain_id, debug } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
@@ -70,6 +70,9 @@ export default function Index() {
                   day_metrics: {
                     terms: { field: 'dayStartTimestamp', size: 10000 },
                     aggs: {
+                      versions: {
+                        terms: { field: 'version.keyword' },
+                      },
                       volumes: {
                         sum: { field: 'normalize_volume' },
                       },
@@ -209,6 +212,11 @@ export default function Index() {
               normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
               normalize_volumeIn: typeof timely?._normalize_volumeIn === 'number' ? timely._normalize_volumeIn : typeof timely?.normalize_volumeIn === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volumeIn * timely.data.prices[0].price),
             }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volumeIn: timely?.version === 'v0' ? timely?.normalize_volume : timely?.normalize_volumeIn,
+            }
           }).filter(timely => timely?.data)
         ]
       }))
@@ -273,7 +281,7 @@ export default function Index() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-7xl mt-4 mb-6 mx-auto pb-2">
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
+        <div className={`grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-${['true'].includes(debug) ? 4 : 3} gap-4 mt-8`}>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
           >
@@ -297,14 +305,16 @@ export default function Index() {
               <TotalTransaction />
             </div>
           </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Fees</div>}
-            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-          >
-            <div className="mx-3">
-              <TotalFees />
-            </div>
-          </Widget>
+          {['true'].includes(debug) && (
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Fees</div>}
+              right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+            >
+              <div className="mx-3">
+                <TotalFees />
+              </div>
+            </Widget>
+          )}
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
@@ -357,32 +367,34 @@ export default function Index() {
             </div>
           </Widget>
         </div>
-        <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Fees by Chain</div>}
-            right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div>
-              <FeesByChain />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees</div>}
-            right={theVolume && (
-              <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theFees.fees === 'number' ? numberFormat(theFees.fees, '0,0') : ' -'}</div>
-                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theFees.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+        {['true'].includes(debug) && (
+          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Fees by Chain</div>}
+              right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+              className="lg:col-span-2 px-0 sm:px-4"
+            >
+              <div>
+                <FeesByChain />
               </div>
-            )}
-            contentClassName="items-start"
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div>
-              <TimelyFees timeRange={timeRange} theFees={theFees} setTheFees={_theFees => setTheFees(_theFees)} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
-            </div>
-          </Widget>
-        </div>
+            </Widget>
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees</div>}
+              right={theVolume && (
+                <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
+                  <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theFees.fees === 'number' ? numberFormat(theFees.fees, '0,0') : ' -'}</div>
+                  <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theFees.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+                </div>
+              )}
+              contentClassName="items-start"
+              className="lg:col-span-2 px-0 sm:px-4"
+            >
+              <div>
+                <TimelyFees timeRange={timeRange} theFees={theFees} setTheFees={_theFees => setTheFees(_theFees)} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
+              </div>
+            </Widget>
+          </div>
+        )}
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <Link href="/routers">
             <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>

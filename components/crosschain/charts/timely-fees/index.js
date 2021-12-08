@@ -33,8 +33,8 @@ export default function TimelyFees({ theFees, setTheFees, setTheVolume, setTheTr
         time: Number(key),
         volume: _.sumBy(value, 'normalize_volume'),
         tx_count: _.sumBy(value, 'txCount'),
-        volumeIn: _.sumBy(value, 'normalize_volumeIn'),
-        fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
+        volumeIn: _.sumBy(value, 'normalize_volumeIn') + _.sumBy(value.filter(v => v.version === 'v0'), 'normalize_volume'),
+        fees: _.sumBy(value, 'normalize_volumeIn') + _.sumBy(value.filter(v => v.version === 'v0'), 'normalize_volume') - _.sumBy(value, 'normalize_volume'),
       }
     }), ['time'], ['asc'])
 
