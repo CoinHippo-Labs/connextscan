@@ -40,6 +40,8 @@ export default function Routers() {
             normalize_locked: asset?.data?.contract_decimals && ((asset.locked || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_supplied: asset?.data?.contract_decimals && ((asset.supplied || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_removed: asset?.data?.contract_decimals && ((asset.removed || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_volume: asset?.data?.contract_decimals && ((asset.volume || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_volumeIn: asset?.data?.contract_decimals && ((asset.volumeIn || 0) / Math.pow(10, asset.data.contract_decimals)),
           }
         }).map(asset => {
           return {
@@ -48,6 +50,8 @@ export default function Routers() {
             value_locked: typeof asset?.normalize_locked === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_locked * asset.data.prices[0].price),
             value_supplied: typeof asset?.normalize_supplied === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_supplied * asset.data.prices[0].price),
             value_removed: typeof asset?.normalize_removed === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_removed * asset.data.prices[0].price),
+            value_volume: typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
+            value_volumeIn: typeof asset?.normalize_volumeIn === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_volumeIn * asset.data.prices[0].price),
           }
         })), 'router.id')
       ).map(([key, value]) => {
@@ -62,6 +66,8 @@ export default function Routers() {
           liquidity_locked: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_locked'),
           liquidity_supplied: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_supplied'),
           liquidity_removed: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_removed'),
+          liquidity_volume: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volume'),
+          liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
         }
       }), ['liquidity'], ['desc'])
 
@@ -133,11 +139,11 @@ export default function Routers() {
               {currency_symbol}{numberFormat(router.liquidity + (router.liquidity_locked || 0), '0,0')}
             </div>
           </div>
-          {typeof router?.liquidity_locked === 'number' && typeof router?.liquidity_supplied === 'number' && typeof router?.liquidity_removed === 'number' && (
+          {typeof router?.liquidity_volume === 'number' && typeof router?.liquidity_volumeIn === 'number' && (
             <div className="flex flex-col justify-end space-y-1 mt-2 sm:mt-0 ml-0 sm:ml-8">
-              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">% ROI</div>
+              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-3xs sm:text-2xs font-normal text-right">Fees</div>
               <div className="font-mono sm:text-base font-semibold text-right">
-                {numberFormat((router.liquidity + router.liquidity_locked + router.liquidity_removed - router.liquidity_supplied) * 100 / router.liquidity_supplied, '0,0.00')}%
+                {numberFormat(router.liquidity_volumeIn - router.liquidity_volume, '0,0.00')}
               </div>
             </div>
           )}

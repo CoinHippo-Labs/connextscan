@@ -18,6 +18,8 @@ import { getName, numberFormat } from '../../lib/utils'
 
 import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA } from '../../reducers/types'
 
+const max_query_ens = 25
+
 export default function ChainMeta() {
   const dispatch = useDispatch()
   const { data, contracts, contracts_sync, assets, assets_sync, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, contracts_sync: state.contracts_sync, assets: state.assets, assets_sync: state.assets_sync, ens: state.ens }), shallowEqual)
@@ -161,12 +163,22 @@ export default function ChainMeta() {
         })
 
         if (routerIds?.length > 0) {
-          const response = await domains({ where: `{ resolvedAddress_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+          const chunkRouterIds = _.chunk(routerIds, max_query_ens)
 
-          if (response?.data) {
+          let ensData
+
+          for (let i = 0; i < chunkRouterIds.length; i++) {
+            if (chunkRouterIds[i]) {
+              const response = await domains({ where: `{ resolvedAddress_in: [${chunkRouterIds[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+              ensData = _.concat(ensData || [], response?.data || [])
+            }
+          }
+
+          if (ensData) {
             dispatch({
               type: ENS_DATA,
-              value: Object.fromEntries(response.data.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+              value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
             })
           }
         }
@@ -233,15 +245,25 @@ export default function ChainMeta() {
           value: assets_sync_data,
         })
 
-        const routerIds = Object.values(assets_sync_data).flatMap(assets => assets).map(asset => asset?.router?.id)
+        const routerIds = _.uniq(Object.values(assets_sync_data).flatMap(assets => assets).map(asset => asset?.router?.id))
 
         if (routerIds?.length > 0) {
-          const response = await domains({ where: `{ resolvedAddress_in: [${routerIds.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+          const chunkRouterIds = _.chunk(routerIds, max_query_ens)
 
-          if (response?.data) {
+          let ensData
+
+          for (let i = 0; i < chunkRouterIds.length; i++) {
+            if (chunkRouterIds[i]) {
+              const response = await domains({ where: `{ resolvedAddress_in: [${chunkRouterIds[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+              ensData = _.concat(ensData || [], response?.data || [])
+            }
+          }
+
+          if (ensData) {
             dispatch({
               type: ENS_DATA,
-              value: Object.fromEntries(response.data.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+              value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
             })
           }
         }
