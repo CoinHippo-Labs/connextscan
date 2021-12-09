@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
+import { NxtpSdk } from '@connext/nxtp-sdk'
+import { Wallet } from 'ethers'
 import { IoRadioButtonOnOutline } from 'react-icons/io5'
 import { RiGasStationFill } from 'react-icons/ri'
 import { TiArrowRight } from 'react-icons/ti'
@@ -16,7 +18,7 @@ import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { getName, numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA } from '../../reducers/types'
+import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA, ROUTERS_STATUS_DATA } from '../../reducers/types'
 
 const max_query_ens = 25
 
@@ -36,6 +38,7 @@ export default function ChainMeta() {
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
   const [assetsLoaded, setAssetsLoaded] = useState(false)
+  const [sdk, setSdk] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -288,6 +291,41 @@ export default function ChainMeta() {
       }
     }
   }, [contracts_sync_data, assets_sync_data])
+
+  useEffect(() => {
+    const getData = async _address => {
+      if (!sdk) {
+        const chainConfig = {}
+
+        for (let i = 0; i < networks.length; i++) {
+          const _network = networks[i]
+
+          if (_network?.id && !_network?.disabled) {
+            chainConfig[_network.network_id] = {
+              providers: _network?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')) || []
+            }
+          }
+        }
+
+        setSdk(new NxtpSdk({ chainConfig, signer: Wallet.createRandom() }))
+      }
+      else {
+        const response = await sdk.getRouterStatus(process.env.NEXT_PUBLIC_APP_NAME)
+
+        if (response) {
+          dispatch({
+            type: ROUTERS_STATUS_DATA,
+            value: response?.filter(_router => _router?.supportedChains?.findIndex(chain_id => chain_id && networks?.findIndex(_network => _network?.network_id === chain_id) > -1) > -1),
+          })
+        }
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [sdk])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">

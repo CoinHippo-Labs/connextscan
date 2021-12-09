@@ -25,11 +25,12 @@ import { CONTRACTS_DATA, ROUTER_BALANCES_SYNC_DATA } from '../../reducers/types'
 
 export default function RouterAddress() {
   const dispatch = useDispatch()
-  const { contracts, assets, ens, router_balances_sync } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens, router_balances_sync: state.router_balances_sync }), shallowEqual)
+  const { contracts, assets, ens, router_balances_sync, routers_status } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens, router_balances_sync: state.router_balances_sync, routers_status: state.routers_status }), shallowEqual)
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
   const { ens_data } = { ...ens }
   const { router_balances_sync_data } = { ...router_balances_sync }
+  const { routers_status_data } = { ...routers_status }
 
   const router = useRouter()
   const { query } = { ...router }
@@ -277,6 +278,8 @@ export default function RouterAddress() {
     }
   }, [address])
 
+  const routerStatus = routers_status_data?.find(_router => _router?.routerAddress?.toLowerCase() === address?.toLowerCase())
+
   return (
     <>
       <SectionTitle
@@ -296,7 +299,34 @@ export default function RouterAddress() {
             </div>}
           />
         </div>}
-        className="flex-col sm:flex-row items-start sm:items-center"
+        right={routerStatus && (
+          <div className="flex flex-col sm:items-end space-y-1.5">
+            <div className="sm:text-right">
+              <div className="text-gray-400: dark:text-gray-500 text-sm">Version</div>
+              <div className="font-mono text-base font-semibold mt-1 sm:mt-0">{routerStatus.routerVersion || '-'}</div>
+            </div>
+            <div className="sm:text-right">
+              <div className="text-gray-400: dark:text-gray-500 text-sm">Supported Chains</div>
+              <div className="max-w-md flex flex-wrap items-center sm:justify-end mt-2 sm:mt-1">
+                {routerStatus.supportedChains?.length > 0 ?
+                  routerStatus.supportedChains.map((_chain_id, i) => (
+                    networks.find(_network => _network?.network_id === _chain_id) && (
+                      <Img
+                        key={i}
+                        src={networks.find(_network => _network?.network_id === _chain_id).icon}
+                        alt=""
+                        className="w-5 sm:w-6 h-5 sm:h-6 rounded-full mb-2 ml-0 sm:ml-2 mr-2 sm:mr-0"
+                      />
+                    )
+                  ))
+                  :
+                  <span>-</span>
+                }
+              </div>
+            </div>
+          </div>
+        )}
+        className="flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 pt-4 pb-6 px-2 sm:px-4">

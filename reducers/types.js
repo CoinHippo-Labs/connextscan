@@ -17,6 +17,7 @@ export const ENS_DATA = 'ens_data'
 
 // router
 export const ROUTER_BALANCES_SYNC_DATA = 'router_balances_sync_data'
+export const ROUTERS_STATUS_DATA = 'routers_status_data'
 
 // timely
 export const TIMELY_DATA = 'timely_data'
