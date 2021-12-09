@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           )}
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
-        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Accumulated Fees</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Traffics</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.fees === 'number' ? numberFormat(data.fees, '0,0') : '-'}</div>
       </div>
     )
@@ -81,7 +81,7 @@ export default function FeesByChain() {
         return {
           ...asset,
           value_volume: asset.normalize_volume,
-          value_volumeIn: asset.version === 'v0' ? asset.normalize_volume : asset.normalize_volumeIn,
+          value_volumeIn: asset.normalize_volumeIn,
         }
       }),
       'chain_data.id'

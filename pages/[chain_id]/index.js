@@ -226,8 +226,8 @@ export default function Chain() {
               <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">TX {hourly_time_range}h</div>
               {chain_id && hourlyData?.chain_id === chain_id ?
                 <div className="text-xl font-semibold">
-                  {hourlyData?.data?.findIndex(timely => typeof timely?.txCount === 'number') > -1 ?
-                    numberFormat(_.sumBy(hourlyData.data, 'txCount'), '0,0')
+                  {hourlyData?.data?.findIndex(timely => typeof timely?.receivingTxCount === 'number') > -1 ?
+                    numberFormat(_.sumBy(hourlyData.data, 'receivingTxCount'), '0,0')
                     :
                     '-'
                   }

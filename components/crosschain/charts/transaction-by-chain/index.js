@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Receiving Transactions</div>
-        <div className="text-base font-semibold">{typeof data.receiving_tx_count === 'number' ? numberFormat(data.receiving_tx_count, '0,0') : typeof data.tx_count === 'number' ? numberFormat(data.tx_count, '0,0') : '-'}</div>
+        <div className="text-base font-semibold">{typeof data.receiving_tx_count === 'number' ? numberFormat(data.receiving_tx_count, '0,0') : '-'}</div>
         {typeof data.sending_tx_count === 'number' && (
           <>
             <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Sending Transactions</div>
@@ -73,15 +73,14 @@ export default function TransactionByChain() {
       return {
         ...(value.find(asset => asset?.chain_data?.id === key)?.chain_data),
         assets: value,
-        tx_count: _.sumBy(value, 'txCount'),
         sending_tx_count: _.sumBy(value, 'sendingTxCount'),
-        receiving_tx_count: _.sumBy(value, 'receivingTxCount') || _.sumBy(value, 'txCount'),
+        receiving_tx_count: _.sumBy(value, 'receivingTxCount'),
         cancel_tx_count: _.sumBy(value, 'cancelTxCount'),
       }
     }).map(chain => {
       return {
         ...chain,
-        total_tx_count: /*(chain.tx_count || 0) + */(chain.sending_tx_count || 0) + (chain.receiving_tx_count || 0) + (chain.cancel_tx_count || 0),
+        total_tx_count: (chain.sending_tx_count || 0) + (chain.receiving_tx_count || 0) + (chain.cancel_tx_count || 0),
       }
     })
 
@@ -94,11 +93,11 @@ export default function TransactionByChain() {
         const network = networks[i]
 
         if (network?.id && !network.disabled/* && __data.findIndex(chain => chain.id === network.id) > -1*/) {
-          _data.push(__data.find(chain => chain.id === network.id) || { ...network, tx_count: 0, sending_tx_count: 0, receiving_tx_count: 0, cancel_tx_count: 0 })
+          _data.push(__data.find(chain => chain.id === network.id) || { ...network, sending_tx_count: 0, receiving_tx_count: 0, cancel_tx_count: 0 })
         }
       }
 
-      _data = _data.map((chain, i) => { return { ...chain, total_tx_count_string: numberFormat(chain.total_tx_count, '0,0.00a'), tx_count_string: numberFormat(chain.tx_count, '0,0.00a'), sending_tx_count_string: numberFormat(chain.sending_tx_count, '0,0.00a'), receiving_tx_count_string: numberFormat(chain.receiving_tx_count, '0,0.00a'), cancel_tx_count_string: numberFormat(chain.cancel_tx_count, '0,0.00a') } })
+      _data = _data.map((chain, i) => { return { ...chain, total_tx_count_string: numberFormat(chain.total_tx_count, '0,0.00a'), sending_tx_count_string: numberFormat(chain.sending_tx_count, '0,0.00a'), receiving_tx_count_string: numberFormat(chain.receiving_tx_count, '0,0.00a'), cancel_tx_count_string: numberFormat(chain.cancel_tx_count, '0,0.00a') } })
 
       setData(_data)
     }
@@ -135,10 +134,6 @@ export default function TransactionByChain() {
               <LabelList dataKey="total_tx_count_string" position="top" cursor="default" />
               {data.map((entry, i) => (<Cell key={i} cursor="pointer" fillOpacity={1} fill={`url(#gradient-vol-${entry.short_name})`} />))}
             </Bar>
-            {/*<Bar dataKey="tx_count" stackId="tx" minPointSize={10} onClick={chain => router.push(`/${chain.id}`)}>
-              <LabelList dataKey="total_tx_count_string" position="top" cursor="default" />
-              {data.map((entry, i) => (<Cell key={i} cursor="pointer" fillOpacity={1} fill={`url(#gradient-vol-${entry.short_name})`} />))}
-            </Bar>*/}
           </BarChart>
         </ResponsiveContainer>
         :

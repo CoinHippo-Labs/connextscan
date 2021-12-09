@@ -29,9 +29,9 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
         assets: value && _.groupBy(value, 'chain_data.id'),
         time: Number(key),
         volume: _.sumBy(value, 'normalize_volume'),
-        tx_count: _.sumBy(value, 'txCount'),
-        volumeIn: _.sumBy(value, 'normalize_volumeIn') + _.sumBy(value.filter(v => v.version === 'v0'), 'normalize_volume'),
-        fees: _.sumBy(value, 'normalize_volumeIn') + _.sumBy(value.filter(v => v.version === 'v0'), 'normalize_volume') - _.sumBy(value, 'normalize_volume'),
+        receiving_tx_count: _.sumBy(value, 'receivingTxCount'),
+        volumeIn: _.sumBy(value, 'normalize_volumeIn'),
+        fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
       }
     }), ['time'], ['asc'])
     .filter(timely => moment(timely.time * 1000).diff(moment(today).subtract(daily_time_range, 'days')) >= 0)
@@ -42,17 +42,13 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, tx_count: 0, volumeIn: 0, fees: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, receiving_tx_count: 0, volumeIn: 0, fees: 0 })
       }
 
       _data = _data.map((timely, i) => {
         return {
           ...timely,
           day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD'),
-          volume_percentage_change: _data[i - 1]?.volume > 0 && (timely.volume - _data[i - 1].volume) * 100 / _data[i - 1].volume,
-          tx_count_percentage_change: _data[i - 1]?.tx_count > 0 && (timely.tx_count - _data[i - 1].tx_count) * 100 / _data[i - 1].tx_count,
-          volumeIn_percentage_change: _data[i - 1]?.volumeIn > 0 && (timely.volumeIn - _data[i - 1].volumeIn) * 100 / _data[i - 1].volumeIn,
-          fees_percentage_change: _data[i - 1]?.fees > 0 && (timely.fees - _data[i - 1].fees) * 100 / _data[i - 1].fees,
         }
       })
     
@@ -127,7 +123,7 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
               </linearGradient>
             </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
-            <Bar dataKey="tx_count" minPointSize={5}>
+            <Bar dataKey="receiving_tx_count" minPointSize={5}>
               {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-tx)" />))}
             </Bar>
           </BarChart>
