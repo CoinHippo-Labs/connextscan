@@ -109,7 +109,7 @@ export default function Chain() {
 
             const _new_contracts = _.cloneDeep(new_contracts)
 
-            const _contracts = { [`${network.network_id}`]: _.uniqBy(data.filter(timely => timely.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
+            const _contracts = { [`${network.network_id}`]: _.uniqBy(data.filter(timely => timely?.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
 
             for (let i = 0; i < Object.entries(_contracts).length; i++) {
               if (!controller.signal.aborted) {
