@@ -161,7 +161,7 @@ export default function Status() {
       </div>
       <div className="flex items-center justify-between mt-1.5">
         <div className="flex items-center text-sm space-x-2">
-          <span>Volume:</span>
+          <span className="text-gray-600 dark:text-gray-400">Volume:</span>
           {chainsLiquidity ?
             <span className="font-mono font-semibold">
               {currency_symbol}{numberFormat(chainStatus.volume, '0,0')}
@@ -179,12 +179,12 @@ export default function Status() {
             :
             <div className="skeleton w-6 h-4" />
           }
-          <span>Router{!routers_status_data || chainStatus.routers?.length > 1 ? 's' : ''}</span>
+          <span className="text-gray-600 dark:text-gray-400">Router{!routers_status_data || chainStatus.routers?.length > 1 ? 's' : ''}</span>
         </div>
       </div>
       <div className="flex items-center justify-between mt-1.5">
         <div className="flex items-center text-sm space-x-2">
-          <span>Liquidity:</span>
+          <span className="text-gray-600 dark:text-gray-400">Liquidity:</span>
           {chainsLiquidity ?
             <span className="font-mono font-semibold">
               {currency_symbol}{numberFormat(chainStatus.liquidity, '0,0')}
