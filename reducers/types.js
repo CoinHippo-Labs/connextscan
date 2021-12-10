@@ -15,6 +15,10 @@ export const ASSETS_SYNC_DATA = 'assets_sync_data'
 // routers
 export const ENS_DATA = 'ens_data'
 
+// chains status
+export const CHAINS_STATUS_DATA = 'chains_status_data'
+export const CHAINS_STATUS_SYNC_DATA = 'chains_status_sync_data'
+
 // router
 export const ROUTER_BALANCES_SYNC_DATA = 'router_balances_sync_data'
 export const ROUTERS_STATUS_DATA = 'routers_status_data'

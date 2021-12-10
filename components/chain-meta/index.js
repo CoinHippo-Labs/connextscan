@@ -18,18 +18,20 @@ import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { getName, numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA, ROUTERS_STATUS_DATA } from '../../reducers/types'
+import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA, CHAINS_STATUS_DATA, CHAINS_STATUS_SYNC_DATA, ROUTERS_STATUS_DATA } from '../../reducers/types'
 
 const max_query_ens = 25
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
-  const { data, contracts, contracts_sync, assets, assets_sync, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, contracts_sync: state.contracts_sync, assets: state.assets, assets_sync: state.assets_sync, ens: state.ens }), shallowEqual)
+  const { data, contracts, contracts_sync, assets, assets_sync, chains_status, chains_status_sync, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, contracts_sync: state.contracts_sync, assets: state.assets, assets_sync: state.assets_sync, chains_status: state.chains_status, chains_status_sync: state.chains_status_sync, ens: state.ens }), shallowEqual)
   const { chain_data } = { ...data }
   const { contracts_data } = { ...contracts }
   const { contracts_sync_data } = { ...contracts_sync }
   const { assets_data } = { ...assets }
   const { assets_sync_data } = { ...assets_sync }
+  const { chains_status_data } = { ...chains_status }
+  const { chains_status_sync_data } = { ...chains_status_sync }
   const { ens_data } = { ...ens }
 
   const router = useRouter()
@@ -326,6 +328,59 @@ export default function ChainMeta() {
     const interval = setInterval(() => getData(), 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [sdk])
+
+  useEffect(() => {
+    const getDataSync = async _chains => {
+      if (_chains && sdk) {
+        let chainsData
+
+        for (let i = 0; i < _chains.length; i++) {
+          const _chain = _chains[i]
+
+          const response = !_chain.disabled && await sdk.getSubgraphSyncStatus(_chain.network_id)
+
+          chainsData = _.concat(chainsData || [], { ..._chain, ...response })
+            .map(_chain => { return { ..._chain, ...(_chain.latestBlock < 0 && chains_status_data?.find(__chain => __chain?.id === _chain.id)) } })
+            .filter(_chain => !chains_status_data || _chain.latestBlock > -1)
+        }
+
+        dispatch({
+          type: CHAINS_STATUS_SYNC_DATA,
+          value: chainsData,
+        })
+      }
+    }
+
+    const getData = async () => {
+      if (sdk) {
+        const _networks = networks.filter(_network => _network?.id && !_network.disabled)
+        const chunkSize = _.head([...Array(_networks.length).keys()].map(i => i + 1).filter(i => Math.ceil(_networks.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _networks.length
+        _.chunk([...Array(_networks.length).keys()], chunkSize).forEach(chunk => getDataSync(_networks.map((_chain, i) => { return { ..._chain, i } }).filter((_chain, i) => chunk.includes(i))))
+      }
+    }
+
+    setTimeout(() => {
+      getData()
+    }, (sdk ? 1 : 0) * 15 * 1000)
+
+    const interval = setInterval(() => getData(), 0.5 * 60 * 1000)
+    return () => {
+      clearInterval(interval)
+    }
+  }, [sdk])
+
+  useEffect(() => {
+    if (chains_status_sync_data) {
+      const _networks = networks.filter(_network => _network?.id && !_network.disabled)
+
+      if (chains_status_sync_data.length >= _networks.length) {
+        dispatch({
+          type: CHAINS_STATUS_DATA,
+          value: _.orderBy(chains_status_sync_data, ['i'], ['asc']),
+        })
+      }
+    }
+  }, [chains_status_sync_data])
 
   return (
     <div className="w-full bg-gray-100 dark:bg-gray-900 overflow-x-auto flex items-center py-2 px-2 sm:px-4">
