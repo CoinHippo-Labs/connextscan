@@ -347,7 +347,7 @@ export default function RouterAddress() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Processing TXS</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Processing Txs</div>}
           >
             <div className="mx-3">
               <div className="font-mono text-xl font-semibold mt-1">

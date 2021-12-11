@@ -24,9 +24,15 @@
       "density": "1.0"
     },
     {
-      "src": "/icons/android-chrome-144x144.png",
+      "src": "/icons/android-chrome-192x192.png",
       "type": "image/png",
-      "sizes": "144x144",
+      "sizes": "192x192",
+      "density": "4.0"
+    },
+    {
+      "src": "/icons/android-chrome-256x256.png",
+      "type": "image/png",
+      "sizes": "256x256",
       "density": "4.0"
     }
   ] 

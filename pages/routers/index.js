@@ -1,10 +1,10 @@
 import { useRouter } from 'next/router'
 
-import ChainInfo from '../components/crosschain/chain-info'
-import Routers from '../components/crosschain/routers'
-import SectionTitle from '../components/section-title'
+import ChainInfo from '../../components/crosschain/chain-info'
+import Routers from '../../components/crosschain/routers'
+import SectionTitle from '../../components/section-title'
 
-import { networks } from '../lib/menus'
+import { networks } from '../../lib/menus'
 
 export default function RoutersIndex() {
   const router = useRouter()
