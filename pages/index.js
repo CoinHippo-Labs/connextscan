@@ -327,12 +327,14 @@ export default function Index() {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume</div>}
-            right={theVolume && (
+            right={theVolume ?
               <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
                 <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theVolume.volume === 'number' ? numberFormat(theVolume.volume, '0,0') : ' -'}</div>
                 <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
               </div>
-            )}
+              :
+              timely_data && timelyData && <div style={{ height: '54px' }} />
+            }
             contentClassName="items-start"
             className="lg:col-span-2 px-0 sm:px-4"
           >
@@ -353,12 +355,14 @@ export default function Index() {
           </Widget>
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
-            right={theTransaction && (
+            right={theTransaction ?
               <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
                 <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.receiving_tx_count === 'number' ? numberFormat(theTransaction.receiving_tx_count, '0,0') : '-'}</div>
                 <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
               </div>
-            )}
+              :
+              timely_data && timelyData && <div style={{ height: '54px' }} />
+            }
             contentClassName="items-start"
             className="lg:col-span-2 px-0 sm:px-4"
           >
