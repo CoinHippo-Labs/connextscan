@@ -36,7 +36,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Liquidity</div>
-        <div className="text-base font-semibold">{currency_symbol}{typeof data.liquidity === 'number' ? numberFormat(data.liquidity, '0,0') : ' -'}</div>
+        <div className="font-mono text-base font-semibold">{currency_symbol}{typeof data.liquidity === 'number' ? numberFormat(data.liquidity, '0,0') : ' -'}</div>
       </div>
     )
   }

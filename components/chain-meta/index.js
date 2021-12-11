@@ -437,7 +437,7 @@ export default function ChainMeta() {
               <img
                 src={chain_data.coin.image?.thumb || network?.icon}
                 alt=""
-                className="w-4 h-4 rounded-full"
+                className="w-4 h-4 rounded-full mb-0.5"
               />
               <span className="uppercase font-medium">{chain_data.coin.symbol || network?.currency?.symbol}</span>
             </div>
