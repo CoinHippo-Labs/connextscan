@@ -325,7 +325,7 @@ export default function ChainMeta() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 5 * 60 * 1000)
+    const interval = setInterval(() => getData(), 0.25 * 60 * 1000)
     return () => clearInterval(interval)
   }, [sdk])
 
