@@ -281,7 +281,7 @@ export default function Index() {
         className="flex-col sm:flex-row items-start sm:items-center"
       />
       <div className="max-w-7xl mt-4 mb-6 mx-auto pb-2">
-        <div className={`grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-${['true'].includes(debug) ? 4 : 3} gap-4 mt-8`}>
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
           >
@@ -305,16 +305,14 @@ export default function Index() {
               <TotalTransaction />
             </div>
           </Widget>
-          {['true'].includes(debug) && (
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Fees</div>}
-              right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-            >
-              <div className="mx-3">
-                <TotalFees />
-              </div>
-            </Widget>
-          )}
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Fees</div>}
+            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+          >
+            <div className="mx-3">
+              <TotalFees />
+            </div>
+          </Widget>
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
