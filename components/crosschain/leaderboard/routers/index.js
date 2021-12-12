@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
@@ -24,6 +25,10 @@ export default function LeaderboardRouters({ className = '' }) {
   const { assets_data } = { ...assets }
   const { ens_data } = { ...ens }
   const { routers_status_data } = { ...routers_status }
+
+  const router = useRouter()
+  const { query } = { ...router }
+  const { debug } = { ...query }
 
   const [routers, setRouters] = useState(null)
 
@@ -249,6 +254,20 @@ export default function LeaderboardRouters({ className = '' }) {
             headerClassName: 'justify-end text-right',
           },
           {
+            Header: 'Accumulated Fees',
+            accessor: 'liquidity_volumeIn',
+            sortType: (rowA, rowB) => (rowA.original.liquidity_volumeIn - rowA.original.liquidity_volume) > (rowB.original.liquidity_volumeIn - rowB.original.liquidity_volume) ? 1 : -1,
+            Cell: props => (
+              !props.row.original.skeleton ?
+                <div className="font-mono font-semibold text-right my-1">
+                  {currency_symbol}{numberFormat(props.value - props.row.original.liquidity_volume, '0,0')}
+                </div>
+                :
+                <div className="skeleton w-24 h-5 my-1 ml-auto" />
+            ),
+            headerClassName: 'whitespace-nowrap justify-end text-right',
+          },
+          {
             Header: 'Supported',
             accessor: 'supportedChains',
             sortType: (rowA, rowB) => (rowA.original.supportedChains ? rowA.original.supportedChains.length : -1) > (rowB.original.supportedChains ? rowB.original.supportedChains.length : -1) ? 1 : -1,
@@ -278,7 +297,7 @@ export default function LeaderboardRouters({ className = '' }) {
             ),
             headerClassName: 'justify-end text-right',
           },
-        ]}
+        ].filter(column => ['true'].includes(debug) || !['liquidity_volumeIn'].includes(column.accessor))}
         data={routers && routers_status_data ?
           routers.map((_router, i) => { return { ..._router, i } })
           :
