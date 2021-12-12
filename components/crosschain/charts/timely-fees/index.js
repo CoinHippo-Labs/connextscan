@@ -13,10 +13,34 @@ import {
   // Area,
   Bar,
   Cell,
+  Tooltip,
 } from 'recharts'
 
 import { currency_symbol } from '../../../../lib/object/currency'
 import { daily_time_range, day_s } from '../../../../lib/object/timely'
+import { numberFormat } from '../../../../lib/utils'
+
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active) {
+    const data = { ...payload?.[0]?.payload }
+
+    return (
+      <div className="bg-gray-50 dark:bg-gray-800 shadow-lg rounded-lg text-gray-900 dark:text-white text-xs p-2">
+        <div className="text-gray-600 dark:text-gray-400 text-sm">
+          {moment(data?.time * 1000).utc().format('MMM D, YYYY [(UTC)]')}
+        </div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Traffics</div>
+        <div className="text-base font-semibold">{currency_symbol}{typeof data.fees === 'number' ? numberFormat(data.fees, '0,0') : '-'}</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume</div>
+        <div className="text-base font-semibold">{currency_symbol}{typeof data.volume === 'number' ? numberFormat(data.volume, '0,0') : '-'}</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume IN</div>
+        <div className="text-base font-semibold">{currency_symbol}{typeof data.volumeIn === 'number' ? numberFormat(data.volumeIn, '0,0') : '-'}</div>
+      </div>
+    )
+  }
+
+  return null
+}
 
 export default function TimelyFees({ theFees, setTheFees, setTheVolume, setTheTransaction }) {
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
@@ -127,6 +151,7 @@ export default function TimelyFees({ theFees, setTheFees, setTheVolume, setTheTr
               </linearGradient>
             </defs>
             <XAxis dataKey="day_string" axisLine={false} tickLine={false} />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }}/> 
             <Bar dataKey="fees" minPointSize={5}>
               {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-fees)" />))}
             </Bar>

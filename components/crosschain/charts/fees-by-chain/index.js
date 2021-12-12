@@ -37,6 +37,10 @@ const CustomTooltip = ({ active, payload, label }) => {
         </div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Traffics</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.fees === 'number' ? numberFormat(data.fees, '0,0') : '-'}</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume</div>
+        <div className="text-base font-semibold">{currency_symbol}{typeof data.volume === 'number' ? numberFormat(data.volume, '0,0') : '-'}</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume IN</div>
+        <div className="text-base font-semibold">{currency_symbol}{typeof data.volumeIn === 'number' ? numberFormat(data.volumeIn, '0,0') : '-'}</div>
       </div>
     )
   }
@@ -59,24 +63,24 @@ export default function FeesByChain() {
         return {
           ...asset,
         }
-      }).map(asset => {
-        return {
-          ...asset,
-          normalize_volume: asset?.data?.contract_decimals && (asset.volume / Math.pow(10, asset.data.contract_decimals)),
-          normalize_volumeIn: asset?.data?.contract_decimals && (asset.volumeIn / Math.pow(10, asset.data.contract_decimals)),
-        }
-      }).map(asset => {
-        return {
-          ...asset,
-          normalize_volume: typeof asset?._normalize_volume === 'number' ? asset._normalize_volume : typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
-          normalize_volumeIn: typeof asset?._normalize_volumeIn === 'number' ? asset._normalize_volumeIn : typeof asset?.normalize_volumeIn === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volumeIn * asset.data.prices[0].price),
-        }
       // }).map(asset => {
       //   return {
       //     ...asset,
-      //     normalize_volume: asset._normalize_volume,
-      //     normalize_volumeIn: asset._normalize_volumeIn,
+      //     normalize_volume: asset?.data?.contract_decimals && (asset.volume / Math.pow(10, asset.data.contract_decimals)),
+      //     normalize_volumeIn: asset?.data?.contract_decimals && (asset.volumeIn / Math.pow(10, asset.data.contract_decimals)),
       //   }
+      // }).map(asset => {
+      //   return {
+      //     ...asset,
+      //     normalize_volume: typeof asset?._normalize_volume === 'number' ? asset._normalize_volume : typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
+      //     normalize_volumeIn: typeof asset?._normalize_volumeIn === 'number' ? asset._normalize_volumeIn : typeof asset?.normalize_volumeIn === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volumeIn * asset.data.prices[0].price),
+      //   }
+      }).map(asset => {
+        return {
+          ...asset,
+          normalize_volume: asset._normalize_volume,
+          normalize_volumeIn: asset._normalize_volumeIn,
+        }
       }).map(asset => {
         return {
           ...asset,
@@ -89,6 +93,8 @@ export default function FeesByChain() {
       return {
         ...(value.find(asset => asset?.chain_data?.id === key)?.chain_data),
         assets: value,
+        volume: _.sumBy(value, 'value_volume'),
+        volumeIn: _.sumBy(value, 'value_volumeIn'),
         fees: _.sumBy(value, 'value_volumeIn') - _.sumBy(value, 'value_volume'),
       }
     }).map(chain => { return { ...chain, fees_string: `${currency_symbol}${numberFormat(chain.fees, Math.abs(chain.fees) >= 1000000 ? '0,0.00a' : '0,0')}` } })
@@ -102,7 +108,7 @@ export default function FeesByChain() {
         const network = networks[i]
 
         if (network?.id && !network.disabled/* && __data.findIndex(chain => chain.id === network.id) > -1*/) {
-          _data.push(__data.find(chain => chain.id === network.id) || { ...network, fees: 0 })
+          _data.push(__data.find(chain => chain.id === network.id) || { ...network, volume: 0, volumeIn: 0, fees: 0 })
         }
       }
 
