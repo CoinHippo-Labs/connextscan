@@ -68,7 +68,7 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
       try {
         await provider.request({
           method: 'wallet_switchEthereumChain',
-          params: [{ chainId: utils.hexlify(chainIdToConnect)?.replace('0x0', '0x') }],
+          params: [{ chainId: utils.hexValue(chainIdToConnect) }],
         })
       } catch (error) {
         if (error.code === 4902) {
