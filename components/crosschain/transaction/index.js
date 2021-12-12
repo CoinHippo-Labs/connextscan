@@ -811,7 +811,7 @@ export default function Transaction({ data, className = '' }) {
             </div>}
             className="overflow-x-auto ml-auto px-5 lg:px-3 xl:px-5"
           >
-            <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 mt-0 lg:mt-2">
+            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 my-2">
               {data ?
                 general?.sendingAddress ?
                   <div className="min-w-max">
@@ -842,7 +842,7 @@ export default function Transaction({ data, className = '' }) {
                       )}
                     </div>
                     {general.sendingChain && (
-                      <div className="flex items-center space-x-2 mt-1.5">
+                      <div className="flex items-center justify-center sm:justify-start space-x-2 mt-1.5">
                         {general.sendingChain.icon && (
                           <img
                             src={general.sendingChain.icon}
@@ -859,13 +859,13 @@ export default function Transaction({ data, className = '' }) {
                 :
                 <div>
                   <div className="skeleton w-40 h-6 sm:h-5 xl:h-6 mt-1" />
-                  <div className="skeleton w-16 h-8 sm:h-6 xl:h-8 mt-3" />
+                  <div className="skeleton w-16 h-8 sm:h-6 xl:h-8 mt-3 mx-auto sm:ml-0" />
                 </div>
               }
-              <div className="ml-0 sm:mx-auto">
+              <div className="mx-auto">
                 <TiArrowRight size={24} className="transform rotate-90 sm:rotate-0 text-gray-600 dark:text-gray-400" />
               </div>
-              <div className="ml-0 sm:mx-auto">
+              <div className="flex flex-col items-center justify-center mx-auto">
                 {data ?
                   <>
                     <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sender?.status ? ['Fulfilled'].includes(sender.status) ? 'green-600' : ['Prepared'].includes(sender.status) ? 'yellow-500' : 'red-700' : sender?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === sender.chainId) < 0 ? 'gray-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
@@ -893,7 +893,7 @@ export default function Transaction({ data, className = '' }) {
                         <Copy
                           size={12}
                           text={sender.chainTx}
-                          copyTitle={<span className="text-gray-500 dark:text-gray-400 text-xs font-light">
+                          copyTitle={<span className="text-gray-500 dark:text-gray-400 text-xs font-normal">
                             {ellipseAddress(sender.chainTx, 6)}
                           </span>}
                         />
@@ -929,11 +929,11 @@ export default function Transaction({ data, className = '' }) {
                   </>
                 }
               </div>
-              <div className="ml-0 sm:mx-auto">
+              <div className="mx-auto">
                 <TiArrowRight size={24} className="transform rotate-90 sm:rotate-0 text-gray-600 dark:text-gray-400" />
               </div>
-              <div className="ml-0 sm:mx-auto">
-                <div className="min-w-max grid grid-flow-row grid-cols-8 sm:grid-cols-3 gap-2 sm:mt-1 xl:mt-0">
+              <div className="mx-auto">
+                <div className="min-w-max grid grid-flow-row grid-cols-3 gap-2 sm:mt-1 xl:mt-0">
                   {data ?
                     general?.sendingChain && (
                       <img
@@ -999,10 +999,10 @@ export default function Transaction({ data, className = '' }) {
                     </>
                 )}
               </div>
-              <div className="ml-0 sm:mx-auto">
+              <div className="mx-auto">
                 <TiArrowRight size={24} className="transform rotate-90 sm:rotate-0 text-gray-600 dark:text-gray-400" />
               </div>
-              <div className="ml-0 sm:mx-auto">
+              <div className="flex flex-col items-center justify-center mx-auto">
                 {data ?
                   <>
                     <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receiver?.status ? ['Fulfilled'].includes(receiver.status) ? 'green-600' : ['Prepared'].includes(receiver.status) ? 'yellow-500' : 'red-700' : sender?.status === 'Cancelled' ? 'red-700' : receiver?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === receiver.chainId) < 0 ? 'gray-700' : 'indigo-500'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
@@ -1033,7 +1033,7 @@ export default function Transaction({ data, className = '' }) {
                         <Copy
                           size={12}
                           text={receiver.chainTx}
-                          copyTitle={<span className="text-gray-500 dark:text-gray-400 text-xs font-light">
+                          copyTitle={<span className="text-gray-500 dark:text-gray-400 text-xs font-normal">
                             {ellipseAddress(receiver.chainTx, 6)}
                           </span>}
                         />
@@ -1069,7 +1069,7 @@ export default function Transaction({ data, className = '' }) {
                   </>
                 }
               </div>
-              <div className="ml-0 sm:mx-auto">
+              <div className="mx-auto">
                 <TiArrowRight size={24} className="transform rotate-90 sm:rotate-0 text-gray-600 dark:text-gray-400" />
               </div>
               <span className="hidden sm:block sm:ml-auto" />
@@ -1103,7 +1103,7 @@ export default function Transaction({ data, className = '' }) {
                       )}
                     </div>
                     {general.receivingChain && (
-                      <div className="flex items-center space-x-2 mt-1.5">
+                      <div className="flex items-center justify-center sm:justify-end space-x-2 mt-1.5">
                         {general.receivingChain.icon && (
                           <img
                             src={general.receivingChain.icon}
@@ -1120,7 +1120,7 @@ export default function Transaction({ data, className = '' }) {
                 :
                 <div>
                   <div className="skeleton w-40 h-6 sm:h-5 xl:h-6 mt-1" />
-                  <div className="skeleton w-16 h-8 sm:h-6 xl:h-8 mt-3" />
+                  <div className="skeleton w-16 h-8 sm:h-6 xl:h-8 mt-3 mx-auto sm:mr-0" />
                 </div>
               }
             </div>
@@ -1144,7 +1144,7 @@ export default function Transaction({ data, className = '' }) {
             >
               <div className="w-full flex flex-col space-y-4">
                 <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
-                  <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Prepare TX:</span>
+                  <span className="md:w-20 xl:w-40 whitespace-nowrap text-xs lg:text-base font-semibold">Prepare TX:</span>
                   {data ?
                     transaction?.prepareTransactionHash ?
                       <div className="flex items-center">

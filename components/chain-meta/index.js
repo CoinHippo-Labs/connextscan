@@ -125,7 +125,7 @@ export default function ChainMeta() {
       let assetsData, routerIds
       let assetsSet = false
 
-      if ((['/', '/routers'].includes(pathname) && !assetsLoaded) || !assetsLoaded || isInterval) {
+      if ((['/', '/routers', '/leaderboard/routers'].includes(pathname) && !assetsLoaded) || !assetsLoaded || isInterval) {
         const _networks = networks.filter(_network => _network.id && !_network.disabled)
 
         if (isInterval) {
