@@ -126,7 +126,7 @@ export default function FeesByChain() {
         <ResponsiveContainer>
           <BarChart
             data={data}
-            margin={{ top: 20, right: 10, left: 10, bottom: 0 }}
+            margin={{ top: 20, right: 10, left: 10, bottom: 10 }}
             className="font-default"
           >
             <defs>
