@@ -22,6 +22,7 @@ export const CHAINS_STATUS_SYNC_DATA = 'chains_status_sync_data'
 // router
 export const ROUTER_BALANCES_SYNC_DATA = 'router_balances_sync_data'
 export const ROUTERS_STATUS_DATA = 'routers_status_data'
+export const ROUTERS_STATUS_REFRESH = 'routers_status_refresh'
 
 // timely
 export const TIMELY_DATA = 'timely_data'

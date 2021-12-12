@@ -18,13 +18,13 @@ import { networks } from '../../lib/menus'
 import { currency, currency_symbol } from '../../lib/object/currency'
 import { getName, numberFormat } from '../../lib/utils'
 
-import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA, CHAINS_STATUS_DATA, CHAINS_STATUS_SYNC_DATA, ROUTERS_STATUS_DATA } from '../../reducers/types'
+import { CHAIN_DATA, CONTRACTS_DATA, CONTRACTS_SYNC_DATA, ASSETS_DATA, ASSETS_SYNC_DATA, ENS_DATA, CHAINS_STATUS_DATA, CHAINS_STATUS_SYNC_DATA, ROUTERS_STATUS_DATA, ROUTERS_STATUS_REFRESH } from '../../reducers/types'
 
 const max_query_ens = 25
 
 export default function ChainMeta() {
   const dispatch = useDispatch()
-  const { data, contracts, contracts_sync, assets, assets_sync, chains_status, chains_status_sync, ens } = useSelector(state => ({ data: state.data, contracts: state.contracts, contracts_sync: state.contracts_sync, assets: state.assets, assets_sync: state.assets_sync, chains_status: state.chains_status, chains_status_sync: state.chains_status_sync, ens: state.ens }), shallowEqual)
+  const { data, contracts, contracts_sync, assets, assets_sync, chains_status, chains_status_sync, ens, routers_status } = useSelector(state => ({ data: state.data, contracts: state.contracts, contracts_sync: state.contracts_sync, assets: state.assets, assets_sync: state.assets_sync, chains_status: state.chains_status, chains_status_sync: state.chains_status_sync, ens: state.ens, routers_status: state.routers_status }), shallowEqual)
   const { chain_data } = { ...data }
   const { contracts_data } = { ...contracts }
   const { contracts_sync_data } = { ...contracts_sync }
@@ -33,6 +33,7 @@ export default function ChainMeta() {
   const { chains_status_data } = { ...chains_status }
   const { chains_status_sync_data } = { ...chains_status_sync }
   const { ens_data } = { ...ens }
+  const { routers_status_refresh } = { ...routers_status }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
@@ -312,6 +313,13 @@ export default function ChainMeta() {
         setSdk(new NxtpSdk({ chainConfig, signer: Wallet.createRandom() }))
       }
       else {
+        if (routers_status_refresh) {
+          dispatch({
+            type: ROUTERS_STATUS_DATA,
+            value: null,
+          })
+        }
+
         const response = await sdk.getRouterStatus(process.env.NEXT_PUBLIC_APP_NAME)
 
         if (response) {
@@ -320,14 +328,21 @@ export default function ChainMeta() {
             value: response?.filter(_router => _router?.supportedChains?.findIndex(chain_id => chain_id && networks?.findIndex(_network => _network?.network_id === chain_id) > -1) > -1),
           })
         }
+
+        dispatch({
+          type: ROUTERS_STATUS_REFRESH,
+          value: false,
+        })
       }
     }
 
-    getData()
+    if (routers_status_refresh || typeof routers_status_refresh !== 'boolean') {
+      getData()
+    }
 
     const interval = setInterval(() => getData(), 0.25 * 60 * 1000)
     return () => clearInterval(interval)
-  }, [sdk])
+  }, [sdk, routers_status_refresh])
 
   useEffect(() => {
     const getDataSync = async _chains => {

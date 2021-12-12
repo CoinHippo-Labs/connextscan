@@ -1,9 +1,11 @@
 import Link from 'next/link'
 import { useState, useEffect } from 'react'
-import { useSelector, shallowEqual } from 'react-redux'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
+import Loader from 'react-loader-spinner'
+import { MdRefresh } from 'react-icons/md'
 
 import Datatable from '../../../datatable'
 import Copy from '../../../copy'
@@ -12,8 +14,12 @@ import { networks } from '../../../../lib/menus'
 import { currency_symbol } from '../../../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../../../lib/utils'
 
+import { ROUTERS_STATUS_REFRESH } from '../../../../reducers/types'
+
 export default function LeaderboardRouters({ className = '' }) {
-  const { contracts, assets, ens, routers_status } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens, routers_status: state.routers_status }), shallowEqual)
+  const dispatch = useDispatch()
+  const { preferences, contracts, assets, ens, routers_status } = useSelector(state => ({ preferences: state.preferences, contracts: state.contracts, assets: state.assets, ens: state.ens, routers_status: state.routers_status }), shallowEqual)
+  const { theme } = { ...preferences }
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
   const { ens_data } = { ...ens }
@@ -84,6 +90,13 @@ export default function LeaderboardRouters({ className = '' }) {
     }
   }, [contracts_data, assets_data, routers_status_data])
 
+  const refresh = () => {
+   dispatch({
+      type: ROUTERS_STATUS_REFRESH,
+      value: true,
+    })
+  }
+
   const compareVersion = (v1, v2) => {
     if (!v1 || !v2) {
       if (v1) return 1
@@ -108,6 +121,20 @@ export default function LeaderboardRouters({ className = '' }) {
 
   return (
     <>
+      <div className="flex items-center justify-end mb-2">
+        <button
+          disabled={!routers_status_data}
+          onClick={() => refresh()}
+          className={`hover:bg-gray-100 dark:hover:bg-gray-900 ${!routers_status_data ? 'cursor-not-allowed' : ''} rounded-lg flex items-center font-medium space-x-1.5 py-1.5 px-3`}
+        >
+          {routers_status_data ?
+            <MdRefresh size={16} />
+            :
+            <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+          }
+          <span>Refresh</span>
+        </button>
+      </div>
       <Datatable
         columns={[
           {
@@ -252,7 +279,7 @@ export default function LeaderboardRouters({ className = '' }) {
             headerClassName: 'justify-end text-right',
           },
         ]}
-        data={routers ?
+        data={routers && routers_status_data ?
           routers.map((_router, i) => { return { ..._router, i } })
           :
           [...Array(20).keys()].map(i => { return { i, skeleton: true } })
