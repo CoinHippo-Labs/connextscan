@@ -89,6 +89,25 @@ export default function LeaderboardRouters({ className = '' }) {
           trackerLength: typeof _router?.trackerLength === 'number' ? _router.trackerLength : -1,
           supportedChains: _router?.supportedChains?.filter(_chain_id => networks.findIndex(_network => _network?.network_id === _chain_id) > -1),
         }
+      }).map(_router => {
+        const assets = Object.fromEntries(Object.entries(_router?.assets || {}).filter(([key, value]) => _router?.supportedChains?.findIndex(_chain_id => networks.findIndex(_network => _network.id === key && _network?.network_id === _chain_id) > -1) > -1))
+
+        if (_router?.routerVersion) {
+          return {
+            ..._router,
+            // liquidity: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value'),
+            // liquidity_locked: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_locked'),
+            // liquidity_supplied: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_supplied'),
+            // liquidity_removed: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_removed'),
+            // liquidity_volume: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_volume'),
+            // liquidity_volumeIn: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_volumeIn'),
+          }
+        }
+        else {
+          return {
+            ..._router,
+          }
+        }
       })
 
       setRouters(data)
