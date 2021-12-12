@@ -130,14 +130,14 @@ export default function LeaderboardRouters({ className = '' }) {
         <button
           disabled={!routers_status_data}
           onClick={() => refresh()}
-          className={`hover:bg-gray-100 dark:hover:bg-gray-900 ${!routers_status_data ? 'cursor-not-allowed' : ''} rounded-lg flex items-center font-medium space-x-1.5 py-1.5 px-3`}
+          className={`hover:bg-gray-100 dark:hover:bg-gray-900 ${!routers_status_data ? 'cursor-not-allowed text-gray-800 dark:text-gray-200' : ''} rounded-lg flex items-center font-medium space-x-1.5 py-1.5 px-3`}
         >
           {routers_status_data ?
             <MdRefresh size={16} />
             :
             <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
           }
-          <span>Refresh</span>
+          <span>{routers_status_data ? 'Refresh' : 'Loading'}</span>
         </button>
       </div>
       <Datatable
