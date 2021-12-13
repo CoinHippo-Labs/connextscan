@@ -184,14 +184,15 @@ export default function CrosschainTx() {
           if (['search'].includes(source)) {
             router.push(`/tx/${tx}`)
           }
-          else if (data) {
+
+          if (data) {
             const addresses = _.uniq([data.sender?.initiator, data.sender?.receivingAddress, data.receiver?.initiator, data.receiver?.receivingAddress].filter(_address => _address))
 
             const response = await domains({ where: `{ resolvedAddress_in: [${addresses.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
 
             const ensData = _.concat(ensData || [], response?.data || [])
 
-            if (ensData) {
+            if (ensData?.length > 0) {
               dispatch({
                 type: ENS_DATA,
                 value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
