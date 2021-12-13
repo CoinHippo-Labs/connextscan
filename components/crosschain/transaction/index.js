@@ -661,7 +661,7 @@ export default function Transaction({ data, className = '' }) {
                 :
                 <FaClock className="w-4 h-4 stroke-current mr-2" />
               }
-              content={<span>{result.error?.reason || result.error?.message || result.message}</span>}
+              content={<span>{result.error?.reason || result.error?.data?.message || result.error?.message || result.message}</span>}
             />
           )}
           <Widget
