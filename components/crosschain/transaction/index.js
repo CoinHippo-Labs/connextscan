@@ -811,7 +811,7 @@ export default function Transaction({ data, className = '' }) {
             </div>}
             className="overflow-x-auto ml-auto px-5 lg:px-3 xl:px-5"
           >
-            <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 my-2">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 my-2">
               {data ?
                 general?.sendingAddress ?
                   <div className="min-w-max">
