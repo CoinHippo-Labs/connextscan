@@ -818,7 +818,7 @@ export default function Transaction({ data, className = '' }) {
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
                       <Link href={`/address/${general.sendingAddress}`}>
                         <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                          {ellipseAddress(general.sendingAddress, 6)}
+                          {ellipseAddress(ens_data?.[general.sendingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.sendingAddress?.toLowerCase(), 6)}
                         </a>
                       </Link>
                       <Copy size={18} text={general.sendingAddress} />
@@ -1079,7 +1079,7 @@ export default function Transaction({ data, className = '' }) {
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
                       <Link href={`/address/${general.receivingAddress}`}>
                         <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                          {ellipseAddress(general.receivingAddress, 6)}
+                          {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 6)}
                         </a>
                       </Link>
                       <Copy size={18} text={general.receivingAddress} />

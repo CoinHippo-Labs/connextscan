@@ -13,6 +13,7 @@ import Widget from '../../components/widget'
 
 import { user } from '../../lib/api/subgraph'
 import { balances as getBalances, contracts as getContracts } from '../../lib/api/covalent'
+import { domains } from '../../lib/api/ens'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
@@ -40,9 +41,23 @@ export default function CrosschainAddress() {
     }
   }, [assets_data])
 
-  useEffect(() => {
-    if (address && routerIds?.includes(address.toLowerCase())) {
-      router.push(`/router/${address}`)
+  useEffect(async () => {
+    if (address) {
+      if (routerIds?.includes(address.toLowerCase())) {
+        router.push(`/router/${address}`)
+      }
+      else {
+        const response = await domains({ where: `{ resolvedAddress_in: ["${address.toLowerCase()}"] }` })
+
+        const ensData = _.concat(ensData || [], response?.data || [])
+
+        if (ensData) {
+          dispatch({
+            type: ENS_DATA,
+            value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+          })
+        }
+      }
     }
   }, [address, routerIds])
 

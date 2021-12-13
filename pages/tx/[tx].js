@@ -2,6 +2,7 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
+import _ from 'lodash'
 import Loader from 'react-loader-spinner'
 import { FaCheckCircle, FaDotCircle, FaTimesCircle } from 'react-icons/fa'
 import { MdPending } from 'react-icons/md'
@@ -12,10 +13,11 @@ import Copy from '../../components/copy'
 
 import { transactions as getTransactions } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
+import { domains } from '../../lib/api/ens'
 import { networks } from '../../lib/menus'
 import { ellipseAddress } from '../../lib/utils'
 
-import { CONTRACTS_DATA } from '../../reducers/types'
+import { CONTRACTS_DATA, ENS_DATA } from '../../reducers/types'
 
 export default function CrosschainTx() {
   const dispatch = useDispatch()
@@ -181,6 +183,20 @@ export default function CrosschainTx() {
         if (!controller.signal.aborted) {
           if (['search'].includes(source)) {
             router.push(`/tx/${tx}`)
+          }
+          else if (data) {
+            const addresses = _.uniq([data.sender?.initiator, data.sender?.receivingAddress, data.receiver?.initiator, data.receiver?.receivingAddress].filter(_address => _address))
+
+            const response = await domains({ where: `{ resolvedAddress_in: [${addresses.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+            const ensData = _.concat(ensData || [], response?.data || [])
+
+            if (ensData) {
+              dispatch({
+                type: ENS_DATA,
+                value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+              })
+            }
           }
 
           setTransaction({ data, tx })
