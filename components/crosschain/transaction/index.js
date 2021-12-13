@@ -191,7 +191,7 @@ export default function Transaction({ data, className = '' }) {
         actionButtons.push(
           <span key={actionButtons.length} className="min-w-max flex flex-col text-gray-400 dark:text-gray-500 text-xs font-light text-right">
             <span>address not match.</span>
-            <span className="flex items-center">(Your<span className="hidden sm:block ml-1">connected addr</span>: {ellipseAddress(address, 6)})</span>
+            <span className="flex items-center">(Your<span className="hidden sm:block ml-1">connected addr</span>: {ellipseAddress(ens_data?.[address?.toLowerCase()]?.name, 10) || ellipseAddress(address?.toLowerCase(), 6)})</span>
           </span>
         )
       }
@@ -240,7 +240,7 @@ export default function Transaction({ data, className = '' }) {
                     {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
                       <Link href={`/address/${general.receivingAddress}`}>
                         <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                          {ellipseAddress(general.receivingAddress, 10)}
+                          {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
                         </a>
                       </Link>
                       <Copy size={18} text={general.receivingAddress} />
@@ -367,7 +367,7 @@ export default function Transaction({ data, className = '' }) {
                       {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
                         <Link href={`/address/${general.receivingAddress}`}>
                           <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                            {ellipseAddress(general.receivingAddress, 10)}
+                            {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
                           </a>
                         </Link>
                         <Copy size={18} text={general.receivingAddress} />
@@ -514,7 +514,7 @@ export default function Transaction({ data, className = '' }) {
             size={18}
             text={canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress}
             copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-              {ellipseAddress(canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress, 6)}
+              {ellipseAddress(ens_data?.[(canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress)?.toLowerCase()]?.name, 10) || ellipseAddress((canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress)?.toLowerCase(), 6)}
             </span>}
           />
           {canCancelSender ?
