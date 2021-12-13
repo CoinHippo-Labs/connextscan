@@ -97,11 +97,18 @@ export default function Routers() {
         {router?.router_id && (
           <div className="space-y-0.5">
             {ens_data?.[router.router_id.toLowerCase()]?.name && (
-              <Link href={`/router/${router.router_id}`}>
-                <a className="text-gray-900 dark:text-white font-semibold">
-                  {ens_data[router.router_id.toLowerCase()].name}
-                </a>
-              </Link>
+              <div className="flex items-center">
+                <Img
+                  src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[router.router_id.toLowerCase()].name}`}
+                  alt=""
+                  className="w-6 h-6 rounded-full mr-2"
+                />
+                <Link href={`/router/${router.router_id}`}>
+                  <a className="text-gray-900 dark:text-white font-semibold">
+                    {ens_data[router.router_id.toLowerCase()].name}
+                  </a>
+                </Link>
+              </div>
             )}
             <div className="flex items-center space-x-1">
               {ens_data?.[router.router_id.toLowerCase()]?.name ?

@@ -182,11 +182,18 @@ export default function LeaderboardRouters({ className = '' }) {
               !props.row.original.skeleton ?
                 <div className="space-y-0.5 my-1">
                   {ens_data?.[props.value?.toLowerCase()]?.name && (
-                    <Link href={`/router/${props.value?.toLowerCase()}`}>
-                      <a className="text-gray-900 dark:text-white font-semibold">
-                        {ens_data[props.value?.toLowerCase()].name}
-                      </a>
-                    </Link>
+                    <div className="flex items-center">
+                      <Img
+                        src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[props.value?.toLowerCase()].name}`}
+                        alt=""
+                        className="w-6 h-6 rounded-full mr-2"
+                      />
+                      <Link href={`/router/${props.value?.toLowerCase()}`}>
+                        <a className="text-gray-900 dark:text-white font-semibold">
+                          {ens_data[props.value?.toLowerCase()].name}
+                        </a>
+                      </Link>
+                    </div>
                   )}
                   <div className="flex items-center space-x-1">
                     {ens_data?.[props.value?.toLowerCase()]?.name ?

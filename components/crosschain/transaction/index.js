@@ -238,6 +238,13 @@ export default function Transaction({ data, className = '' }) {
                       <span className="hidden sm:block">:</span>
                     </div>
                     {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                      {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
+                        <Img
+                          src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
+                          alt=""
+                          className="w-6 h-6 rounded-full"
+                        />
+                      )}
                       <Link href={`/address/${general.receivingAddress}`}>
                         <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
                           {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
@@ -365,6 +372,13 @@ export default function Transaction({ data, className = '' }) {
                         <span className="hidden sm:block">:</span>
                       </div>
                       {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                        {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
+                          <Img
+                            src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
+                            alt=""
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
                         <Link href={`/address/${general.receivingAddress}`}>
                           <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
                             {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
@@ -816,6 +830,13 @@ export default function Transaction({ data, className = '' }) {
                 general?.sendingAddress ?
                   <div className="min-w-max">
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                      {ens_data?.[general.sendingAddress?.toLowerCase()]?.name && (
+                        <Img
+                          src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.sendingAddress.toLowerCase()].name}`}
+                          alt=""
+                          className="w-6 h-6 rounded-full"
+                        />
+                      )}
                       <Link href={`/address/${general.sendingAddress}`}>
                         <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
                           {ellipseAddress(ens_data?.[general.sendingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.sendingAddress?.toLowerCase(), 6)}
@@ -1077,6 +1098,13 @@ export default function Transaction({ data, className = '' }) {
                 general?.receivingAddress ?
                   <div className="min-w-max">
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                      {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
+                        <Img
+                          src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
+                          alt=""
+                          className="w-6 h-6 rounded-full"
+                        />
+                      )}
                       <Link href={`/address/${general.receivingAddress}`}>
                         <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
                           {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 6)}

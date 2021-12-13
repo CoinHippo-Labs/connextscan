@@ -289,7 +289,14 @@ export default function RouterAddress() {
         </div>}
         subtitle={<div>
           {ens_data?.[address?.toLowerCase()]?.name && (
-            <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
+            <div className="flex items-center">
+              <Img
+                src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[address?.toLowerCase()].name}`}
+                alt=""
+                className="w-8 h-8 rounded-full mr-3"
+              />
+              <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
+            </div>
           )}
           <Copy
             size={ens_data?.[address?.toLowerCase()]?.name ? 12 : 24}

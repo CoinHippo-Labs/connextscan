@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
+import { Img } from 'react-image'
 import { BiWallet } from 'react-icons/bi'
 
 import Balances from '../../components/crosschain/balances'
@@ -207,7 +208,14 @@ export default function CrosschainAddress() {
         title="Address"
         subtitle={<div>
           {ens_data?.[address?.toLowerCase()]?.name && (
-            <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
+            <div className="flex items-center">
+              <Img
+                src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[address?.toLowerCase()].name}`}
+                alt=""
+                className="w-8 h-8 rounded-full mr-3"
+              />
+              <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
+            </div>
           )}
           <Copy
             size={ens_data?.[address?.toLowerCase()]?.name ? 12 : 24}
