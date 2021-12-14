@@ -76,7 +76,7 @@ export default function LeaderboardRouters({ className = '' }) {
           liquidity_volume: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volume'),
           liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
         }
-      }), ['liquidity'], ['desc'])
+      }), ['liquidity_volume'], ['desc'])
 
       data = data.map(_router => {
         return {

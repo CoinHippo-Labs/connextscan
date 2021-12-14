@@ -186,7 +186,7 @@ export default function TopLiquidity({ n, isAggs = true, className = '' }) {
                     <Link key={key} href={`/router/${_.maxBy(value, 'normalize_amount')?.router?.id}`}>
                       <a className="flex items-center justify-end space-x-2">
                         <span className="font-mono font-semibold">
-                          {numberFormat(_.maxBy(value, 'normalize_amount')?.normalize_amount, '0,0')}
+                          {numberFormat(_.maxBy(value, 'normalize_amount')?.normalize_amount, '0,0.00')}
                         </span>
                         {_.maxBy(value, 'normalize_amount')?.data?.contract_ticker_symbol && (
                           <span className="text-gray-600 dark:text-gray-400 text-xs">{_.maxBy(value, 'normalize_amount').data.contract_ticker_symbol}</span>
