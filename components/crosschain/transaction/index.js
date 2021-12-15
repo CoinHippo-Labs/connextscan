@@ -960,27 +960,27 @@ export default function Transaction({ data, className = '' }) {
                       <img
                         src={general.sendingChain.icon}
                         alt=""
-                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full mx-auto"
                       />
                     )
                     :
-                    <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                    <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 mx-auto" style={{ borderRadius: '100%' }} />
                   }
                   <img
                     src={networks.find(network => network.id === '')?.icon}
                     alt=""
-                    className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                    className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full mx-auto"
                   />
                   {data ?
                     general?.receivingChain && (
                       <img
                         src={general.receivingChain.icon}
                         alt=""
-                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full mx-auto"
                       />
                     )
                     :
-                    <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                    <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 mx-auto" style={{ borderRadius: '100%' }} />
                   }
                 </div>
                 {general?.router?.id && (
