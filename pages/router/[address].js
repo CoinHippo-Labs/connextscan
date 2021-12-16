@@ -513,7 +513,7 @@ export default function RouterAddress() {
                           </div>
                         </div>
                         <div className="w-full flex flex-col items-end justify-center">
-                          <div className="text-gray-400 dark:text-gray-600 text-sm">Recv. Locked</div>
+                          <div className="text-gray-400 dark:text-gray-600 text-sm text-right">Recv. Locked</div>
                           <div>
                             <span className="font-mono text-xs sm:text-sm font-semibold mr-1.5">{typeof asset?.normalize_locked === 'number' ? numberFormat(asset.normalize_locked, '0,0') : asset?.locked && !(asset?.data) ? numberFormat(asset.locked / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
                             <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-xs">{asset?.data?.contract_ticker_symbol}</span>
