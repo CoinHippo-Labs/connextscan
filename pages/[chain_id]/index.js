@@ -207,7 +207,7 @@ export default function Chain() {
                 <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
               }
             </span>
-            <span className="sm:text-right mb-auto ml-0 sm:ml-16">
+            {/*<span className="sm:text-right mb-auto ml-0 sm:ml-16">
               <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">Volume {hourly_time_range}h</div>
               {chain_id && hourlyData?.chain_id === chain_id ?
                 <div className="font-mono text-xl font-semibold">
@@ -235,7 +235,7 @@ export default function Chain() {
                 :
                 <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
               }
-            </span>
+            </span>*/}
           </div>
           <Assets data={routers} assetBy={assetBy} className="mt-4" />
         </div>
