@@ -68,7 +68,7 @@ export default function TimelyTransaction({ theTransaction, setTheTransaction, s
         volume: _.sumBy(value, 'normalize_volume'),
         receiving_tx_count: _.sumBy(value, 'receivingTxCount'),
         volumeIn: _.sumBy(value, 'normalize_volumeIn'),
-        fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
+        fees: _.sumBy(value, 'normalize_relayerFee')/*_.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume')*/,
       }
     }).map(timely => {
       return {

@@ -35,7 +35,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           )}
           <span className="text-gray-700 dark:text-gray-300 text-base sm:text-sm xl:text-base font-medium">{data.title || data.short_name}</span>
         </div>
-        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Traffics</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Accumulated Fees</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.fees === 'number' ? numberFormat(data.fees, '0,0') : '-'}</div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.volume === 'number' ? numberFormat(data.volume, '0,0') : '-'}</div>
@@ -68,24 +68,28 @@ export default function FeesByChain() {
       //     ...asset,
       //     normalize_volume: asset?.data?.contract_decimals && (asset.volume / Math.pow(10, asset.data.contract_decimals)),
       //     normalize_volumeIn: asset?.data?.contract_decimals && (asset.volumeIn / Math.pow(10, asset.data.contract_decimals)),
+      //     normalize_relayerFee: asset?.data?.contract_decimals && (asset.relayerFee / Math.pow(10, asset.data.contract_decimals)),
       //   }
       // }).map(asset => {
       //   return {
       //     ...asset,
       //     normalize_volume: typeof asset?._normalize_volume === 'number' ? asset._normalize_volume : typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
       //     normalize_volumeIn: typeof asset?._normalize_volumeIn === 'number' ? asset._normalize_volumeIn : typeof asset?.normalize_volumeIn === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_volumeIn * asset.data.prices[0].price),
+      //     normalize_relayerFee: typeof asset?._normalize_relayerFee === 'number' ? asset._normalize_relayerFee : typeof asset?.normalize_relayerFee === 'number' && typeof asset?.data?.prices?.[0].price === 'number' && (asset.normalize_relayerFee * asset.data.prices[0].price),
       //   }
       }).map(asset => {
         return {
           ...asset,
           normalize_volume: asset._normalize_volume,
           normalize_volumeIn: asset._normalize_volumeIn,
+          normalize_relayerFee: asset._normalize_relayerFee,
         }
       }).map(asset => {
         return {
           ...asset,
           value_volume: asset.normalize_volume,
           value_volumeIn: asset.normalize_volumeIn,
+          value_relayerFee: asset.normalize_relayerFee,
         }
       }),
       'chain_data.id'
@@ -95,7 +99,7 @@ export default function FeesByChain() {
         assets: value,
         volume: _.sumBy(value, 'value_volume'),
         volumeIn: _.sumBy(value, 'value_volumeIn'),
-        fees: _.sumBy(value, 'value_volumeIn') - _.sumBy(value, 'value_volume'),
+        fees: _.sumBy(value, 'value_relayerFee')/*_.sumBy(value, 'value_volumeIn') - _.sumBy(value, 'value_volume')*/,
       }
     }).map(chain => { return { ...chain, fees_string: `${currency_symbol}${numberFormat(chain.fees, Math.abs(chain.fees) >= 1000000 ? '0,0.00a' : '0,0')}` } })
 

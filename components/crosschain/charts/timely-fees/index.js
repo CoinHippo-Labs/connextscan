@@ -29,7 +29,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <div className="text-gray-600 dark:text-gray-400 text-sm">
           {moment(data?.time * 1000).utc().format('MMM D, YYYY [(UTC)]')}
         </div>
-        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Traffics</div>
+        <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Accumulated Fees</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.fees === 'number' ? numberFormat(data.fees, '0,0') : '-'}</div>
         <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume</div>
         <div className="text-base font-semibold">{currency_symbol}{typeof data.volume === 'number' ? numberFormat(data.volume, '0,0') : '-'}</div>
@@ -58,7 +58,7 @@ export default function TimelyFees({ theFees, setTheFees, setTheVolume, setTheTr
         volume: _.sumBy(value, 'normalize_volume'),
         receiving_tx_count: _.sumBy(value, 'receivingTxCount'),
         volumeIn: _.sumBy(value, 'normalize_volumeIn'),
-        fees: _.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume'),
+        fees: _.sumBy(value, 'normalize_relayerFee')/*_.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume')*/,
       }
     }), ['time'], ['asc'])
 
@@ -74,7 +74,7 @@ export default function TimelyFees({ theFees, setTheFees, setTheVolume, setTheTr
       _data = _data.map((timely, i) => {
         return {
           ...timely,
-          fees: timely.volumeIn - timely.volume,
+          fees: timely.fees/*timely.volumeIn - timely.volume*/,
           day_string: i % 2 === 0 && moment(timely.time * 1000).utc().format('DD'),
         }
       })

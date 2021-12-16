@@ -91,6 +91,9 @@ export default function Index() {
                       volume_ins: {
                         sum: { field: 'normalize_volumeIn' },
                       },
+                      relayer_fees: {
+                        sum: { field: 'normalize_relayerFee' },
+                      },
                     },
                   },
                 },
@@ -205,17 +208,14 @@ export default function Index() {
               ...timely,
               normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
               normalize_volumeIn: timely?.data?.contract_decimals && (timely.volumeIn / Math.pow(10, timely.data.contract_decimals)),
+              normalize_relayerFee: timely?.data?.contract_decimals && (timely.relayerFee / Math.pow(10, timely.data.contract_decimals)),
             }
           }).map(timely => {
             return {
               ...timely,
               normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
               normalize_volumeIn: typeof timely?._normalize_volumeIn === 'number' ? timely._normalize_volumeIn : typeof timely?.normalize_volumeIn === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volumeIn * timely.data.prices[0].price),
-            }
-          }).map(timely => {
-            return {
-              ...timely,
-              normalize_volumeIn: timely?.version === 'v0' ? timely?.normalize_volume : timely?.normalize_volumeIn,
+              normalize_relayerFee: typeof timely?._normalize_relayerFee === 'number' ? timely._normalize_relayerFee : typeof timely?.normalize_relayerFee === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_relayerFee * timely.data.prices[0].price),
             }
           }).filter(timely => timely?.data)
         ]
@@ -372,7 +372,7 @@ export default function Index() {
         {['true'].includes(debug) && (
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
             <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Traffics by Chain</div>}
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees by Chain</div>}
               right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
               className="lg:col-span-2 px-0 sm:px-4"
             >
@@ -381,13 +381,15 @@ export default function Index() {
               </div>
             </Widget>
             <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Traffics</div>}
-              right={theVolume && (
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees</div>}
+              right={theVolume ?
                 <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
                   <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theFees.fees === 'number' ? numberFormat(theFees.fees, '0,0') : ' -'}</div>
                   <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theFees.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
                 </div>
-              )}
+                :
+                timely_data && timelyData && <div style={{ height: '54px' }} />
+              }
               contentClassName="items-start"
               className="lg:col-span-2 px-0 sm:px-4"
             >
