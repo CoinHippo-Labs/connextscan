@@ -45,16 +45,19 @@ export default function LeaderboardRouters({ className = '' }) {
             ...asset,
             normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
             normalize_locked: asset?.data?.contract_decimals && ((asset.locked || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_lockedIn: asset?.data?.contract_decimals && ((asset.lockedIn || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_supplied: asset?.data?.contract_decimals && ((asset.supplied || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_removed: asset?.data?.contract_decimals && ((asset.removed || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_volume: asset?.data?.contract_decimals && ((asset.volume || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_volumeIn: asset?.data?.contract_decimals && ((asset.volumeIn || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_receivingFulfillTxCount: Number(asset.receivingFulfillTxCount) || 0,
           }
         }).map(asset => {
           return {
             ...asset,
             value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
             value_locked: typeof asset?.normalize_locked === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_locked * asset.data.prices[0].price),
+            value_lockedIn: typeof asset?.normalize_lockedIn === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_lockedIn * asset.data.prices[0].price),
             value_supplied: typeof asset?.normalize_supplied === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_supplied * asset.data.prices[0].price),
             value_removed: typeof asset?.normalize_removed === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_removed * asset.data.prices[0].price),
             value_volume: typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
@@ -71,10 +74,12 @@ export default function LeaderboardRouters({ className = '' }) {
           ...assets,
           liquidity: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value'),
           liquidity_locked: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_locked'),
+          liquidity_lockedIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_lockedIn'),
           liquidity_supplied: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_supplied'),
           liquidity_removed: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_removed'),
           liquidity_volume: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volume'),
           liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
+          total_receivingFulfillTxCount: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'normalize_receivingFulfillTxCount'),
         }
       }), ['liquidity_volume'], ['desc'])
 
@@ -97,10 +102,12 @@ export default function LeaderboardRouters({ className = '' }) {
             ..._router,
             // liquidity: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value'),
             // liquidity_locked: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_locked'),
+            // liquidity_lockedIn: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_lockedIn'),
             // liquidity_supplied: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_supplied'),
             // liquidity_removed: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_removed'),
             // liquidity_volume: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_volume'),
             // liquidity_volumeIn: assets &&_.sumBy(Object.values(assets).flatMap(_assets => _assets), 'value_volumeIn'),
+            // total_receivingFulfillTxCount: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'normalize_receivingFulfillTxCount'),
           }
         }
         else {
@@ -273,6 +280,20 @@ export default function LeaderboardRouters({ className = '' }) {
               !props.row.original.skeleton ?
                 <div className="font-mono font-semibold text-right my-1">
                   {currency_symbol}{numberFormat(props.value, '0,0')}
+                </div>
+                :
+                <div className="skeleton w-24 h-5 my-1 ml-auto" />
+            ),
+            headerClassName: 'justify-end text-right',
+          },
+          {
+            Header: 'Transactions',
+            accessor: 'total_receivingFulfillTxCount',
+            sortType: (rowA, rowB) => rowA.original.total_receivingFulfillTxCount > rowB.original.total_receivingFulfillTxCount ? 1 : -1,
+            Cell: props => (
+              !props.row.original.skeleton ?
+                <div className="font-mono font-semibold text-right my-1">
+                  {numberFormat(props.value, '0,0')}
                 </div>
                 :
                 <div className="skeleton w-24 h-5 my-1 ml-auto" />

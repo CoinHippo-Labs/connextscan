@@ -65,16 +65,19 @@ export default function RouterAddress() {
             ...asset,
             normalize_amount: asset?.data?.contract_decimals && (asset.amount / Math.pow(10, asset.data.contract_decimals)),
             normalize_locked: asset?.data?.contract_decimals && ((asset.locked || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_lockedIn: asset?.data?.contract_decimals && ((asset.lockedIn || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_supplied: asset?.data?.contract_decimals && ((asset.supplied || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_removed: asset?.data?.contract_decimals && ((asset.removed || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_volume: asset?.data?.contract_decimals && ((asset.volume || 0) / Math.pow(10, asset.data.contract_decimals)),
             normalize_volumeIn: asset?.data?.contract_decimals && ((asset.volumeIn || 0) / Math.pow(10, asset.data.contract_decimals)),
+            normalize_receivingFulfillTxCount: Number(asset.receivingFulfillTxCount) || 0,
           }
         }).map(asset => {
           return {
             ...asset,
             value: typeof asset?.normalize_amount === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_amount * asset.data.prices[0].price),
             value_locked: typeof asset?.normalize_locked === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_locked * asset.data.prices[0].price),
+            value_lockedIn: typeof asset?.normalize_lockedIn === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_lockedIn * asset.data.prices[0].price),
             value_supplied: typeof asset?.normalize_supplied === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_supplied * asset.data.prices[0].price),
             value_removed: typeof asset?.normalize_removed === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_removed * asset.data.prices[0].price),
             value_volume: typeof asset?.normalize_volume === 'number' && typeof asset?.data?.prices?.[0]?.price === 'number' && (asset.normalize_volume * asset.data.prices[0].price),
@@ -91,10 +94,12 @@ export default function RouterAddress() {
           ...assets,
           liquidity: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value'),
           liquidity_locked: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_locked'),
+          liquidity_lockedIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_lockedIn'),
           liquidity_supplied: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_supplied'),
           liquidity_removed: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_removed'),
           liquidity_volume: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volume'),
           liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
+          total_receivingFulfillTxCount: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'normalize_receivingFulfillTxCount'),
         }
       }))
 
@@ -383,12 +388,12 @@ export default function RouterAddress() {
             </div>
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Volume IN</div>}
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Transactions</div>}
           >
             <div className="mx-3">
               <div className="font-mono text-xl font-semibold mt-1">
                 {contracts_data && routerAssets ?
-                  `${currency_symbol}${numberFormat(routerAssets.liquidity_volumeIn, '0,0')}`
+                  numberFormat(routerAssets.total_receivingFulfillTxCount, '0,0')
                   :
                   <div className="skeleton w-20 h-6 mt-2" />
                 }
@@ -500,8 +505,15 @@ export default function RouterAddress() {
                         <div className="text-gray-500 dark:text-gray-400 text-2xs sm:text-sm font-medium mt-1">~{currency_symbol}{typeof asset?.value === 'number' ? numberFormat(asset.value, '0,0') : ' -'}</div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="w-full flex items-center justify-between">
-                          <div className="text-gray-400 dark:text-gray-600 text-sm">Locked:</div>
+                        <div className="w-full flex flex-col items-start justify-center">
+                          <div className="text-gray-400 dark:text-gray-600 text-sm">Send Locked</div>
+                          <div>
+                            <span className="font-mono text-xs sm:text-sm font-semibold mr-1.5">{typeof asset?.normalize_lockedIn === 'number' ? numberFormat(asset.normalize_lockedIn, '0,0') : asset?.lockedIn && !(asset?.data) ? numberFormat(asset.lockedIn / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
+                            <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-xs">{asset?.data?.contract_ticker_symbol}</span>
+                          </div>
+                        </div>
+                        <div className="w-full flex flex-col items-end justify-center">
+                          <div className="text-gray-400 dark:text-gray-600 text-sm">Recv. Locked</div>
                           <div>
                             <span className="font-mono text-xs sm:text-sm font-semibold mr-1.5">{typeof asset?.normalize_locked === 'number' ? numberFormat(asset.normalize_locked, '0,0') : asset?.locked && !(asset?.data) ? numberFormat(asset.locked / Math.pow(10, asset?.chain_data?.currency?.decimals), '0,0') : '-'}</span>
                             <span className="text-gray-600 dark:text-gray-400 text-2xs sm:text-xs">{asset?.data?.contract_ticker_symbol}</span>
