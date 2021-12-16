@@ -5,16 +5,19 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import _ from 'lodash'
 import moment from 'moment'
 
+import TimelyVolume from '../../components/charts/timely-volume'
+import TimelyTransaction from '../../components/charts/timely-transaction'
 import Assets from '../../components/assets'
 import Transactions from '../../components/transactions'
 import SectionTitle from '../../components/section-title'
 import Widget from '../../components/widget'
 
-import { hourly, routers as getRouters } from '../../lib/api/subgraph'
+import { daily, hourly, routers as getRouters } from '../../lib/api/subgraph'
+import { dayMetrics } from '../../lib/api/opensearch'
 import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
-import { hourly_time_range } from '../../lib/object/timely'
+import { daily_time_ranges, daily_time_range, query_daily_time_range, hourly_time_range } from '../../lib/object/timely'
 import { numberFormat, getName } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
@@ -32,6 +35,13 @@ export default function Chain() {
   const [assetBy, setAssetBy] = useState('assets')
   const [routers, setRouters] = useState(null)
   const [hourlyData, setHourlyData] = useState(null)
+
+  const [dayMetricsData, setDayMetricsData] = useState(null)
+  const [timeRange, setTimeRange] = useState(_.last(daily_time_ranges?.filter(time_range => !time_range.disabled)) || { day: daily_time_range })
+  const [timelyData, setTimelyData] = useState(null)
+  const [chainTimelyData, setChainTimelyData] = useState(null)
+  const [theVolume, setTheVolume] = useState(null)
+  const [theTransaction, setTheTransaction] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -159,6 +169,140 @@ export default function Chain() {
     }
   }, [network])
 
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const getData = async () => {
+      if (!controller.signal.aborted) {
+        if (chain_id) {
+          const resDayMetrics = await dayMetrics({
+            query: {
+              match: { chain_id },
+            },
+            aggs: {
+              chains: {
+                terms: { field: 'chain_id.keyword', size: 1000 },
+                aggs: {
+                  day_metrics: {
+                    terms: { field: 'dayStartTimestamp', size: 10000 },
+                    aggs: {
+                      versions: {
+                        terms: { field: 'version.keyword' },
+                      },
+                      volumes: {
+                        sum: { field: 'normalize_volume' },
+                      },
+                      txs: {
+                        sum: { field: 'txCount' },
+                      },
+                      sending_txs: {
+                        sum: { field: 'sendingTxCount' },
+                      },
+                      receiving_txs: {
+                        sum: { field: 'receivingTxCount' },
+                      },
+                      cancel_txs: {
+                        sum: { field: 'cancelTxCount' },
+                      },
+                      volume_ins: {
+                        sum: { field: 'normalize_volumeIn' },
+                      },
+                      relayer_fees: {
+                        sum: { field: 'normalize_relayerFee' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          })
+
+          setDayMetricsData(resDayMetrics?.data || {})
+        }
+      }
+    }
+
+    getData()
+
+    return () => {
+      controller?.abort()
+    }
+  }, [chain_id])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    const getData = async () => {
+      if (dayMetricsData) {
+        let _timelyData
+
+        const today = moment().utc().startOf('day')
+
+        if (!controller.signal.aborted) {
+          const response = await daily({ chain_id: chain_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+
+          _timelyData = {
+            ..._timelyData,
+            [`${chain_id}`]: _.concat(response?.data || [], dayMetricsData.[`${chain_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+          }
+        }
+
+        setTimelyData(_timelyData || {})
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 60 * 1000)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
+  }, [dayMetricsData])
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    if (contracts_data && timelyData && Object.keys(timelyData).length >= 1) {
+      const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
+        return [
+          key,
+          value.map(timely => {
+            return {
+              ...timely,
+              data: timely?.data || contracts_data.find(contract => contract.id?.replace(`${key}-`, '') === timely?.assetId)?.data,
+              chain_data: networks.find(network => network.id === key),
+            }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
+              normalize_volumeIn: timely?.data?.contract_decimals && (timely.volumeIn / Math.pow(10, timely.data.contract_decimals)),
+              normalize_relayerFee: timely?.data?.contract_decimals && (timely.relayerFee / Math.pow(10, timely.data.contract_decimals)),
+            }
+          }).map(timely => {
+            return {
+              ...timely,
+              normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
+              normalize_volumeIn: typeof timely?._normalize_volumeIn === 'number' ? timely._normalize_volumeIn : typeof timely?.normalize_volumeIn === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volumeIn * timely.data.prices[0].price),
+              normalize_relayerFee: typeof timely?._normalize_relayerFee === 'number' ? timely._normalize_relayerFee : typeof timely?.normalize_relayerFee === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_relayerFee * timely.data.prices[0].price),
+            }
+          }).filter(timely => timely?.data)
+        ]
+      }))
+
+      if (!controller.signal.aborted) {
+        if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
+          setChainTimelyData(_timelyData || {})
+        }
+      }
+    }
+
+    return () => {
+      controller?.abort()
+    }
+  }, [contracts_data, timelyData])
+
   if (query?.chain_id && !network) {
     router.push('/')
   }
@@ -239,6 +383,40 @@ export default function Chain() {
           </div>
           <Assets data={routers} assetBy={assetBy} className="mt-4" />
         </div>
+        <Widget
+          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume</div>}
+          right={theVolume ?
+            <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
+              <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theVolume.volume === 'number' ? numberFormat(theVolume.volume, '0,0') : ' -'}</div>
+              <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+            </div>
+            :
+            timelyData && chainTimelyData && <div style={{ height: '54px' }} />
+          }
+          contentClassName="items-start"
+          className="lg:col-span-2 mt-8 px-0 sm:px-4"
+        >
+          <div>
+            <TimelyVolume timelyData={chainTimelyData} timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
+          </div>
+        </Widget>
+        <Widget
+          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
+          right={theTransaction ?
+            <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
+              <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.receiving_tx_count === 'number' ? numberFormat(theTransaction.receiving_tx_count, '0,0') : '-'}</div>
+              <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+            </div>
+            :
+            timelyData && chainTimelyData && <div style={{ height: '54px' }} />
+          }
+          contentClassName="items-start"
+          className="lg:col-span-2 mt-8 px-0 sm:px-4"
+        >
+          <div>
+            <TimelyTransaction timelyData={chainTimelyData} theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
+          </div>
+        </Widget>
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <span className="uppercase text-gray-400 dark:text-gray-500 text-base font-light mx-3">Latest Transactions</span>
           <div className="h-3" />
