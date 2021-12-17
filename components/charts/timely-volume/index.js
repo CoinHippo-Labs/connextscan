@@ -36,11 +36,11 @@ const CustomTooltip = ({ active, payload, label }) => {
         </div>
         <div className="flex items-center space-x-3">
           <div>
-            <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume IN</div>
+            <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume In</div>
             <div className="text-base font-semibold">{currency_symbol}{typeof data.volumeIn === 'number' ? numberFormat(data.volumeIn, '0,0') : '-'}</div>
           </div>
           <div>
-            <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume</div>
+            <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs mt-2">Volume Out</div>
             <div className="text-base font-semibold">{currency_symbol}{typeof data.volume === 'number' ? numberFormat(data.volume, '0,0') : '-'}</div>
           </div>
         </div>
