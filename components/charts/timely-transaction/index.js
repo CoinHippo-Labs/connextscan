@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         <div className="text-gray-600 dark:text-gray-400 text-sm">
           {moment(data?.time * 1000).utc().format('MMM D, YYYY [(UTC)]')}
         </div>
-        <div className="grid grid-flow-row grid-cols-3 gap-3 mt-2">
+        <div className="grid grid-flow-row grid-cols-1 gap-3 mt-2">
           {Object.entries(data?.receiving_tx_by_chain || {}).length > 0 ?
             _.orderBy(Object.entries(data.receiving_tx_by_chain).map(([key, value]) => { return { key, value } }), ['value'], ['desc']).map(({ key, value }) => (
               <div key={key} className="flex items-center space-x-2">
