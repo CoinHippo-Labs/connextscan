@@ -152,7 +152,7 @@ export default function LeaderboardRouters({ className = '' }) {
       return -1
     }
   }
-console.log(routers_status_data)
+
   return (
     <>
       <div className="flex items-center justify-end mb-2">

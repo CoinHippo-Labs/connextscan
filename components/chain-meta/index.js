@@ -115,9 +115,19 @@ export default function ChainMeta() {
           assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
         }
 
+        const assetDataByChain = _.groupBy(assetsData, 'chain_data.id')
+
+        for (let i = 0; i < _networks.length; i++) {
+          const network = _networks[i]
+
+          if (!assetDataByChain[network.id]) {
+            assetDataByChain[network.id] = []
+          }
+        }
+
         dispatch({
           type: ASSETS_SYNC_DATA,
-          value: _.groupBy(assetsData, 'chain_data.id'),
+          value: assetDataByChain,
         })
       }
     }
