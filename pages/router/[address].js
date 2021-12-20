@@ -8,6 +8,7 @@ import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
 import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
+import { BsFileEarmarkCheck } from 'react-icons/bs'
 
 import Transactions from '../../components/crosschain/transactions'
 import SectionTitle from '../../components/section-title'
@@ -288,9 +289,15 @@ export default function RouterAddress() {
   return (
     <>
       <SectionTitle
-        title={<div className="flex items-center space-x-1">
+        title={<div className="flex items-center space-x-1.5">
           <MdOutlineRouter size={20} className="mb-0.5" />
           <span>Router</span>
+          {routerStatus?.isRouterContract && (
+            <div className="max-w-min bg-blue-500 dark:bg-indigo-600 rounded-xl capitalize flex items-center text-white text-xs space-x-1 py-1 px-2.5">
+              <BsFileEarmarkCheck size={14} />
+              <span>Contract</span>
+            </div>
+          )}
         </div>}
         subtitle={<div>
           {ens_data?.[address?.toLowerCase()]?.name && (
@@ -341,7 +348,7 @@ export default function RouterAddress() {
         className="flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0"
       />
       <div className="max-w-6xl my-4 mx-auto pb-2">
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mt-8">
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-4 mt-8">
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Router Version</div>}
           >
@@ -350,6 +357,22 @@ export default function RouterAddress() {
                 {routers_status_data ?
                   routerStatus?.routerVersion ?
                     routerStatus.routerVersion
+                    :
+                    '-'
+                  :
+                  <div className="skeleton w-20 h-6 mt-2" />
+                }
+              </div>
+            </div>
+          </Widget>
+          <Widget
+            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Active Txs</div>}
+          >
+            <div className="mx-3">
+              <div className="font-mono text-xl font-semibold mt-1">
+                {routers_status_data ?
+                  routerStatus ?
+                    numberFormat(routerStatus.activeTransactionsLength, '0,0')
                     :
                     '-'
                   :

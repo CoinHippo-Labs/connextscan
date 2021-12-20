@@ -7,6 +7,7 @@ import _ from 'lodash'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
 import { MdRefresh } from 'react-icons/md'
+import { BsFileEarmarkCheck } from 'react-icons/bs'
 
 import Datatable from '../../../datatable'
 import Copy from '../../../copy'
@@ -81,7 +82,7 @@ export default function LeaderboardRouters({ className = '' }) {
           liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
           total_receivingFulfillTxCount: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'normalize_receivingFulfillTxCount'),
         }
-      }), ['liquidity_volume'], ['desc'])
+      }), ['isRouterContract', 'liquidity_volume'], ['desc', 'desc'])
 
       data = data.map(_router => {
         return {
@@ -91,7 +92,9 @@ export default function LeaderboardRouters({ className = '' }) {
       }).map(_router => {
         return {
           ..._router,
+          routerAddress: (_router.routerAddress || _router.router_id)?.toLowerCase(),
           trackerLength: typeof _router?.trackerLength === 'number' ? _router.trackerLength : -1,
+          activeTransactionsLength: typeof _router?.activeTransactionsLength === 'number' ? _router.activeTransactionsLength : -1,
           supportedChains: _router?.supportedChains?.filter(_chain_id => networks.findIndex(_network => _network?.network_id === _chain_id) > -1),
         }
       }).map(_router => {
@@ -149,7 +152,7 @@ export default function LeaderboardRouters({ className = '' }) {
       return -1
     }
   }
-
+console.log(routers_status_data)
   return (
     <>
       <div className="flex items-center justify-end mb-2">
@@ -183,7 +186,7 @@ export default function LeaderboardRouters({ className = '' }) {
           },
           {
             Header: 'Router',
-            accessor: 'router_id',
+            accessor: 'routerAddress',
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
@@ -221,6 +224,14 @@ export default function LeaderboardRouters({ className = '' }) {
                       </>
                     }
                   </div>
+                  {props.row.original.isRouterContract && (
+                    <div className="pt-1">
+                      <div className="max-w-min bg-blue-500 dark:bg-indigo-600 rounded-xl flex items-center text-white text-xs space-x-1 py-1 px-2.5">
+                        <BsFileEarmarkCheck size={14} />
+                        <span>RouterContract</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 :
                 <div className="flex items-start space-x-2 my-1">
@@ -243,6 +254,20 @@ export default function LeaderboardRouters({ className = '' }) {
                 :
                 <div className="skeleton w-16 h-5 my-1" />
             ),
+          },
+          {
+            Header: 'Active Txs',
+            accessor: 'activeTransactionsLength',
+            sortType: (rowA, rowB) => rowA.original.activeTransactionsLength > rowB.original.activeTransactionsLength ? 1 : -1,
+            Cell: props => (
+              !props.row.original.skeleton ?
+                <div className="font-mono font-semibold text-right my-1">
+                  {props.value > -1 ? numberFormat(props.value, '0,0') : 'N/A'}
+                </div>
+                :
+                <div className="skeleton w-12 h-5 my-1 ml-auto" />
+            ),
+            headerClassName: 'whitespace-nowrap justify-end text-right',
           },
           {
             Header: 'Processing Txs',
