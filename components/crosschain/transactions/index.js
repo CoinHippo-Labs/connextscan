@@ -483,7 +483,7 @@ export default function Transactions({ useData, n, event, className = '' }) {
                   </div>
                   {props.value && (
                     <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-xs space-x-1 mt-1.5 mb-1 ml-auto py-0.5 px-1.5">
-                      <span className="font-semibold">{numberFormat(props.value, '0,0.00000000')}</span>
+                      <span className="font-semibold">{numberFormat(props.value, '0,0.00000000', true)}</span>
                       <span className="uppercase text-gray-600 dark:text-gray-400">{props.row.original.sendingAsset?.contract_ticker_symbol || props.row.original.receivingAsset?.contract_ticker_symbol}</span>
                     </div>
                   )}
