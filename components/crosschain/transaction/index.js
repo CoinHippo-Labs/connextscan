@@ -95,7 +95,7 @@ export default function Transaction({ data, className = '' }) {
         }
       }
 
-      const sdk = new NxtpSdk({ chainConfig, signer })
+      const sdk = await NxtpSdk.create({ chainConfig, signer })
 
       let response
 
