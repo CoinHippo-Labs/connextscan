@@ -297,18 +297,20 @@ export default function Transaction({ data, className = '' }) {
                           </div>
                         )}
                       </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                        <div className="flex items-center text-gray-400 dark:text-gray-500">
-                          Fees
-                          <span className="hidden sm:block">:</span>
-                        </div>
-                        {receiver?.value && sender?.value && (
-                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                            <span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000')}</span>
-                            {/*<span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>*/}
+                      {false && (
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                          <div className="flex items-center text-gray-400 dark:text-gray-500">
+                            Fees
+                            <span className="hidden sm:block">:</span>
                           </div>
-                        )}
-                      </div>
+                          {receiver?.value && sender?.value && (
+                            <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                              <span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000')}</span>
+                              {/*<span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>*/}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </>
                   )}
                   <div className="flex items-center space-x-2 mx-auto py-2">
@@ -429,18 +431,20 @@ export default function Transaction({ data, className = '' }) {
                         </div>
                       )}
                     </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                      <div className="flex items-center text-gray-400 dark:text-gray-500">
-                        Fees
-                        <span className="hidden sm:block">:</span>
-                      </div>
-                      {receiver?.value && sender?.value && (
-                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                          <span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000', true)}</span>
-                          {/*<span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>*/}
+                    {false && (
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                        <div className="flex items-center text-gray-400 dark:text-gray-500">
+                          Fees
+                          <span className="hidden sm:block">:</span>
                         </div>
-                      )}
-                    </div>
+                        {receiver?.value && sender?.value && (
+                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                            <span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000', true)}</span>
+                            {/*<span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>*/}
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center space-x-2 mx-auto py-2">
                       {data ?
                         general?.sendingChain && (
