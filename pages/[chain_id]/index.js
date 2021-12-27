@@ -243,7 +243,7 @@ export default function Chain() {
 
           _timelyData = {
             ..._timelyData,
-            [`${chain_id}`]: _.concat(response?.data || [], dayMetricsData.[`${chain_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            [`${chain_id}`]: _.concat(response?.data || [], dayMetricsData[`${chain_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
         }
 

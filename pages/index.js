@@ -127,7 +127,7 @@ export default function Index() {
 
           _timelyData = {
             ..._timelyData,
-            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
         }
 
@@ -155,7 +155,7 @@ export default function Index() {
 
               _timelyData = {
                 ..._timelyData,
-                [`${network.id}`]: _.concat(response?.data || [], dayMetricsData.[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+                [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
               }
 
               // setNumLoadedChains(i + 1)
