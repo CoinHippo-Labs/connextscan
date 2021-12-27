@@ -14,7 +14,7 @@ import Widget from '../../components/widget'
 
 import { user } from '../../lib/api/subgraph'
 import { balances as getBalances, contracts as getContracts } from '../../lib/api/covalent'
-import { domains } from '../../lib/api/ens'
+import { domains, getENS } from '../../lib/api/ens'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
@@ -53,9 +53,15 @@ export default function CrosschainAddress() {
         const ensData = _.concat(ensData || [], response?.data || [])
 
         if (ensData?.length > 0) {
+          let ensResponse
+
+          if (ensData.length > 1) {
+            ensResponse = await getENS(address)
+          }
+
           dispatch({
             type: ENS_DATA,
-            value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+            value: Object.fromEntries(ensData.filter(domain => !ensResponse?.reverseRecord || domain?.name === ensResponse.reverseRecord).map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
           })
         }
       }

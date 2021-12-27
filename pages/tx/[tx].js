@@ -13,7 +13,7 @@ import Copy from '../../components/copy'
 
 import { transactions as getTransactions } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
-import { domains } from '../../lib/api/ens'
+import { domains, getENS } from '../../lib/api/ens'
 import { networks } from '../../lib/menus'
 import { ellipseAddress } from '../../lib/utils'
 
@@ -193,9 +193,19 @@ export default function CrosschainTx() {
             const ensData = _.concat(ensData || [], response?.data || [])
 
             if (ensData?.length > 0) {
+              const ensResponses = {}
+
+              for (let i = 0; i < addresses.length; i++) {
+                const address = addresses[i]?.toLowerCase()
+
+                if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === address).length > 1) {
+                  ensResponses[address] = await getENS(address)
+                }
+              }
+
               dispatch({
                 type: ENS_DATA,
-                value: Object.fromEntries(ensData.map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+                value: Object.fromEntries(ensData.filter(domain => !ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()]?.reverseRecord || domain?.name === ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()].reverseRecord).map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
               })
             }
           }
