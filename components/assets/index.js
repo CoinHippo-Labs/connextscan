@@ -74,25 +74,27 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                         </div>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 space-x-0 sm:space-x-1.5">
-                      <div className="text-gray-400: dark:text-gray-500 text-sm">Supported Chains:</div>
-                      <div className="max-w-md flex flex-wrap items-center sm:justify-end">
-                        {routerStatus?.supportedChains?.length > 0 ?
-                          routerStatus.supportedChains.map((_chain_id, i) => (
-                            networks.find(_network => _network?.network_id === _chain_id) && (
-                              <Img
-                                key={i}
-                                src={networks.find(_network => _network?.network_id === _chain_id).icon}
-                                alt=""
-                                className="w-5 h-5 rounded-full mb-1 mr-1"
-                              />
-                            )
-                          ))
-                          :
-                          <span>-</span>
-                        }
+                    {routers_status_data && (
+                      <div className="flex flex-col sm:flex-row items-start space-y-1 sm:space-y-0 space-x-0 sm:space-x-1.5">
+                        <div className="text-gray-400: dark:text-gray-500 text-sm">Supported Chains:</div>
+                        <div className="max-w-md flex flex-wrap items-center sm:justify-end">
+                          {routerStatus?.supportedChains?.length > 0 ?
+                            routerStatus.supportedChains.map((_chain_id, i) => (
+                              networks.find(_network => _network?.network_id === _chain_id) && (
+                                <Img
+                                  key={i}
+                                  src={networks.find(_network => _network?.network_id === _chain_id).icon}
+                                  alt=""
+                                  className="w-5 h-5 rounded-full mb-1 mr-1"
+                                />
+                              )
+                            ))
+                            :
+                            <span>-</span>
+                          }
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
                   :
                   <div className="skeleton w-40 h-5" />
