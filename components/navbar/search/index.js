@@ -58,7 +58,7 @@ export default function Search() {
           <input
             ref={inputSearchRef}
             value={inputSearch}
-            onChange={event => setInputSearch(event.target.value)}
+            onChange={event => setInputSearch(event.target.value?.trim())}
             type="search"
             placeholder="Search by Router / Address / Tx ID"
             className="w-60 sm:w-72 xl:w-96 h-8 sm:h-10 appearance-none rounded text-xs pl-2 sm:pl-8 pr-0 sm:pr-3 focus:outline-none"
