@@ -190,7 +190,7 @@ export default function CrosschainTx() {
 
             const response = await domains({ where: `{ resolvedAddress_in: [${addresses.map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
 
-            const ensData = _.concat(ensData || [], response?.data || [])
+            const ensData = response?.data || []
 
             if (ensData?.length > 0) {
               const ensResponses = {}

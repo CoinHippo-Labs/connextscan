@@ -50,7 +50,7 @@ export default function CrosschainAddress() {
       else {
         const response = await domains({ where: `{ resolvedAddress_in: ["${address.toLowerCase()}"] }` })
 
-        const ensData = _.concat(ensData || [], response?.data || [])
+        const ensData = response?.data || []
 
         if (ensData?.length > 0) {
           let ensResponse
