@@ -11,12 +11,12 @@ import { networks } from '../../lib/menus'
 import { WALLET_DATA, WALLET_RESET } from '../../reducers/types'
 
 const providerOptions = {
-  walletconnect: {
-    package: WalletConnectProvider,
-    options: {
-      infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
-    },
-  },
+  // walletconnect: {
+  //   package: WalletConnectProvider,
+  //   options: {
+  //     infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
+  //   },
+  // },
 }
 
 const web3Modal = typeof window !== 'undefined' && new Web3Modal({
