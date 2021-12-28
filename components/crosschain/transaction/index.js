@@ -187,7 +187,7 @@ export default function Transaction({ data, className = '' }) {
 
   if (canCancelSender || canDoAction) {
     if (web3_provider) {
-      if (![canCancelSender ? sender?.sendingAddress?.toLowerCase() : [receiver?.sendingAddress?.toLowerCase(), receiver?.user?.id?.toLowerCase()]].flatMap(_address => _address).includes(address?.toLowerCase())) {
+      if (![canCancelSender ? /*sender?.sendingAddress?.toLowerCase()*/sender?.user?.id?.toLowerCase() : [/*receiver?.sendingAddress?.toLowerCase(), */receiver?.user?.id?.toLowerCase()]].flatMap(_address => _address).includes(address?.toLowerCase())) {
         actionButtons.push(
           <span key={actionButtons.length} className="min-w-max flex flex-col text-gray-400 dark:text-gray-500 text-xs font-light text-right">
             <span>address not match.</span>
