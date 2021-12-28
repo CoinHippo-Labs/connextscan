@@ -15,6 +15,7 @@ import { MdOutlineRouter, MdPending, MdInfoOutline } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
 import { BsFileEarmarkX } from 'react-icons/bs'
+import { IoWalletOutline } from 'react-icons/io5'
 
 import Copy from '../../copy'
 import Widget from '../../widget'
@@ -509,7 +510,7 @@ export default function Transaction({ data, className = '' }) {
       body={<div className="space-y-3">
         <div className="flex text-left text-sm sm:text-base space-x-2 my-1">
           <span>1.</span>
-          <span>Connect your Metamask with the address and the network of the {canCancelSender ? 'sender' : 'receiver'} side.</span>
+          <span>Connect your Wallet with the address and the network of the {canCancelSender ? 'sender' : 'receiver'} side.</span>
         </div>
         <button
           className="bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 pointer-events-none rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3"
@@ -517,11 +518,12 @@ export default function Transaction({ data, className = '' }) {
         >
           <div className="flex items-center space-x-2">
             <span>Connect</span>
-            <img
+            <IoWalletOutline size={20} />
+            {/*<Img
               src="/logos/wallets/metamask.png"
               alt=""
               className="w-4 h-4 -mr-1 mb-0.5"
-            />
+            />*/}
           </div>
         </button>
         <TiArrowRight size={24} className="transform rotate-90 mx-auto" />

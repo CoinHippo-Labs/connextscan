@@ -1,41 +1,57 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import Web3Modal from 'web3modal'
+import WalletConnectProvider from '@walletconnect/web3-provider'
 import { providers, utils } from 'ethers'
-import HeadShake from 'react-reveal/HeadShake'
+import { Img } from 'react-image'
+import { IoWalletOutline } from 'react-icons/io5'
 
 import { networks } from '../../lib/menus'
 import { WALLET_DATA, WALLET_RESET } from '../../reducers/types'
 
-const providerOptions = {}
+const providerOptions = {
+  walletconnect: {
+    package: WalletConnectProvider,
+    options: {
+      infuraId: process.env.NEXT_PUBLIC_INFURA_ID,
+    },
+  },
+}
 
-export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, buttonConnectClassName, buttonDisconnectTitle, buttonDisconnectClassName }) {
+const web3Modal = typeof window !== 'undefined' && new Web3Modal({
+  network: 'mainnet', // optional
+  cacheProvider: true,
+  providerOptions,
+})
+
+export default function Wallet({ chainIdToConnect, hidden, disabled = false, buttonConnectTitle, buttonConnectClassName, buttonDisconnectTitle, buttonDisconnectClassName, onChangeNetwork }) {
   const dispatch = useDispatch()
-  const { wallet } = useSelector(state => ({ wallet: state.wallet }), shallowEqual)
+  const { chains, wallet, preferences } = useSelector(state => ({ chains: state.chains, wallet: state.wallet, preferences: state.preferences }), shallowEqual)
+  const { chains_data } = { ...chains }
   const { wallet_data } = { ...wallet }
   const { provider, web3_provider, chain_id } = { ...wallet_data }
-
-  const [web3Modal, setWeb3Modal] = useState(null)
+  const { theme } = { ...preferences }
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && !web3Modal) {
-      setWeb3Modal(new Web3Modal({
-        network: 'mainnet', // optional
-        cacheProvider: true,
-        providerOptions,
-      }))
+    if (web3Modal?.cachedProvider) {
+      connect()
     }
   }, [web3Modal])
+
+  useEffect(async () => {
+    if (web3Modal) {
+      await web3Modal.updateTheme(theme)
+    }
+  }, [theme])
 
   const connect = useCallback(async () => {
     const provider = await web3Modal.connect()
     const web3Provider = new providers.Web3Provider(provider)
 
     const signer = web3Provider.getSigner()
-    const address = await signer.getAddress()
-
     const network = await web3Provider.getNetwork()
+    const address = await signer.getAddress()
 
     dispatch({
       type: WALLET_DATA,
@@ -49,8 +65,8 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
     })
   }, [web3Modal])
 
-  const disconnect = useCallback(async () => {
-    if (web3Modal) {
+  const disconnect = useCallback(async (e, is_reestablish) => {
+    if (web3Modal && !is_reestablish) {
       await web3Modal.clearCachedProvider()
     }
 
@@ -75,7 +91,7 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
           try {
             await provider.request({
               method: 'wallet_addEthereumChain',
-              params: networks.find(_network => _network.network_id === chainIdToConnect)?.provider_params,
+              params: chains_data?.find(_chain => _chain.chain_id === chainIdToConnect)?.provider_params,
             })
           } catch (error) {
             console.log(error)
@@ -84,12 +100,6 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
       }
     }
   }
-
-  useEffect(() => {
-    if (web3Modal?.cachedProvider) {
-      connect()
-    }
-  }, [web3Modal])
 
   useEffect(() => {
     if (provider?.on) {
@@ -122,10 +132,10 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
         }
       }
 
-      const handleDisconnect = ({ code }) => {
-        disconnect()
+      const handleDisconnect = e => {
+        disconnect(e, e.code === 1013)
 
-        if (code === 1013) {
+        if (e.code === 1013) {
           connect()
         }
       }
@@ -148,40 +158,46 @@ export default function Wallet({ chainIdToConnect, hidden, buttonConnectTitle, b
     <>
       {web3_provider ?
         chainIdToConnect ?
-          <HeadShake duration={1500} forever>
-            <button
-              onClick={switchNetwork}
-              className={buttonDisconnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-2xl whitespace-nowrap font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
-            >
-              {buttonDisconnectTitle || 'Wrong Network'}
-            </button>
-          </HeadShake>
+          <button
+            disabled={disabled}
+            onClick={() => {
+              switchNetwork()
+
+              if (onChangeNetwork) {
+                onChangeNetwork()
+              }
+            }}
+            className={buttonDisconnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-3xl whitespace-nowrap font-semibold py-1.5 sm:py-2 px-3 sm:px-3.5'}
+          >
+            {buttonDisconnectTitle || 'Wrong Network'}
+          </button>
           :
           <button
+            disabled={disabled}
             onClick={disconnect}
-            className={buttonDisconnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-red-600 dark:hover:bg-red-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
+            className={buttonDisconnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-red-600 dark:hover:bg-red-700 rounded-3xl font-semibold py-1.5 sm:py-2 px-3 sm:px-3.5'}
           >
             {buttonDisconnectTitle || 'Disconnect'}
           </button>
         :
-        <HeadShake duration={1500} forever>
-          <button
-            onClick={connect}
-            className={buttonConnectClassName || 'bg-gray-100 hover:bg-gray-200 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-2xl font-semibold py-1 sm:py-1.5 px-2 sm:px-3'}
-            style={{ width: 'max-content' }}
-          >
-            {buttonConnectTitle || (
-              <div className="flex items-center space-x-2">
-                <span>Connect</span>
-                <img
-                  src="/logos/wallets/metamask.png"
-                  alt=""
-                  className="w-4 h-4 -mr-1 mb-0.5"
-                />
-              </div>
-            )}
-          </button>
-        </HeadShake>
+        <button
+          disabled={disabled}
+          onClick={connect}
+          className={buttonConnectClassName || 'bg-blue-600 hover:bg-blue-700 dark:bg-indigo-600 dark:hover:bg-indigo-700 rounded-3xl text-gray-100 hover:text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-3.5'}
+          style={buttonConnectClassName?.includes('w-full') ? null : { width: 'max-content' }}
+        >
+          {buttonConnectTitle || (
+            <div className="flex items-center space-x-1.5">
+              <span>Connect</span>
+              <IoWalletOutline size={20} />
+              {/*<Img
+                src="/logos/wallets/metamask.png"
+                alt=""
+                className="w-4 h-4 -mr-1 mb-0.5"
+              />*/}
+            </div>
+          )}
+        </button>
       }
     </>
   )
