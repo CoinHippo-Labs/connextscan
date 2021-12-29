@@ -436,10 +436,22 @@ export default function RouterAddress() {
                       {currency_symbol}{numberFormat(routerAssets.liquidity, '0,0')}
                     </div>
                   </div>
-                  <div className="flex flex-col justify-end space-y-1">
+                  <div className="flex flex-col justify-end space-y-1 mb-2 sm:mb-0 mr-0 sm:mr-8">
                     <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal text-right">Total Liquidity</div>
                     <div className="font-mono sm:text-base font-semibold text-right">
                       {currency_symbol}{numberFormat(routerAssets.liquidity + (routerAssets.liquidity_locked || 0), '0,0')}
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-end space-y-1 mb-2 sm:mb-0 mr-0 sm:mr-8">
+                    <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal text-right">Supplied Liquidity</div>
+                    <div className="font-mono sm:text-base font-semibold text-right">
+                      {currency_symbol}{numberFormat(routerAssets.liquidity_supplied, '0,0')}
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-end space-y-1">
+                    <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-500 text-2xs font-normal text-right">Removed Liquidity</div>
+                    <div className="font-mono sm:text-base font-semibold text-right">
+                      {currency_symbol}{numberFormat(routerAssets.liquidity_removed, '0,0')}
                     </div>
                   </div>
                   {/*typeof routerAssets?.liquidity_volume === 'number' && typeof routerAssets?.liquidity_volumeIn === 'number' && (
