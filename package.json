@@ -41,6 +41,7 @@
     "recharts": "^2.1.4",
     "redux": "^4.1.0",
     "redux-devtools-extension": "^2.13.9",
+    "web3": "^1.6.1",
     "web3modal": "^1.9.4"
   },
   "devDependencies": {
