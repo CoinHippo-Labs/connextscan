@@ -566,15 +566,15 @@ export default function Transaction({ data, className = '' }) {
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
           <Copy
             size={18}
-            text={canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress}
+            text={canCancelSender ? sender?.user?.id : receiver?.user?.id}
             copyTitle={<span className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-              {ellipseAddress(ens_data?.[(canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress)?.toLowerCase()]?.name, 10) || ellipseAddress((canCancelSender ? sender?.sendingAddress : receiver?.sendingAddress)?.toLowerCase(), 6)}
+              {ellipseAddress(ens_data?.[(canCancelSender ? sender?.user?.id : receiver?.user?.id)?.toLowerCase()]?.name, 10) || ellipseAddress((canCancelSender ? sender?.user?.id : receiver?.user?.id)?.toLowerCase(), 6)}
             </span>}
           />
           {canCancelSender ?
             sender?.sendingChain?.explorer?.url && (
               <a
-                href={`${sender.sendingChain.explorer.url}${sender.sendingChain.explorer.address_path?.replace('{address}', sender.sendingAddress)}`}
+                href={`${sender.sendingChain.explorer.url}${sender.sendingChain.explorer.address_path?.replace('{address}', sender.user?.id)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-indigo-600 dark:text-white"
@@ -593,7 +593,7 @@ export default function Transaction({ data, className = '' }) {
             :
             receiver?.receivingChain?.explorer?.url && (
               <a
-                href={`${receiver.receivingChain.explorer.url}${receiver.receivingChain.explorer.address_path?.replace('{address}', receiver.receivingAddress)}`}
+                href={`${receiver.receivingChain.explorer.url}${receiver.receivingChain.explorer.address_path?.replace('{address}', receiver.user?.id)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-indigo-600 dark:text-white"
