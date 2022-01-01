@@ -61,7 +61,13 @@ export default function Transaction({ data, className = '' }) {
       setWeb3(new Web3(Web3.givenProvider))
     }
     else {
-      web3.currentProvider._handleChainChanged = e => setChainId(Web3.utils.hexToNumber(e.chainId))
+      try {
+        web3.currentProvider._handleChainChanged = e => {
+          try {
+            setChainId(Web3.utils.hexToNumber(e?.chainId))
+          } catch (error) {}
+        }
+      } catch (error) {}
     }
   }, [web3])
 
