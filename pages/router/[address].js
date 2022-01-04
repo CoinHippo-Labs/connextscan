@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
+import { providers, constants, Contract } from 'ethers'
+import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
 import { MdOutlineRouter } from 'react-icons/md'
@@ -23,6 +25,8 @@ import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
 import { CONTRACTS_DATA, ROUTER_BALANCES_SYNC_DATA } from '../../reducers/types'
+
+BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function RouterAddress() {
   const dispatch = useDispatch()
@@ -136,12 +140,18 @@ export default function RouterAddress() {
         for (let i = 0; i < chains.length; i++) {
           if (!controller.signal.aborted) {
             const chain = chains[i]
+            const _network = networks.find(_network => _network?.network_id === chain.chain_id)
 
-            const response = await balances(chain.chain_id, routerChains?.id)
+            const useRPC = ![100].includes(chain.chain_id)
 
+            const response = !useRPC ?
+              await balances(chain.chain_id, routerChains?.id)
+              :
+              await getChainTokenRPC(chain.chain_id, { contract_address: constants.AddressZero, contract_decimals: _network?.currency?.decimals, contract_symbol: _network?.currency?.gas_symbol })
+            
             const network = networks.find(_network => _network.id === chain.id)
 
-            balancesData = _.concat(balancesData || [], (response?.data?.items || [{ logo_url: network?.icon, contract_name: network?.currency?.name, contract_ticker_symbol: network?.currency?.gas_symbol }]).map(_balance => { return { ..._balance, order: networks.findIndex(_network => _network.id === chain.id), chain_data: network } }).filter(_balance => _balance?.contract_ticker_symbol?.toLowerCase() === network?.currency?.gas_symbol?.toLowerCase()) || [])
+            balancesData = _.concat(balancesData || [], ((useRPC ? response : response?.data?.items) || [{ logo_url: network?.icon, contract_name: network?.currency?.name, contract_ticker_symbol: network?.currency?.gas_symbol }]).map(_balance => { return { ..._balance, order: networks.findIndex(_network => _network.id === chain.id), chain_data: network, logo_url: network?.icon, contract_name: network?.currency?.name } }).filter(_balance => _balance?.contract_ticker_symbol?.toLowerCase() === network?.currency?.gas_symbol?.toLowerCase()) || [])
           }
         }
 
@@ -283,6 +293,53 @@ export default function RouterAddress() {
       clearInterval(interval)
     }
   }, [address])
+
+  const getChainBalanceRPC = async (_chain_id, contract_address) => {
+    let balance
+
+    if (_chain_id && address) {
+      const provider_urls = networks.find(_network => _network?.network_id === _chain_id)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')).map(rpc => new providers.JsonRpcProvider(rpc)) || []
+      const provider = new providers.FallbackProvider(provider_urls)
+
+      if (contract_address === constants.AddressZero) {
+        balance = await provider.getBalance(address)
+      }
+      else {
+        const contract = new Contract(contract_address, ['function balanceOf(address owner) view returns (uint256)'], provider)
+        balance = await contract.balanceOf(address)
+      }
+    }
+
+    return balance
+  }
+
+  const getChainTokenRPC = async (_chain_id, _contract, _asset) => {
+    if (_chain_id && _contract) {
+      let balance = await getChainBalanceRPC(_chain_id, _contract.contract_address)
+
+      if (balance) {
+        balance = balance.toString()
+        const _balance = BigNumber(balance).shiftedBy(-_contract.contract_decimals).toNumber()
+
+        if (_asset) {
+          _asset = {
+            ..._asset,
+            balance,
+            quote: (_asset.quote_rate || 0) * _balance,
+          }
+        }
+        else {
+          _asset = {
+            ..._contract,
+            contract_ticker_symbol: _contract.contract_symbol,
+            balance,
+          }
+        }
+      }
+    }
+
+    return [_asset]
+  }
 
   const routerStatus = routers_status_data?.find(_router => _router?.routerAddress?.toLowerCase() === address?.toLowerCase())
 
