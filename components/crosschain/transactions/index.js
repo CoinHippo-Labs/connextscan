@@ -149,7 +149,7 @@ export default function Transactions({ useData, n, event, className = '' }) {
 
     getData()
 
-    const interval = setInterval(() => getData(true), (typeof event !== 'boolean' ? 120 : loaded ? 1 : 2) * 60 * 1000)
+    const interval = setInterval(() => getData(true), (typeof event !== 'boolean' ? 120 : loaded ? 2 : 4) * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)

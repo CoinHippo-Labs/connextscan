@@ -287,7 +287,7 @@ export default function RouterAddress() {
 
     getData()
 
-    const interval = setInterval(() => getData(), 2 * 60 * 1000)
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)

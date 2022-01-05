@@ -226,7 +226,7 @@ export default function CrosschainTx() {
       getData()
     }
 
-    const interval = setInterval(() => getData(), 15 * 1000)
+    const interval = setInterval(() => getData(), 20 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)

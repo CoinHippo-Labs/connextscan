@@ -173,7 +173,7 @@ export default function Index() {
 
     getData()
 
-    const interval = setInterval(() => getData(true), 60 * 1000)
+    const interval = setInterval(() => getData(true), 5 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)

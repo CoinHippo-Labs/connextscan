@@ -95,7 +95,7 @@ export default function ChainMeta() {
       getData()
     }
 
-    const interval = setInterval(() => getData(), 60 * 1000)
+    const interval = setInterval(() => getData(), 5 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
@@ -226,7 +226,7 @@ export default function ChainMeta() {
 
     getData()
 
-    const interval = setInterval(() => getData(true), 2 * 60 * 1000)
+    const interval = setInterval(() => getData(true), 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [assetsLoaded, pathname, assets_data])
 
@@ -350,7 +350,7 @@ export default function ChainMeta() {
       getData()
     }
 
-    const interval = setInterval(() => getData(), 0.25 * 60 * 1000)
+    const interval = setInterval(() => getData(), 0.5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [sdk, routers_status_refresh])
 
@@ -388,7 +388,7 @@ export default function ChainMeta() {
       getData()
     }, (sdk ? 1 : 0) * 15 * 1000)
 
-    const interval = setInterval(() => getData(), 0.5 * 60 * 1000)
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
     return () => {
       clearInterval(interval)
     }
