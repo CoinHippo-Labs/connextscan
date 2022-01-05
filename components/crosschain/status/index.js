@@ -4,7 +4,6 @@ import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
-import { NxtpSdk } from '@connext/nxtp-sdk'
 import { Img } from 'react-image'
 import StackGrid from 'react-stack-grid'
 import { IoRadioButtonOn } from 'react-icons/io5'
