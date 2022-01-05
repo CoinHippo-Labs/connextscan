@@ -320,7 +320,7 @@ export default function ChainMeta() {
           }
         }
 
-        setSdk(await NxtpSdk.create({ chainConfig, signer: Wallet.createRandom() }))
+        setSdk(await NxtpSdk.create({ chainConfig, signer: Wallet.createRandom(), skipPolling: true }))
       }
       else {
         if (routers_status_refresh) {
