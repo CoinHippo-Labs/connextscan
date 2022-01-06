@@ -118,7 +118,7 @@ export default function LeaderboardRouters({ className = '' }) {
             ..._router,
           }
         }
-      })
+      }).filter(_router => _router?.liquidity >= 1)
 
       setRouters(data)
     }

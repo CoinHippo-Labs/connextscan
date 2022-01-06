@@ -72,7 +72,7 @@ export default function Routers() {
           liquidity_volume: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volume'),
           liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
         }
-      }), ['liquidity'], ['desc'])
+      }).filter(_router => _router?.liquidity >= 1), ['liquidity'], ['desc'])
 
       setRouters(data)
     }

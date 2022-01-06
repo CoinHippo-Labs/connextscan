@@ -40,7 +40,9 @@ export default function ChainInfo({ className = '' }) {
         }
       }))
 
-      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_routers: _.uniqBy(data, 'router.id').length, num_contracts: _.uniqBy(data, 'chain_contract_id').length })
+      const routers = Object.entries(_.groupBy(data, 'router.id')).map(([key, value]) => { return { id: key, liquidity: _.sumBy(value, 'value') } }).filter(_router => _router.liquidity >= 1)
+
+      setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_routers: routers.length/*_.uniqBy(data, 'router.id').length*/, num_contracts: _.uniqBy(data, 'chain_contract_id').length })
     }
   }, [contracts_data, assets_data])
 

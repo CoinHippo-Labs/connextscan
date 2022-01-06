@@ -30,7 +30,7 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
       {assetBy === 'routers' ?
         <div className={`space-y-8 ${className}`}>
           {(data?.chain_id === chain_id ?
-            (data?.data || []).map((router, i) => { return { ...router, i } })
+            (data?.data || []).filter(router => router?.assetBalances?.findIndex(_assetBalance => _assetBalance?.normalize_amount > 0) > -1).map((router, i) => { return { ...router, i } })
             :
             [...Array(1).keys()].map(i => { return { i, skeleton: true } })
           ).map((router, i) => {
@@ -151,7 +151,7 @@ export default function Assets({ data, assetBy = 'assets', className = '' }) {
                         <div className="mt-4">
                           <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Liquidity</div>
                           <div>
-                            <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.normalize_amount ? numberFormat(assetBalance.normalize_amount, '0,0') : assetBalance?.amount && !(assetBalance?.data) ? numberFormat(assetBalance.amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
+                            <span className="font-mono text-lg font-semibold mr-1.5">{typeof assetBalance?.normalize_amount === 'number' ? numberFormat(assetBalance.normalize_amount, '0,0') : assetBalance?.amount && !(assetBalance?.data) ? numberFormat(assetBalance.amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
                             <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>
                           </div>
                           <div className="text-gray-500 dark:text-gray-400 font-medium">~{currency_symbol}{typeof assetBalance?.value === 'number' ? numberFormat(assetBalance.value, '0,0') : ' -'}</div>
