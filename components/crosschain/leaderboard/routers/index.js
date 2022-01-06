@@ -29,7 +29,7 @@ export default function LeaderboardRouters({ className = '' }) {
 
   const router = useRouter()
   const { query } = { ...router }
-  const { debug } = { ...query }
+  const { debug, all } = { ...query }
 
   const [routers, setRouters] = useState(null)
 
@@ -118,7 +118,7 @@ export default function LeaderboardRouters({ className = '' }) {
             ..._router,
           }
         }
-      }).filter(_router => _router?.liquidity >= 1)
+      }).filter(_router => _router?.liquidity >= (['true'].includes(all) ? 0 : 1))
 
       setRouters(data)
     }

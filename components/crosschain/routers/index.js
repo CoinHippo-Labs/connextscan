@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
@@ -21,6 +22,10 @@ export default function Routers() {
   const { contracts_data } = { ...contracts }
   const { assets_data } = { ...assets }
   const { ens_data } = { ...ens }
+
+  const router = useRouter()
+  const { query } = { ...router }
+  const { all } = { ...query }
 
   const [routers, setRouters] = useState(null)
   const [timer, setTimer] = useState(null)
@@ -72,7 +77,7 @@ export default function Routers() {
           liquidity_volume: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volume'),
           liquidity_volumeIn: assets &&_.sumBy(Object.values(assets.assets).flatMap(_assets => _assets), 'value_volumeIn'),
         }
-      }).filter(_router => _router?.liquidity >= 1), ['liquidity'], ['desc'])
+      }).filter(_router => _router?.liquidity >= (['true'].includes(all) ? 0 : 1)), ['liquidity'], ['desc'])
 
       setRouters(data)
     }

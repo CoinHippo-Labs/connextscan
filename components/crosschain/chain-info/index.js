@@ -16,7 +16,8 @@ export default function ChainInfo({ className = '' }) {
   const { assets_data } = { ...assets }
 
   const router = useRouter()
-  const { pathname } = { ...router }
+  const { pathname, query } = { ...router }
+  const { all } = { ...query }
 
   const [liquidity, setLiquidity] = useState(null)
 
@@ -40,7 +41,7 @@ export default function ChainInfo({ className = '' }) {
         }
       }))
 
-      const routers = Object.entries(_.groupBy(data, 'router.id')).map(([key, value]) => { return { id: key, liquidity: _.sumBy(value, 'value') } }).filter(_router => _router.liquidity >= 1)
+      const routers = Object.entries(_.groupBy(data, 'router.id')).map(([key, value]) => { return { id: key, liquidity: _.sumBy(value, 'value') } }).filter(_router => _router.liquidity >= (['true'].includes(all) ? 0 : 1))
 
       setLiquidity({ data, liquidity: _.sumBy(data, 'value'), num_chains: _.uniqBy(data, 'chain_data.id').length, num_routers: routers.length/*_.uniqBy(data, 'router.id').length*/, num_contracts: _.uniqBy(data, 'chain_contract_id').length })
     }
