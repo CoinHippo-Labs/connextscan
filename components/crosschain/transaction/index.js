@@ -117,7 +117,7 @@ export default function Transaction({ data, className = '' }) {
         }
       }
 
-      const sdk = await NxtpSdk.create({ chainConfig, signer, skipPolling: false/*true*/ })
+      const sdk = await NxtpSdk.create({ chainConfig, signer, skipPolling: true })
 
       let response
 
