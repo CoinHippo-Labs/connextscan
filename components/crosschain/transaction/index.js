@@ -1386,20 +1386,22 @@ export default function Transaction({ data, className = '' }) {
                     <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
                   }
                 </div>
-                <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
-                  <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Expiry:</span>
-                  {data ?
-                    transaction?.expiry ?
-                      <span className="text-xs lg:text-base">
-                        <span className="text-gray-400 dark:text-gray-500 mr-1">{moment(transaction.expiry).fromNow()}</span>
-                        <span>({moment(transaction.expiry).format('MMM D, YYYY h:mm:ss A')})</span>
-                      </span>
+                {!['Fulfilled'].includes(transaction?.status) && (
+                  <div className="flex flex-col md:flex-row items-start space-y-2 md:space-y-0 space-x-0 md:space-x-2">
+                    <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Expiry:</span>
+                    {data ?
+                      transaction?.expiry ?
+                        <span className="text-xs lg:text-base">
+                          <span className="text-gray-400 dark:text-gray-500 mr-1">{moment(transaction.expiry).fromNow()}</span>
+                          <span>({moment(transaction.expiry).format('MMM D, YYYY h:mm:ss A')})</span>
+                        </span>
+                        :
+                        <span className="text-xs lg:text-base">-</span>
                       :
-                      <span className="text-xs lg:text-base">-</span>
-                    :
-                    <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
-                  }
-                </div>
+                      <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
+                    }
+                  </div>
+                )}
               </div>
             </Widget>
           ))}
