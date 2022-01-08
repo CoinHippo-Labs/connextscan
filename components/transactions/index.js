@@ -5,6 +5,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
+import Web3 from 'web3'
 import { Img } from 'react-image'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
@@ -12,6 +13,7 @@ import { MdPending } from 'react-icons/md'
 
 import Datatable from '../datatable'
 import Copy from '../copy'
+import Popover from '../popover'
 
 import { transactions as getTransactions } from '../../lib/api/subgraph'
 import { contracts as getContracts } from '../../lib/api/covalent'
@@ -31,6 +33,24 @@ export default function Transactions({ className = '' }) {
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
 
   const [transactions, setTransactions] = useState(null)
+
+  const [web3, setWeb3] = useState(null)
+  const [chainId, setChainId] = useState(null)
+
+  useEffect(() => {
+    if (!web3) {
+      setWeb3(new Web3(Web3.givenProvider))
+    }
+    else {
+      try {
+        web3.currentProvider._handleChainChanged = e => {
+          try {
+            setChainId(Web3.utils.hexToNumber(e?.chainId))
+          } catch (error) {}
+        }
+      } catch (error) {}
+    }
+  }, [web3])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -99,6 +119,27 @@ export default function Transactions({ className = '' }) {
       clearInterval(interval)
     }
   }, [network])
+
+  const addTokenToMetaMask = async (chain_id, contract) => {
+    if (web3 && chain_id === chainId && contract) {
+      try {
+        const image = _.head(contract.logo_url || [])
+
+        const response = await web3.currentProvider.request({
+          method: 'wallet_watchAsset',
+          params: {
+            type: 'ERC20',
+            options: {
+              address: contract.contract_address,
+              symbol: contract.contract_ticker_symbol,
+              decimals: contract.contract_decimals,
+              image: `${image?.startsWith('/') ? process.env.NEXT_PUBLIC_SITE_URL : ''}${image}`,
+            },
+          },
+        })
+      } catch (error) {}
+    }
+  }
 
   return (
     <>
@@ -293,8 +334,21 @@ export default function Transactions({ className = '' }) {
             Header: 'Asset',
             accessor: 'normalize_amount',
             disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
+            Cell: props => {
+              const addToMetaMaskButton = (
+                <button
+                  onClick={() => addTokenToMetaMask(props.row.original?.receivingChainId, { ...props.row.original?.receivingAsset })}
+                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg flex items-center justify-center py-1.5 px-2"
+                >
+                  <Img
+                    src="/logos/wallets/metamask.png"
+                    alt=""
+                    className="w-4 h-4"
+                  />
+                </button>
+              )
+
+              return !props.row.original.skeleton ?
                 <>
                   <div className="flex flex-row items-center justify-end space-x-2">
                     {props.row.original.sendingAssetId ?
@@ -351,21 +405,40 @@ export default function Transactions({ className = '' }) {
                     {props.row.original.receivingAssetId ?
                       <div className="flex flex-col">
                         {props.row.original.receivingAsset && (
-                          <a
-                            href={`${props.row.original.receivingChain?.explorer?.url}${props.row.original.receivingChain?.explorer?.[`contract${props.row.original.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-1.5"
-                          >
-                            {props.row.original.receivingAsset.logo_url && (
-                              <Img
-                                src={props.row.original.receivingAsset.logo_url}
-                                alt=""
-                                className="w-5 h-5 rounded-full"
-                              />
-                            )}
-                            <span className="h-5 text-xs font-medium">{props.row.original.receivingAsset.contract_ticker_symbol || props.row.original.receivingAsset.contract_name}</span>
-                          </a>
+                          <div className="flex items-center space-x-2">
+                            <a
+                              href={`${props.row.original.receivingChain?.explorer?.url}${props.row.original.receivingChain?.explorer?.[`contract${props.row.original.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center space-x-1.5"
+                            >
+                              {props.row.original.receivingAsset.logo_url && (
+                                <Img
+                                  src={props.row.original.receivingAsset.logo_url}
+                                  alt=""
+                                  className="w-5 h-5 rounded-full"
+                                />
+                              )}
+                              <span className="h-5 text-xs font-medium">{props.row.original.receivingAsset.contract_ticker_symbol || props.row.original.receivingAsset.contract_name}</span>
+                            </a>
+                            {props.row.original.receivingChainId === chainId ?
+                              <Popover
+                                placement="top"
+                                title={<span className="normal-case text-xs">Add token</span>}
+                                content={<div className="w-36 text-xs">Add <span className="font-semibold">{props.row.original.receivingAsset.contract_ticker_symbol}</span> to MetaMask</div>}
+                              >
+                                {addToMetaMaskButton}
+                              </Popover>
+                              :
+                              <Popover
+                                placement="top"
+                                title={<span className="normal-case text-xs">Please change the wallet network</span>}
+                                content={<div className="w-52 whitespace-pre-wrap break-words text-xs">Change the wallet network in the MetaMask Application to add this contract.</div>}
+                              >
+                                {addToMetaMaskButton}
+                              </Popover>
+                            }
+                          </div>
                         )}
                         <div className="flex items-center space-x-1">
                           <Copy
@@ -411,7 +484,7 @@ export default function Transactions({ className = '' }) {
                   <div className="skeleton w-32 h-4 ml-auto" />
                   <div className="skeleton w-24 h-3 mt-3 ml-auto" />
                 </>
-            ),
+            },
             headerClassName: 'justify-end text-right',
           },
           {
