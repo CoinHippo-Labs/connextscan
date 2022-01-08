@@ -4,12 +4,13 @@ import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
-import { NxtpSdk } from '@connext/nxtp-sdk'
-import { decodeAuctionBid } from '@connext/nxtp-utils'
-import { providers } from 'ethers'
-import Web3 from 'web3'
 import _ from 'lodash'
 import moment from 'moment'
+import { NxtpSdk } from '@connext/nxtp-sdk'
+import { decodeAuctionBid } from '@connext/nxtp-utils'
+import { providers, constants, Contract } from 'ethers'
+import BigNumber from 'bignumber.js'
+import Web3 from 'web3'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
 import Switch from 'react-switch'
@@ -29,9 +30,12 @@ import Alert from '../../alerts'
 import Wallet from '../../wallet'
 import { ProgressBar } from '../../progress-bars'
 
+import { balances } from '../../../lib/api/covalent'
 import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress, convertToJson } from '../../../lib/utils'
+
+BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Transaction({ data, className = '' }) {
   const { preferences, wallet, ens } = useSelector(state => ({ preferences: state.preferences, wallet: state.wallet, ens: state.ens }), shallowEqual)
@@ -49,6 +53,7 @@ export default function Transaction({ data, className = '' }) {
   const [startTransferTime, setStartTransferTime] = useState(null)
   const [decoded, setDecoded] = useState(false)
   const [decodedBid, setDecodedBid] = useState(null)
+  const [routerGasBalance, setRouterGasBalance] = useState(null)
 
   const [web3, setWeb3] = useState(null)
   const [chainId, setChainId] = useState(null)
@@ -78,6 +83,28 @@ export default function Transaction({ data, className = '' }) {
       setDecodedBid(<ReactJson src={convertToJson(decodeAuctionBid(general.encodedBid))} collapsed={false} theme={theme === 'dark' ? 'shapeshifter' : 'rjv-default'} />)
     }
   }, [general, decodedBid])
+
+  useEffect(async () => {
+    if (general?.router?.id && !receiver && general.receivingChainId) {
+      const _network = networks.find(_network => _network?.network_id === general.receivingChainId)
+
+      const useRPC = ![100].includes(general.receivingChainId)
+
+      const response = !useRPC ?
+        await balances(general.receivingChainId, general.router.id)
+        :
+        await getChainTokenRPC(general.receivingChainId, { contract_address: constants.AddressZero, contract_decimals: _network?.currency?.decimals, contract_symbol: _network?.currency?.gas_symbol }, general.router.id)
+
+      const balanceData = _.head(((useRPC ? response : response?.data?.items) || [{ logo_url: _network?.icon, contract_name: _network?.currency?.name, contract_ticker_symbol: _network?.currency?.gas_symbol }]).map(_balance => { return { ..._balance, chain_data: _network, logo_url: _network?.icon, contract_name: _network?.currency?.name } }).filter(_balance => _balance?.contract_ticker_symbol?.toLowerCase() === _network?.currency?.gas_symbol?.toLowerCase()))
+    
+      if (balanceData) {
+        setRouterGasBalance(balanceData)
+      }
+    }
+    else {
+      setRouterGasBalance(null)
+    }
+  }, [data])
 
   const transfer = async (action, txData, side) => {
     if (chain_id && signer && txData) {
@@ -218,6 +245,53 @@ export default function Transaction({ data, className = '' }) {
         })
       } catch (error) {}
     }
+  }
+
+  const getChainBalanceRPC = async (_chain_id, contract_address, address) => {
+    let balance
+
+    if (_chain_id && address) {
+      const provider_urls = networks.find(_network => _network?.network_id === _chain_id)?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')).map(rpc => new providers.JsonRpcProvider(rpc)) || []
+      const provider = new providers.FallbackProvider(provider_urls)
+
+      if (contract_address === constants.AddressZero) {
+        balance = await provider.getBalance(address)
+      }
+      else {
+        const contract = new Contract(contract_address, ['function balanceOf(address owner) view returns (uint256)'], provider)
+        balance = await contract.balanceOf(address)
+      }
+    }
+
+    return balance
+  }
+
+  const getChainTokenRPC = async (_chain_id, _contract, address, _asset) => {
+    if (_chain_id && _contract) {
+      let balance = await getChainBalanceRPC(_chain_id, _contract.contract_address, address)
+
+      if (balance) {
+        balance = balance.toString()
+        const _balance = BigNumber(balance).shiftedBy(-_contract.contract_decimals).toNumber()
+
+        if (_asset) {
+          _asset = {
+            ..._asset,
+            balance,
+            quote: (_asset.quote_rate || 0) * _balance,
+          }
+        }
+        else {
+          _asset = {
+            ..._contract,
+            contract_ticker_symbol: _contract.contract_symbol,
+            balance,
+          }
+        }
+      }
+    }
+
+    return [_asset]
   }
 
   const canCancelSender = sender?.status === 'Prepared' && moment().valueOf() >= sender.expiry && !(result && !result.error)
@@ -720,6 +794,8 @@ export default function Transaction({ data, className = '' }) {
     </button>
   )
 
+  const lowGas = !receiver && routerGasBalance && (routerGasBalance.balance / Math.pow(10, routerGasBalance.contract_decimals)) < Number(process.env.NEXT_PUBLIC_LOW_GAS_THRESHOLD)
+
   return (
     !data || data.data ?
       <>
@@ -1127,6 +1203,17 @@ export default function Transaction({ data, className = '' }) {
                       }
                       <div className={`uppercase ${receiver?.status ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receiver?.status ? receiver.status : sender?.status === 'Cancelled' ? 'Ignored' : receiver?.chainId && networks.findIndex(_network => !_network.disabled && _network.network_id === receiver.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                     </div>
+                    {lowGas && (
+                      <div className="mt-1">
+                        <Popover
+                          placement="top"
+                          title={<span className="text-xs">Router out of gas</span>}
+                          content={<div className="w-52 text-xs">Low Gas on Router, Transaction Might Not Complete Until Refilled</div>}
+                        >
+                          <span className="text-red-500 text-xs">Router out of gas</span>
+                        </Popover>
+                      </div>
+                    )}
                     {receiver?.chainTx && receiver?.receivingChain?.explorer?.url && (
                       <div className="flex items-center space-x-1 mt-0.5">
                         <Copy
