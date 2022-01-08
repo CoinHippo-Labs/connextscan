@@ -1,6 +1,7 @@
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { useSelector, shallowEqual } from 'react-redux'
+import { useEffect } from 'react'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import Navbar from '../../components/navbar'
 import Footer from '../../components/footer'
@@ -9,7 +10,10 @@ import ChainMeta from '../../components/chain-meta'
 import meta from '../../lib/meta'
 import { networks } from '../../lib/menus'
 
+import { THEME } from '../../reducers/types'
+
 export default function Layout({ children }) {
+  const dispatch = useDispatch()
   const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
   const { theme } = { ...preferences }
 
@@ -17,6 +21,17 @@ export default function Layout({ children }) {
   const { pathname, query, asPath } = { ...router }
   const { chain_id } = { ...query }
   const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem(THEME) && localStorage.getItem(THEME) !== theme) {
+        dispatch({
+          type: THEME,
+          value: localStorage.getItem(THEME),
+        })
+      }
+    }
+  }, [theme])
 
   const headMeta = meta(asPath, network?.id && network)
 
