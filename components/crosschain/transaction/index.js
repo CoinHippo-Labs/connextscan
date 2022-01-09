@@ -2,7 +2,7 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
-import { useSelector, shallowEqual } from 'react-redux'
+import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
@@ -13,6 +13,7 @@ import BigNumber from 'bignumber.js'
 import Web3 from 'web3'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
+import HeadShake from 'react-reveal/HeadShake'
 import Switch from 'react-switch'
 import { MdOutlineRouter, MdPending, MdInfoOutline } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
@@ -35,9 +36,12 @@ import { networks } from '../../../lib/menus'
 import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat, ellipseAddress, convertToJson } from '../../../lib/utils'
 
+import { WALLET_DATA } from '../../../reducers/types'
+
 BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Transaction({ data, className = '' }) {
+  const dispatch = useDispatch()
   const { preferences, wallet, ens } = useSelector(state => ({ preferences: state.preferences, wallet: state.wallet, ens: state.ens }), shallowEqual)
   const { theme } = { ...preferences }
   const { wallet_data } = { ...wallet }
@@ -70,6 +74,13 @@ export default function Transaction({ data, className = '' }) {
         web3.currentProvider._handleChainChanged = e => {
           try {
             setChainId(Web3.utils.hexToNumber(e?.chainId))
+
+            dispatch({
+              type: WALLET_DATA,
+              value: {
+                chain_id: Web3.utils.hexToNumber(e?.chainId),
+              },
+            })
           } catch (error) {}
         }
       } catch (error) {}
@@ -334,74 +345,211 @@ export default function Transaction({ data, className = '' }) {
             )
           }
           else {
-            actionButtons.push(
-              <ModalConfirm
-                key={actionButtons.length}
-                buttonTitle={<>
-                  {transfering === 'cancel' && (
-                    <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
-                  )}
-                  <span>Cancel</span>
-                  {isActionBeta && (
-                    <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-7 py-0.5 px-1">Beta</span>
-                  )}
-                </>}
-                buttonClassName={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
-                title="Cancel Transaction"
-                body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                    <div className="flex items-center text-gray-400 dark:text-gray-500">
-                      Address
-                      <span className="hidden sm:block">:</span>
-                    </div>
-                    {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                      {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
-                        <Img
-                          src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
-                          alt=""
-                          className="w-6 h-6 rounded-full"
-                        />
+            // actionButtons.push(
+            //   <ModalConfirm
+            //     key={actionButtons.length}
+            //     buttonTitle={<>
+            //       {transfering === 'cancel' && (
+            //         <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
+            //       )}
+            //       <span>Cancel</span>
+            //       {isActionBeta && (
+            //         <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-7 py-0.5 px-1">Beta</span>
+            //       )}
+            //     </>}
+            //     buttonClassName={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
+            //     title="Cancel Transaction"
+            //     body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
+            //       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+            //         <div className="flex items-center text-gray-400 dark:text-gray-500">
+            //           Address
+            //           <span className="hidden sm:block">:</span>
+            //         </div>
+            //         {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+            //           {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
+            //             <Img
+            //               src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
+            //               alt=""
+            //               className="w-6 h-6 rounded-full"
+            //             />
+            //           )}
+            //           <Link href={`/address/${general.receivingAddress}`}>
+            //             <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+            //               {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
+            //             </a>
+            //           </Link>
+            //           <Copy size={18} text={general.receivingAddress} />
+            //           {general.receivingChain?.explorer?.url && (
+            //             <a
+            //               href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
+            //               target="_blank"
+            //               rel="noopener noreferrer"
+            //               className="text-indigo-600 dark:text-white"
+            //             >
+            //               {general.receivingChain.explorer.icon ?
+            //                 <img
+            //                   src={general.receivingChain.explorer.icon}
+            //                   alt=""
+            //                   className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+            //                 />
+            //                 :
+            //                 <TiArrowRight size={20} className="transform -rotate-45" />
+            //               }
+            //             </a>
+            //           )}
+            //         </div>)}
+            //       </div>
+            //       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+            //         <div className="flex items-center text-gray-400 dark:text-gray-500">
+            //           Amount Sent
+            //           <span className="hidden sm:block">:</span>
+            //         </div>
+            //         {sender?.normalize_amount && (
+            //           <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+            //             <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000', true)}</span>
+            //             <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
+            //           </div>
+            //         )}
+            //       </div>
+            //       {receiver && (
+            //         <>
+            //           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+            //             <div className="flex items-center text-gray-400 dark:text-gray-500">
+            //               Amount Received
+            //               <span className="hidden sm:block">:</span>
+            //             </div>
+            //             {receiver?.normalize_amount && (
+            //               <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+            //                 <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000', true)}</span>
+            //                 <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+            //               </div>
+            //             )}
+            //           </div>
+            //           <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+            //             <div className="flex items-center text-gray-400 dark:text-gray-500">
+            //               Total Fees Paid
+            //               <span className="hidden sm:block">:</span>
+            //             </div>
+            //             {/*receiver?.value && sender?.value*/receiver?.normalize_amount && sender?.normalize_amount && (
+            //               <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+            //                 {/*<span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000', true)}</span>*/}
+            //                 <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000', true)}</span>
+            //                 <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
+            //               </div>
+            //             )}
+            //           </div>
+            //         </>
+            //       )}
+            //       <div className="flex items-center space-x-2 mx-auto py-2">
+            //         {data ?
+            //           general?.sendingChain && (
+            //             <img
+            //               src={general.sendingChain.icon}
+            //               alt=""
+            //               className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+            //             />
+            //           )
+            //           :
+            //           <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+            //         }
+            //         <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+            //         <img
+            //           src={networks.find(network => network.id === '')?.icon}
+            //           alt=""
+            //           className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+            //         />
+            //         <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+            //         {data ?
+            //           general?.receivingChain && (
+            //             <img
+            //               src={general.receivingChain.icon}
+            //               alt=""
+            //               className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+            //             />
+            //           )
+            //           :
+            //           <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+            //         }
+            //       </div>
+            //       <div>Do you want to cancel this transaction?</div>
+            //     </div>}
+            //     cancelButtonTitle="No"
+            //     confirmButtonTitle="Yes, cancel it"
+            //     onConfirm={() => transfer('cancel', canCancelSender ? sender : receiver, canCancelSender ? 'sender' : 'receiver')}
+            //   />
+            // )
+
+            if (canFulfill) {
+              actionButtons.push(
+                <HeadShake
+                  key={actionButtons.length}
+                  duration={1500}
+                  forever
+                >
+                  <ModalConfirm
+                    buttonTitle={<>
+                      {transfering === 'fulfill' && (
+                        <Loader type="Oval" color="white" width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
                       )}
-                      <Link href={`/address/${general.receivingAddress}`}>
-                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                          {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
-                        </a>
-                      </Link>
-                      <Copy size={18} text={general.receivingAddress} />
-                      {general.receivingChain?.explorer?.url && (
-                        <a
-                          href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-white"
-                        >
-                          {general.receivingChain.explorer.icon ?
-                            <img
-                              src={general.receivingChain.explorer.icon}
+                      <span>{/*Fulfill*/}Claim</span>
+                      {isActionBeta && (
+                        <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-5 py-0.5 px-1">Beta</span>
+                      )}
+                    </>}
+                    buttonClassName={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
+                    title="Fulfill Confirmation"
+                    body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                        <div className="flex items-center text-gray-400 dark:text-gray-500">
+                          Address
+                          <span className="hidden sm:block">:</span>
+                        </div>
+                        {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                          {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
+                            <Img
+                              src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
                               alt=""
-                              className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                              className="w-6 h-6 rounded-full"
                             />
-                            :
-                            <TiArrowRight size={20} className="transform -rotate-45" />
-                          }
-                        </a>
-                      )}
-                    </div>)}
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                    <div className="flex items-center text-gray-400 dark:text-gray-500">
-                      Amount Sent
-                      <span className="hidden sm:block">:</span>
-                    </div>
-                    {sender?.normalize_amount && (
-                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                        <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000', true)}</span>
-                        <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
+                          )}
+                          <Link href={`/address/${general.receivingAddress}`}>
+                            <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                              {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
+                            </a>
+                          </Link>
+                          <Copy size={18} text={general.receivingAddress} />
+                          {general.receivingChain?.explorer?.url && (
+                            <a
+                              href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-indigo-600 dark:text-white"
+                            >
+                              {general.receivingChain.explorer.icon ?
+                                <img
+                                  src={general.receivingChain.explorer.icon}
+                                  alt=""
+                                  className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                                />
+                                :
+                                <TiArrowRight size={20} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                        </div>)}
                       </div>
-                    )}
-                  </div>
-                  {receiver && (
-                    <>
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                        <div className="flex items-center text-gray-400 dark:text-gray-500">
+                          Amount Sent
+                          <span className="hidden sm:block">:</span>
+                        </div>
+                        {sender?.normalize_amount && (
+                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
+                            <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000', true)}</span>
+                            <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
                         <div className="flex items-center text-gray-400 dark:text-gray-500">
                           Amount Received
@@ -427,176 +575,44 @@ export default function Transaction({ data, className = '' }) {
                           </div>
                         )}
                       </div>
-                    </>
-                  )}
-                  <div className="flex items-center space-x-2 mx-auto py-2">
-                    {data ?
-                      general?.sendingChain && (
+                      <div className="flex items-center space-x-2 mx-auto py-2">
+                        {data ?
+                          general?.sendingChain && (
+                            <img
+                              src={general.sendingChain.icon}
+                              alt=""
+                              className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                            />
+                          )
+                          :
+                          <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                        }
+                        <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
                         <img
-                          src={general.sendingChain.icon}
+                          src={networks.find(network => network.id === '')?.icon}
                           alt=""
                           className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
                         />
-                      )
-                      :
-                      <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
-                    }
-                    <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
-                    <img
-                      src={networks.find(network => network.id === '')?.icon}
-                      alt=""
-                      className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
-                    />
-                    <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
-                    {data ?
-                      general?.receivingChain && (
-                        <img
-                          src={general.receivingChain.icon}
-                          alt=""
-                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
-                        />
-                      )
-                      :
-                      <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
-                    }
-                  </div>
-                  <div>Do you want to cancel this transaction?</div>
-                </div>}
-                cancelButtonTitle="No"
-                confirmButtonTitle="Yes, cancel it"
-                onConfirm={() => transfer('cancel', canCancelSender ? sender : receiver, canCancelSender ? 'sender' : 'receiver')}
-              />
-            )
-
-            if (canFulfill) {
-              actionButtons.push(
-                <ModalConfirm
-                  key={actionButtons.length}
-                  buttonTitle={<>
-                    {transfering === 'fulfill' && (
-                      <Loader type="Oval" color="white" width="16" height="16" className={`mb-0.5 ${isActionBeta ? 'mr-1.5' : ''}`} />
-                    )}
-                    <span>Fulfill</span>
-                    {isActionBeta && (
-                      <span className="bg-red-500 absolute rounded-md inline-flex items-center justify-center uppercase text-white text-2xs font-semibold text-center -mt-9 ml-5 py-0.5 px-1">Beta</span>
-                    )}
-                  </>}
-                  buttonClassName={`bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center text-white font-semibold ${isActionBeta ? '' : 'space-x-1.5'} py-1 sm:py-1.5 px-2 sm:px-3`}
-                  title="Fulfill Confirmation"
-                  body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                      <div className="flex items-center text-gray-400 dark:text-gray-500">
-                        Address
-                        <span className="hidden sm:block">:</span>
+                        <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
+                        {data ?
+                          general?.receivingChain && (
+                            <img
+                              src={general.receivingChain.icon}
+                              alt=""
+                              className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                            />
+                          )
+                          :
+                          <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                        }
                       </div>
-                      {general && (<div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                        {ens_data?.[general.receivingAddress?.toLowerCase()]?.name && (
-                          <Img
-                            src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[general.receivingAddress.toLowerCase()].name}`}
-                            alt=""
-                            className="w-6 h-6 rounded-full"
-                          />
-                        )}
-                        <Link href={`/address/${general.receivingAddress}`}>
-                          <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                            {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 10)}
-                          </a>
-                        </Link>
-                        <Copy size={18} text={general.receivingAddress} />
-                        {general.receivingChain?.explorer?.url && (
-                          <a
-                            href={`${general.receivingChain.explorer.url}${general.receivingChain.explorer.address_path?.replace('{address}', general.receivingAddress)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-indigo-600 dark:text-white"
-                          >
-                            {general.receivingChain.explorer.icon ?
-                              <img
-                                src={general.receivingChain.explorer.icon}
-                                alt=""
-                                className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
-                              />
-                              :
-                              <TiArrowRight size={20} className="transform -rotate-45" />
-                            }
-                          </a>
-                        )}
-                      </div>)}
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                      <div className="flex items-center text-gray-400 dark:text-gray-500">
-                        Amount Sent
-                        <span className="hidden sm:block">:</span>
-                      </div>
-                      {sender?.normalize_amount && (
-                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                          <span className="font-semibold">{numberFormat(sender.normalize_amount, '0,0.00000000', true)}</span>
-                          <span className="uppercase text-gray-600 dark:text-gray-400">{sender.sendingAsset?.contract_ticker_symbol || sender.receivingAsset?.contract_ticker_symbol}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                      <div className="flex items-center text-gray-400 dark:text-gray-500">
-                        Amount Received
-                        <span className="hidden sm:block">:</span>
-                      </div>
-                      {receiver?.normalize_amount && (
-                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                          <span className="font-semibold">{numberFormat(receiver.normalize_amount, '0,0.00000000', true)}</span>
-                          <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                      <div className="flex items-center text-gray-400 dark:text-gray-500">
-                        Total Fees Paid
-                        <span className="hidden sm:block">:</span>
-                      </div>
-                      {/*receiver?.value && sender?.value*/receiver?.normalize_amount && sender?.normalize_amount && (
-                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-sm space-x-1 py-1 px-2">
-                          {/*<span className="font-semibold">{currency_symbol}{numberFormat(sender.value - receiver.value, '0,0.00000000', true)}</span>*/}
-                          <span className="font-semibold">{numberFormat(sender.normalize_amount - receiver.normalize_amount, '0,0.00000000', true)}</span>
-                          <span className="uppercase text-gray-600 dark:text-gray-400">{receiver.receivingAsset?.contract_ticker_symbol || receiver.sendingAsset?.contract_ticker_symbol}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center space-x-2 mx-auto py-2">
-                      {data ?
-                        general?.sendingChain && (
-                          <img
-                            src={general.sendingChain.icon}
-                            alt=""
-                            className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
-                          />
-                        )
-                        :
-                        <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
-                      }
-                      <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
-                      <img
-                        src={networks.find(network => network.id === '')?.icon}
-                        alt=""
-                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
-                      />
-                      <TiArrowRight size={24} className="transform text-gray-400 dark:text-gray-500" />
-                      {data ?
-                        general?.receivingChain && (
-                          <img
-                            src={general.receivingChain.icon}
-                            alt=""
-                            className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
-                          />
-                        )
-                        :
-                        <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
-                      }
-                    </div>
-                    <div>Are you sure you want to fulfill?</div>
-                  </div>}
-                  cancelButtonTitle="No"
-                  confirmButtonTitle="Yes"
-                  onConfirm={() => transfer('fulfill', receiver)}
-                />
+                      <div>Are you sure you want to fulfill?</div>
+                    </div>}
+                    cancelButtonTitle="No"
+                    confirmButtonTitle="Yes"
+                    onConfirm={() => transfer('fulfill', receiver)}
+                  />
+                </HeadShake>
               )
             }
           }
@@ -730,7 +746,7 @@ export default function Transaction({ data, className = '' }) {
           {canCancelSender ?
             <span><span className="font-semibold">Cancel Button for Sender:</span> The button can be processed when the sender transaction is prepared and expired.</span>
             :
-            <span><span className="font-semibold">Fulfill and Cancel Button for Receiver:</span> The fulfill action can be processed when the receiver transaction is prepared and has not expired yet. While the cancel action does not consider the expiry date, only prepared status is required.</span>
+            <span><span className="font-semibold">{/*Fulfill*/}Claim and Cancel Button for Receiver:</span> The fulfill action can be processed when the receiver transaction is prepared and has not expired yet. While the cancel action does not consider the expiry date, only prepared status is required.</span>
           }
         </div>
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
@@ -743,7 +759,7 @@ export default function Transaction({ data, className = '' }) {
             <button
               className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 pointer-events-none rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3"
             >
-              <span>Fulfill</span>
+              <span>{/*Fulfill*/}Claim</span>
             </button>
           )}
         </div>
@@ -968,10 +984,12 @@ export default function Transaction({ data, className = '' }) {
             right={<div className="flex items-center space-x-0.5 mb-2 lg:mb-0.5 -mr-1 sm:-mr-2">
               <div className="flex items-center space-x-1.5 sm:space-x-2">
                 {(canCancelSender || canDoAction) && (
-                  <Wallet
-                    hidden={web3_provider && !mustSwitchNetwork ? true : false}
-                    chainIdToConnect={mustSwitchNetwork && (canCancelSender ? sender?.sendingChainId : receiver?.receivingChainId)}
-                  />
+                  <HeadShake duration={1500} forever>
+                    <Wallet
+                      hidden={web3_provider && !mustSwitchNetwork ? true : false}
+                      chainIdToConnect={mustSwitchNetwork && (canCancelSender ? sender?.sendingChainId : receiver?.receivingChainId)}
+                    />
+                  </HeadShake>
                 )}
                 {actionButtons}
               </div>
