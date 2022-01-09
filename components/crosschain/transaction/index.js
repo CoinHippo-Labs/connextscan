@@ -71,21 +71,28 @@ export default function Transaction({ data, className = '' }) {
     }
     else {
       try {
-        web3.currentProvider._handleChainChanged = e => {
+        web3.currentProvider._handleChainChanged = async e => {
           try {
             setChainId(Web3.utils.hexToNumber(e?.chainId))
+
+            const web3Provider = new providers.Web3Provider(provider)
+            const signer = web3Provider.getSigner()
+            const address = await signer.getAddress()
 
             dispatch({
               type: WALLET_DATA,
               value: {
+                web3_provider: web3Provider,
+                signer,
                 chain_id: Web3.utils.hexToNumber(e?.chainId),
+                address,
               },
             })
           } catch (error) {}
         }
       } catch (error) {}
     }
-  }, [web3])
+  }, [web3, provider])
 
   useEffect(() => {
     if (general && !decodedBid && convertToJson(decodeAuctionBid(general.encodedBid))) {
