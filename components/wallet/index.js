@@ -35,6 +35,7 @@ const providerOptions = {
         69: 'https://kovan.optimism.io',
         43113: 'https://api.avax-test.network/ext/bc/C/rpc',
         4002: 'https://rpc.testnet.fantom.network',
+        1287: 'https://rpc.api.moonbase.moonbeam.network',
       },
     },
   },
@@ -65,8 +66,7 @@ let web3Modal
 
 export default function Wallet({ chainIdToConnect, main, hidden, disabled = false, buttonConnectTitle, buttonConnectClassName, buttonDisconnectTitle, buttonDisconnectClassName, onChangeNetwork }) {
   const dispatch = useDispatch()
-  const { chains, wallet, preferences } = useSelector(state => ({ chains: state.chains, wallet: state.wallet, preferences: state.preferences }), shallowEqual)
-  const { chains_data } = { ...chains }
+  const { wallet, preferences } = useSelector(state => ({ wallet: state.wallet, preferences: state.preferences }), shallowEqual)
   const { wallet_data } = { ...wallet }
   const { provider, web3_provider, chain_id } = { ...wallet_data }
   const { theme } = { ...preferences }
@@ -154,7 +154,7 @@ export default function Wallet({ chainIdToConnect, main, hidden, disabled = fals
           try {
             await provider.request({
               method: 'wallet_addEthereumChain',
-              params: chains_data?.find(_chain => _chain.chain_id === chainIdToConnect)?.provider_params,
+              params: networks?.find(_chain => _chain.network_id === chainIdToConnect)?.provider_params,
             })
           } catch (error) {
             console.log(error)
