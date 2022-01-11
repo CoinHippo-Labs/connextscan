@@ -161,3 +161,7 @@ body {
 .recharts-label-list text tspan {
   @apply text-3xs sm:text-xs md:text-xs lg:text-xs xl:text-xs;
 }
+
+.max-w-8xl {
+  max-width: 88rem;
+}
