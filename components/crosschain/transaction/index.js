@@ -1017,7 +1017,7 @@ export default function Transaction({ data, className = '' }) {
                         />
                       )}
                       <Link href={`/address/${general.sendingAddress}`}>
-                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-sm font-medium">
                           {ellipseAddress(ens_data?.[general.sendingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.sendingAddress?.toLowerCase(), 6)}
                         </a>
                       </Link>
@@ -1296,7 +1296,7 @@ export default function Transaction({ data, className = '' }) {
                         />
                       )}
                       <Link href={`/address/${general.receivingAddress}`}>
-                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                        <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-sm font-medium">
                           {ellipseAddress(ens_data?.[general.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(general.receivingAddress?.toLowerCase(), 6)}
                         </a>
                       </Link>
