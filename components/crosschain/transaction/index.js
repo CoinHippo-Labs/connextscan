@@ -859,7 +859,7 @@ export default function Transaction({ data, className = '' }) {
                               className="w-6 h-6 rounded-full"
                             />
                           )}
-                          <span className="h-6 text-base font-semibold">{general.sendingAsset.contract_ticker_symbol || general.sendingAsset.contract_name}</span>
+                          <span className="text-sm font-semibold">{general.sendingAsset.contract_ticker_symbol || general.sendingAsset.contract_name}</span>
                         </a>
                       )}
                       <div className="min-w-max flex items-center space-x-1">
@@ -911,7 +911,7 @@ export default function Transaction({ data, className = '' }) {
                                 className="w-6 h-6 rounded-full"
                               />
                             )}
-                            <span className="h-6 text-base font-semibold">{general.receivingAsset.contract_ticker_symbol || general.receivingAsset.contract_name}</span>
+                            <span className="text-sm font-semibold">{general.receivingAsset.contract_ticker_symbol || general.receivingAsset.contract_name}</span>
                           </a>
                           {general?.receivingChainId === chainId ?
                             <Popover
