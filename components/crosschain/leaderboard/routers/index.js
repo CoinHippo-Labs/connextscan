@@ -256,7 +256,7 @@ export default function LeaderboardRouters({ className = '' }) {
             ),
           },
           {
-            Header: 'Active Txs',
+            Header: 'Active TXs',
             accessor: 'activeTransactionsLength',
             sortType: (rowA, rowB) => rowA.original.activeTransactionsLength > rowB.original.activeTransactionsLength ? 1 : -1,
             Cell: props => (
@@ -270,7 +270,7 @@ export default function LeaderboardRouters({ className = '' }) {
             headerClassName: 'whitespace-nowrap justify-end text-right',
           },
           {
-            Header: 'Processing Txs',
+            Header: 'Processing TXs',
             accessor: 'trackerLength',
             sortType: (rowA, rowB) => rowA.original.trackerLength > rowB.original.trackerLength ? 1 : -1,
             Cell: props => (
