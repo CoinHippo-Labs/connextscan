@@ -121,7 +121,7 @@ export default function CrosschainTx() {
                       if (!controller.signal.aborted) {
                         if (next_chain && next_chain.id) {
                           response = await getTransactions({ chain_id: next_chain.id }, _contracts_data, tx)
-                        
+
                           if (response?.data?.[0]) {
                             _data = response.data[0]
 
