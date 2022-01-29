@@ -6,6 +6,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import _ from 'lodash'
 import moment from 'moment'
 import Web3 from 'web3'
+import { utils } from 'ethers'
 import { Img } from 'react-image'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
@@ -121,23 +122,48 @@ export default function Transactions({ className = '' }) {
   }, [network])
 
   const addTokenToMetaMask = async (chain_id, contract) => {
-    if (web3 && chain_id === chainId && contract) {
-      try {
-        const image = _.head(contract.logo_url || [])
+    if (web3 && contract) {
+      if (chain_id === chainId) {
+        try {
+          const image = _.head(contract.logo_url || [])
 
-        const response = await web3.currentProvider.request({
-          method: 'wallet_watchAsset',
-          params: {
-            type: 'ERC20',
-            options: {
-              address: contract.contract_address,
-              symbol: contract.contract_ticker_symbol,
-              decimals: contract.contract_decimals,
-              image: `${image?.startsWith('/') ? process.env.NEXT_PUBLIC_SITE_URL : ''}${image}`,
+          const response = await web3.currentProvider.request({
+            method: 'wallet_watchAsset',
+            params: {
+              type: 'ERC20',
+              options: {
+                address: contract.contract_address,
+                symbol: contract.contract_ticker_symbol,
+                decimals: contract.contract_decimals,
+                image: `${image?.startsWith('/') ? process.env.NEXT_PUBLIC_SITE_URL : ''}${image}`,
+              },
             },
-          },
-        })
-      } catch (error) {}
+          })
+        } catch (error) {}
+      }
+      else {
+        switchNetwork(chain_id)
+      }
+    }
+  }
+
+  const switchNetwork = async chain_id => {
+    try {
+      await web3.currentProvider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: utils.hexValue(chain_id) }],
+      })
+    } catch (error) {
+      if (error.code === 4902) {
+        try {
+          await web3.currentProvider.request({
+            method: 'wallet_addEthereumChain',
+            params: networks?.find(c => c.network_id === chain_id)?.provider_params,
+          })
+        } catch (error) {
+          console.log(error)
+        }
+      }
     }
   }
 
@@ -432,8 +458,8 @@ export default function Transactions({ className = '' }) {
                               :
                               <Popover
                                 placement="top"
-                                title={<span className="normal-case text-xs">Please change the wallet network</span>}
-                                content={<div className="w-52 whitespace-pre-wrap break-words text-xs">Change the wallet network in the MetaMask Application to add this contract.</div>}
+                                title={<span className="normal-case text-xs">Change wallet network</span>}
+                                content={<div className="w-40 text-xs">Click to switch your wallet network to <span className="font-semibold">{props.row.original.receivingChain?.title}</span>.</div>}
                               >
                                 {addToMetaMaskButton}
                               </Popover>
