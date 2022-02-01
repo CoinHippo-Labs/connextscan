@@ -42,7 +42,7 @@ export default function Networks({ handleDropdownClick }) {
                   alt=""
                   className="w-5 h-5 rounded-full"
                 />
-                <span className="leading-4 text-2xs font-medium">{chainTitle(item)}</span>
+                <span className="leading-4 text-2xs font-medium">{item?.id ? chainTitle(item) : 'All'}</span>
               </a>
             </Link>
         ))}

@@ -36,7 +36,7 @@ export default function Navbar() {
 
   const router = useRouter()
   const { pathname, query } = { ...router }
-  const { blockchain_id } = { query }
+  const { blockchain_id } = { ...query }
 
   useEffect(() => {
     const getData = async () => {
@@ -178,7 +178,7 @@ export default function Navbar() {
 
           if (extra_data?.coingecko_id) {
             const response = await coin(extra_data.coingecko_id)
-            data.token_data = { ...response }
+            data.token_data = !response?.error && response
           }
 
           dispatch({
