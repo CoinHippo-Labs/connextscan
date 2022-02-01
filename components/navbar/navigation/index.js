@@ -8,11 +8,11 @@ export default function Navigation() {
   const { pathname } = { ...router }
 
   return (
-    <div className="hidden lg:flex items-center space-x-0 lg:space-x-2 mx-auto xl:ml-20">
+    <div className="hidden xl:flex items-center space-x-0 xl:space-x-2 mx-auto">
       {navigations.map((item, i) => (
         <Link key={i} href={item.path}>
-          <a className={`bg-transparent hover:bg-gray-100 dark:hover:bg-gray-900 rounded flex items-center uppercase text-xs xl:text-sm space-x-1 p-2 ${pathname === item.path ? 'text-gray-900 hover:text-gray-800 dark:text-gray-50 dark:hover:text-gray-100 font-bold' : 'text-gray-600 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-200 font-medium'}`}>
-            {item.icon}
+          <a className={`bg-transparent hover:bg-gray-100 dark:hover:bg-gray-900 rounded-xl flex items-center uppercase text-xs lg:text-2xs xl:text-2xs space-x-1.5 p-2 ${pathname === item.path ? 'text-gray-900 hover:text-gray-800 dark:text-gray-100 dark:hover:text-gray-200 font-bold' : 'text-gray-800 hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100 font-medium'}`}>
+            <span className="mb-0.5">{item.icon}</span>
             <span>{item.title}</span>
           </a>
         </Link>

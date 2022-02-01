@@ -13,12 +13,12 @@ import Transactions from '../../components/transactions'
 import SectionTitle from '../../components/section-title'
 import Widget from '../../components/widget'
 
-import { daily, hourly, routers as getRouters } from '../../lib/api/subgraph'
+import { daily, routers as getRouters } from '../../lib/api/subgraph'
 import { dayMetrics } from '../../lib/api/opensearch'
 import { contracts as getContracts } from '../../lib/api/covalent'
 import { networks } from '../../lib/menus'
 import { currency_symbol } from '../../lib/object/currency'
-import { daily_time_ranges, daily_time_range, query_daily_time_range, hourly_time_range } from '../../lib/object/timely'
+import { daily_time_ranges, daily_time_range, query_daily_time_range } from '../../lib/object/timely'
 import { numberFormat, getName } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
@@ -32,12 +32,11 @@ export default function Chain() {
 
   const router = useRouter()
   const { query } = { ...router }
-  const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)]
+  const { blockchain_id } = { ...query }
+  const network = networks[networks.findIndex(network => network.id === blockchain_id)]
 
   const [assetBy, setAssetBy] = useState('assets')
   const [routers, setRouters] = useState(null)
-  const [hourlyData, setHourlyData] = useState(null)
 
   const [dayMetricsData, setDayMetricsData] = useState(null)
   const [timeRange, setTimeRange] = useState(_.last(daily_time_ranges?.filter(time_range => !time_range.disabled)) || { day: daily_time_range })
@@ -99,7 +98,7 @@ export default function Chain() {
               }
             })
 
-            setRouters({ data, chain_id })
+            setRouters({ data, blockchain_id })
 
             if (!controller.signal.aborted) {
               if (new_contracts) {
@@ -111,55 +110,6 @@ export default function Chain() {
             }
           }
         }
-
-        // const currentHour = moment().utc().startOf('hour')
-
-        // if (!controller.signal.aborted) {
-        //   response = await hourly({ chain_id: network?.network_id, where: `{ hourStartTimestamp_gte: ${moment(currentHour).subtract(hourly_time_range, 'hours').unix()} }` })
-
-        //   if (response) {
-        //     let data = response.data || []
-
-        //     const _new_contracts = _.cloneDeep(new_contracts)
-
-        //     const _contracts = { [`${network.network_id}`]: _.uniqBy(data.filter(timely => timely?.assetId && !(_new_contracts?.findIndex(contract => contract.id === timely.assetId && contract.data) > -1)), 'assetId') }
-
-        //     for (let i = 0; i < Object.entries(_contracts).length; i++) {
-        //       if (!controller.signal.aborted) {
-        //         const contract = Object.entries(_contracts)[i]
-        //         let [key, value] = contract
-        //         key = Number(key)
-
-        //         const resContracts = await getContracts(key, value?.map(_contract => _.last(_contract.id?.split('-') || [])).join(','))
-
-        //         if (resContracts?.data) {
-        //           new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${network?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
-        //         }
-        //       }
-        //     }
-
-        //     new_contracts = _.uniqBy(_.concat(new_contracts || [], _new_contracts || []), 'id')
-
-        //     data = data.map(timely => {
-        //       return {
-        //         ...timely,
-        //         data: timely?.data || new_contracts?.find(contract => contract.id?.replace(`${network?.id}-`, '') === timely?.assetId && contract.data)?.data,
-        //       }
-        //     }).map(timely => {
-        //       return {
-        //         ...timely,
-        //         normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
-        //       }
-        //     }).map(timely => {
-        //       return {
-        //         ...timely,
-        //         normalize_volume: typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
-        //       }
-        //     })
-
-        //     setHourlyData({ data, chain_id })
-        //   }
-        // }
       }
     }
 
@@ -177,7 +127,7 @@ export default function Chain() {
 
     const getData = async () => {
       if (!controller.signal.aborted) {
-        if (chain_id) {
+        if (blockchain_id) {
           const resDayMetrics = await dayMetrics({
             query: {
               match: { chain_id: network?.network_id },
@@ -227,7 +177,7 @@ export default function Chain() {
     return () => {
       controller?.abort()
     }
-  }, [chain_id])
+  }, [blockchain_id])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -243,7 +193,7 @@ export default function Chain() {
 
           _timelyData = {
             ..._timelyData,
-            [`${chain_id}`]: _.concat(response?.data || [], dayMetricsData[`${network?.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            [`${blockchain_id}`]: _.concat(response?.data || [], dayMetricsData[`${network?.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
         }
 
@@ -298,7 +248,7 @@ export default function Chain() {
     }
   }, [contracts_data, timelyData])
 
-  if (query?.chain_id && !network) {
+  if (query?.blockchain_id && !network) {
     router.push('/')
   }
 
@@ -333,7 +283,7 @@ export default function Chain() {
             <span className="ml-0 sm:ml-auto" />
             <span className="sm:text-right mb-auto ml-0 sm:ml-4">
               <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">Available Liquidity</div>
-              {chain_id && routers?.chain_id === chain_id ?
+              {blockchain_id && routers?.blockchain_id === blockchain_id ?
                 <div className="font-mono text-xl font-semibold">
                   {currency_symbol}
                   {routers?.data?.findIndex(router => router?.assetBalances?.findIndex(assetBalance => typeof assetBalance?.value === 'number') > -1) > -1 ?
@@ -346,35 +296,6 @@ export default function Chain() {
                 <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
               }
             </span>
-            {/*<span className="sm:text-right mb-auto ml-0 sm:ml-16">
-              <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">Volume {hourly_time_range}h</div>
-              {chain_id && hourlyData?.chain_id === chain_id ?
-                <div className="font-mono text-xl font-semibold">
-                  {currency_symbol}
-                  {hourlyData?.data?.findIndex(timely => typeof timely?.normalize_volume === 'number') > -1 ?
-                    numberFormat(_.sumBy(hourlyData.data, 'normalize_volume'), '0,0')
-                    :
-                    '-'
-                  }
-                </div>
-                :
-                <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
-              }
-            </span>
-            <span className="sm:text-right mb-auto ml-0 sm:ml-16">
-              <div className="h-full whitespace-nowrap uppercase text-gray-400 dark:text-gray-500">TX {hourly_time_range}h</div>
-              {chain_id && hourlyData?.chain_id === chain_id ?
-                <div className="text-xl font-semibold">
-                  {hourlyData?.data?.findIndex(timely => typeof timely?.receivingTxCount === 'number') > -1 ?
-                    numberFormat(_.sumBy(hourlyData.data, 'receivingTxCount'), '0,0')
-                    :
-                    '-'
-                  }
-                </div>
-                :
-                <div className="skeleton w-28 h-7 mt-1 sm:ml-auto" />
-              }
-            </span>*/}
           </div>
           <Assets data={routers} assetBy={assetBy} className="mt-4" />
         </div>

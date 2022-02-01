@@ -1,16 +1,16 @@
-import { ASSETS_DATA } from './types'
+import { RPCS_DATA } from './types'
 
 export default function data(
   state = {
-    [`${ASSETS_DATA}`]: null,
+    [`${RPCS_DATA}`]: null,
   },
   action
 ) {
   switch (action.type) {
-    case ASSETS_DATA:
+    case RPCS_DATA:
       return {
         ...state,
-        [`${ASSETS_DATA}`]: action.value,
+        [`${RPCS_DATA}`]: action.value,
       }
     default:
       return state

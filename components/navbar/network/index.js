@@ -1,15 +1,24 @@
 import { useRouter } from 'next/router'
 import { useState, useEffect, useRef } from 'react'
+import { useSelector, shallowEqual } from 'react-redux'
+
+import { Img } from 'react-image'
+import Loader from 'react-loader-spinner'
 
 import Networks from './networks'
 
-import { networks } from '../../../lib/menus'
+import { connext } from '../../../lib/object/chain'
 
 export default function DropdownNetwork() {
+  const { chains, preferences } = useSelector(state => ({ chains: state.chains, preferences: state.preferences }), shallowEqual)
+  const { theme } = { ...preferences }
+  const { chains_data } = { ...chains }
+
   const router = useRouter()
-  const { pathname, query } = { ...router }
-  const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+  const { query } = { ...router }
+  const { blockchain_id } = { ...query }
+
+  const chain = chains_data?.find(c => c?.id === blockchain_id)
 
   const [hidden, setHidden] = useState(true)
 
@@ -41,13 +50,25 @@ export default function DropdownNetwork() {
         onClick={handleDropdownClick}
         className="w-10 sm:w-12 h-16 flex items-center justify-center"
       >
-        {network && (
-          <img
-            src={network.icon}
-            alt=""
-            className="w-6 h-6 rounded-full"
-          />
-        )}
+        {chain ?
+          chain.image ?
+            <Img
+              src={chain.image}
+              alt=""
+              className="w-6 h-6 rounded-full"
+            />
+            :
+            <span className="font-bold">{chain.short_name}</span>
+          :
+          chains_data ?
+            <Img
+              src={connext.image}
+              alt=""
+              className="w-6 h-6 rounded-full"
+            />
+            :
+            <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#D1D5DB'} width="24" height="24" />
+        }
       </button>
       <div
         ref={dropdownRef} 

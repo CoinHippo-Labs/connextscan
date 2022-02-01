@@ -2,8 +2,8 @@ import PropTypes from 'prop-types'
 import { BsThreeDots } from 'react-icons/bs'
 
 export const PageWithText = ({
-  activeClassNames = 'btn btn-default bg-gray-700 hover:bg-gray-800 text-white',
-  inactiveClassNames = 'btn btn-default bg-trasparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-100',
+  activeClassNames = 'btn btn-default bg-gray-700 hover:bg-gray-800 rounded-lg text-white',
+  inactiveClassNames = 'btn btn-default bg-trasparent hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-100',
   disabled = false,
   active,
   onClick,

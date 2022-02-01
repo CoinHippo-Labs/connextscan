@@ -1,35 +1,31 @@
 import { combineReducers } from 'redux'
 
 import preferences from './preferences'
-import data from './data'
-import contracts from './contracts'
-import contracts_sync from './contracts-sync'
+import chains from './chains'
 import assets from './assets'
-import assets_sync from './assets-sync'
+import tokens from './tokens'
 import ens from './ens'
+import status from './status'
 import chains_status from './chains-status'
-import chains_status_sync from './chains-status-sync'
-import router_balances_sync from './router-balances-sync'
 import routers_status from './routers-status'
-import timely from './timely'
-import timely_sync from './timely-sync'
-import total from './total'
+import asset_balances from './asset-balances'
+import stats from './stats'
+import sdk from './sdk'
+import rpcs from './rpcs'
 import wallet from './wallet'
 
 export default combineReducers({
   preferences,
-  data,
-  contracts,
-  contracts_sync,
+  chains,
   assets,
-  assets_sync,
+  tokens,
   ens,
+  status,
   chains_status,
-  chains_status_sync,
-  router_balances_sync,
   routers_status,
-  timely,
-  timely_sync,
-  total,
+  asset_balances,
+  stats,
+  sdk,
+  rpcs,
   wallet,
 })

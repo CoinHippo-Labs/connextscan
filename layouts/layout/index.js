@@ -5,10 +5,8 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import Navbar from '../../components/navbar'
 import Footer from '../../components/footer'
-import ChainMeta from '../../components/chain-meta'
 
 import meta from '../../lib/meta'
-import { networks } from '../../lib/menus'
 
 import { THEME } from '../../reducers/types'
 
@@ -18,9 +16,7 @@ export default function Layout({ children }) {
   const { theme } = { ...preferences }
 
   const router = useRouter()
-  const { pathname, query, asPath } = { ...router }
-  const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+  const { asPath } = { ...router }
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -33,7 +29,7 @@ export default function Layout({ children }) {
     }
   }, [theme])
 
-  const headMeta = meta(asPath, network?.id && network)
+  const headMeta = meta(asPath)
 
   return (
     <>
@@ -69,10 +65,9 @@ export default function Layout({ children }) {
         className={`antialiased disable-scrollbars font-sans text-sm ${theme}`}
       >
         <div className="wrapper">
-          <div className="main w-full bg-gray-50 dark:bg-black text-gray-900 dark:text-white">
+          <div className="main w-full bg-gray-50 dark:bg-black text-gray-900 dark:text-white" style={{ minHeight: 'calc(100vh - 44px)' }}>
             <Navbar />
-            <ChainMeta />
-            <div className="w-full min-h-screen p-4">
+            <div className="w-full px-2 sm:px-4">
               {children}
             </div>
           </div>

@@ -1,38 +1,48 @@
 import Link from 'next/link'
+import { useSelector, shallowEqual } from 'react-redux'
 
-import { networks } from '../../../lib/menus'
+import _ from 'lodash'
+import { Img } from 'react-image'
+
+import { chainTitle, connext } from '../../../lib/object/chain'
 
 export default function Networks({ handleDropdownClick }) {
+  const { chains } = useSelector(state => ({ chains: state.chains }), shallowEqual)
+  const { chains_data } = { ...chains }
+
   return (
     <>
       <div className="dropdown-title">Select Network</div>
       <div className="flex flex-wrap pb-1">
-        {networks.filter(item => !item.menu_hidden).map((item, i) => (
+        {_.concat(connext, chains_data?.filter(item => !item.menu_hidden) || []).map((item, i) => (
           item.disabled ?
             <div
               key={i}
-              title="Not available yet"
-              className="dropdown-item w-1/2 cursor-not-allowed flex items-center justify-start space-x-1.5 p-2"
+              title="Disabled"
+              className="dropdown-item w-1/2 cursor-not-allowed flex items-center justify-start font-medium space-x-1 p-2"
             >
-              <img
-                src={item.icon}
+              <Img
+                src={item.image}
                 alt=""
-                className="w-6 h-6 rounded-full"
+                className="w-5 h-5 rounded-full"
               />
-              <span className="text-xs">{item.id ? item.title : 'All'}</span>
+              <span className="leading-4 text-2xs font-medium">{chainTitle(item)}</span>
             </div>
             :
-            <Link key={i} href={item.url}>
+            <Link
+              key={i}
+              href={`/${item.id}`}
+            >
               <a
                 onClick={handleDropdownClick}
-                className="dropdown-item w-1/2 flex items-center justify-start space-x-1.5 p-2"
+                className="dropdown-item w-1/2 flex items-center justify-start space-x-1 p-2"
               >
-                <img
-                  src={item.icon}
+                <Img
+                  src={item.image}
                   alt=""
-                  className="w-6 h-6 rounded-full"
+                  className="w-5 h-5 rounded-full"
                 />
-                <span className="text-xs">{item.id ? item.title : 'All'}</span>
+                <span className="leading-4 text-2xs font-medium">{chainTitle(item)}</span>
               </a>
             </Link>
         ))}

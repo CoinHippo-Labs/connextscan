@@ -10,15 +10,15 @@ import BigNumber from 'bignumber.js'
 
 import ChainInfo from '../components/crosschain/chain-info'
 import TimeRange from '../components/time-range'
-import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
-import TotalVolume from '../components/crosschain/summary/total-volume'
-import TotalTransaction from '../components/crosschain/summary/total-transaction'
-import TimelyVolume from '../components/crosschain/charts/timely-volume'
-import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
-import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
-import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
-import TopLiquidity from '../components/crosschain/top-liquidity'
-import Transactions from '../components/crosschain/transactions'
+// import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
+// import TotalVolume from '../components/crosschain/summary/total-volume'
+// import TotalTransaction from '../components/crosschain/summary/total-transaction'
+// import TimelyVolume from '../components/crosschain/charts/timely-volume'
+// import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
+// import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
+// import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
+// import TopLiquidity from '../components/crosschain/top-liquidity'
+// import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/crosschain/supported-networks'
 import SectionTitle from '../components/section-title'
 import Widget from '../components/widget'
@@ -45,7 +45,7 @@ export default function Index() {
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
   const { chain_id, debug } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+  // const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
   const [numLoadedChains, setNumLoadedChains] = useState(0)
@@ -109,123 +109,123 @@ export default function Index() {
     }
   }, [])
 
-  useEffect(() => {
-    const controller = new AbortController()
+  // useEffect(() => {
+  //   const controller = new AbortController()
 
-    const getDataSync = async (dayMetricsData, today, _networks) => {
-      if (today && _networks) {
-        let _timelyData
+  //   const getDataSync = async (dayMetricsData, today, _networks) => {
+  //     if (today && _networks) {
+  //       let _timelyData
 
-        for (let i = 0; i < _networks.length; i++) {
-          const network = _networks[i]
+  //       for (let i = 0; i < _networks.length; i++) {
+  //         const network = _networks[i]
 
-          const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+  //         const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
-          _timelyData = {
-            ..._timelyData,
-            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
-          }
-        }
+  //         _timelyData = {
+  //           ..._timelyData,
+  //           [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+  //         }
+  //       }
 
-        dispatch({
-          type: TIMELY_SYNC_DATA,
-          value: _timelyData || {},
-        })
-      }
-    }
+  //       dispatch({
+  //         type: TIMELY_SYNC_DATA,
+  //         value: _timelyData || {},
+  //       })
+  //     }
+  //   }
 
-    const getData = async isInterval => {
-      if (dayMetricsData) {
-        let _timelyData
+  //   const getData = async isInterval => {
+  //     if (dayMetricsData) {
+  //       let _timelyData
 
-        const today = moment().utc().startOf('day')
+  //       const today = moment().utc().startOf('day')
 
-        const _networks = networks.filter(_network => _network.id && !_network.disabled)
+  //       const _networks = networks.filter(_network => _network.id && !_network.disabled)
 
-        if (isInterval) {
-          for (let i = 0; i < _networks.length; i++) {
-            if (!controller.signal.aborted) {
-              const network = _networks[i]
+  //       if (isInterval) {
+  //         for (let i = 0; i < _networks.length; i++) {
+  //           if (!controller.signal.aborted) {
+  //             const network = _networks[i]
 
-              const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+  //             const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
-              _timelyData = {
-                ..._timelyData,
-                [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
-              }
+  //             _timelyData = {
+  //               ..._timelyData,
+  //               [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+  //             }
 
-              // setNumLoadedChains(i + 1)
-            }
-          }
+  //             // setNumLoadedChains(i + 1)
+  //           }
+  //         }
 
-          setTimelyData(_timelyData || {})
-        }
-        else if (!timely_data) {
-          const chunkSize = _.head([...Array(_networks.length).keys()].map(i => i + 1).filter(i => Math.ceil(_networks.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _networks.length
-          _.chunk([...Array(_networks.length).keys()], chunkSize).forEach(chunk => getDataSync(dayMetricsData, today, _networks.filter((_n, i) => chunk.includes(i))))
-        }
-      }
-    }
+  //         setTimelyData(_timelyData || {})
+  //       }
+  //       else if (!timely_data) {
+  //         const chunkSize = _.head([...Array(_networks.length).keys()].map(i => i + 1).filter(i => Math.ceil(_networks.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _networks.length
+  //         _.chunk([...Array(_networks.length).keys()], chunkSize).forEach(chunk => getDataSync(dayMetricsData, today, _networks.filter((_n, i) => chunk.includes(i))))
+  //       }
+  //     }
+  //   }
 
-    getData()
+  //   getData()
 
-    const interval = setInterval(() => getData(true), 5 * 60 * 1000)
-    return () => {
-      controller?.abort()
-      clearInterval(interval)
-    }
-  }, [dayMetricsData, timely_data])
+  //   const interval = setInterval(() => getData(true), 5 * 60 * 1000)
+  //   return () => {
+  //     controller?.abort()
+  //     clearInterval(interval)
+  //   }
+  // }, [dayMetricsData, timely_data])
 
-  useEffect(() => {
-    if (timely_sync_data) {
-      setNumLoadedChains(Object.keys(timely_sync_data).length)
+  // useEffect(() => {
+  //   if (timely_sync_data) {
+  //     setNumLoadedChains(Object.keys(timely_sync_data).length)
 
-      if (Object.keys(timely_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
-        setTimelyData(timely_sync_data)
-      }
-    }
-  }, [timely_sync_data])
+  //     if (Object.keys(timely_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
+  //       setTimelyData(timely_sync_data)
+  //     }
+  //   }
+  // }, [timely_sync_data])
 
-  useEffect(() => {
-    const controller = new AbortController()
+  // useEffect(() => {
+  //   const controller = new AbortController()
 
-    if (contracts_data && timelyData && Object.keys(timelyData).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
-      const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
-        return [
-          key,
-          value.map(timely => {
-            return {
-              ...timely,
-              data: timely?.data || contracts_data.find(contract => contract.id?.replace(`${key}-`, '') === timely?.assetId)?.data,
-              chain_data: networks.find(network => network.id === key),
-            }
-          }).map(timely => {
-            const price = timely.data?.prices?.[0]?.price
+  //   if (contracts_data && timelyData && Object.keys(timelyData).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
+  //     const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
+  //       return [
+  //         key,
+  //         value.map(timely => {
+  //           return {
+  //             ...timely,
+  //             data: timely?.data || contracts_data.find(contract => contract.id?.replace(`${key}-`, '') === timely?.assetId)?.data,
+  //             chain_data: networks.find(network => network.id === key),
+  //           }
+  //         }).map(timely => {
+  //           const price = timely.data?.prices?.[0]?.price
 
-            return {
-              ...timely,
-              volume_value: typeof timely?.volume_value === 'number' ? timely.volume_value : timely?.volume && typeof price === 'number' && (BigNumber(timely.volume).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
-              volumeIn_value: typeof timely?.volumeIn_value === 'number' ? timely.volumeIn_value : timely?.volumeIn && typeof price === 'number' && (BigNumber(timely.volumeIn).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
-              relayerFee_value: typeof timely?.relayerFee_value === 'number' ? timely.relayerFee_value : timely?.relayerFee && typeof price === 'number' && (BigNumber(timely.relayerFee).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
-            }
-          }).filter(timely => timely?.data)
-        ]
-      }))
+  //           return {
+  //             ...timely,
+  //             volume_value: typeof timely?.volume_value === 'number' ? timely.volume_value : timely?.volume && typeof price === 'number' && (BigNumber(timely.volume).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+  //             volumeIn_value: typeof timely?.volumeIn_value === 'number' ? timely.volumeIn_value : timely?.volumeIn && typeof price === 'number' && (BigNumber(timely.volumeIn).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+  //             relayerFee_value: typeof timely?.relayerFee_value === 'number' ? timely.relayerFee_value : timely?.relayerFee && typeof price === 'number' && (BigNumber(timely.relayerFee).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+  //           }
+  //         }).filter(timely => timely?.data)
+  //       ]
+  //     }))
 
-      if (!controller.signal.aborted) {
-        if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
-          dispatch({
-            type: TIMELY_DATA,
-            value: _timelyData || {},
-          })
-        }
-      }
-    }
+  //     if (!controller.signal.aborted) {
+  //       if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
+  //         dispatch({
+  //           type: TIMELY_DATA,
+  //           value: _timelyData || {},
+  //         })
+  //       }
+  //     }
+  //   }
 
-    return () => {
-      controller?.abort()
-    }
-  }, [contracts_data, timelyData])
+  //   return () => {
+  //     controller?.abort()
+  //   }
+  // }, [contracts_data, timelyData])
 
   if (typeof window !== 'undefined' && pathname !== _asPath) {
     router.push(isMatchRoute(_asPath) ? asPath : '/')
@@ -239,7 +239,7 @@ export default function Index() {
 
   return (
     <>
-      <SectionTitle
+      {/*<SectionTitle
         title="Overview"
         subtitle={network?.title}
         right={contracts_data && timely_data ?
@@ -373,7 +373,7 @@ export default function Index() {
       </div>
       <div className="pb-2">
         <SupportedNetworks />
-      </div>
+      </div>*/}
       <div className="dark:bg-black" />
       <div className="border-indigo-300" />
       <div className="border-yellow-400" />

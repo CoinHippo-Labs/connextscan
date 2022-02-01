@@ -1,16 +1,16 @@
-import { TOTAL_DATA } from './types'
+import { STATS_DATA } from './types'
 
 export default function data(
   state = {
-    [`${TOTAL_DATA}`]: null,
+    [`${STATS_DATA}`]: null,
   },
   action
 ) {
   switch (action.type) {
-    case TOTAL_DATA:
+    case STATS_DATA:
       return {
         ...state,
-        [`${TOTAL_DATA}`]: action.value
+        [`${STATS_DATA}`]: { ...state[`${STATS_DATA}`], ...action.value },
       }
     default:
       return state

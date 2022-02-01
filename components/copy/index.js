@@ -17,7 +17,7 @@ const Copy = ({ text, copyTitle, size = 16, onCopy, className = '' }) => {
       {copyTitle && (
         <span className="text-gray-400 dark:text-gray-500 font-medium">{copyTitle}</span>
       )}
-      <FaCheckCircle size={size} className={`text-green-400 dark:text-green-600 ${className}`} />
+      <FaCheckCircle size={size} className={`text-green-400 dark:text-white ${className}`} />
     </div>
     :
     <CopyToClipboard
@@ -33,7 +33,7 @@ const Copy = ({ text, copyTitle, size = 16, onCopy, className = '' }) => {
         {copyTitle && (
           <span className="cursor-pointer text-gray-400 dark:text-gray-500 font-medium">{copyTitle}</span>
         )}
-        <FaRegCopy size={size} className={`cursor-pointer ${className.includes('text-') ? '' : 'text-gray-300 dark:text-gray-600'} ${className}`} />
+        <FaRegCopy size={size} className={`cursor-pointer ${className.includes('text-') ? '' : 'text-gray-300 dark:text-gray-400'} ${className}`} />
       </div>
     </CopyToClipboard>
 }

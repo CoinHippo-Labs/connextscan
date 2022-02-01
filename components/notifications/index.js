@@ -14,18 +14,28 @@ const Notifications = ({
   btnClassNames,
   icon,
   content,
+  hideButton,
+  onClose,
 }) => {
   const [open, setOpen] = useState(visible)
 
   const show = () => setOpen(true)
 
-  const hide = () => setOpen(false)
+  const hide = () => {
+    setOpen(false)
+
+    if (onClose) {
+      onClose()
+    }
+  }
 
   return (
     <>
-      <button type="button" onClick={show} className={`${btnClassNames}`}>
-        {btnTitle}
-      </button>
+      {!hideButton && (
+        <button type="button" onClick={show} className={`${btnClassNames}`}>
+          {btnTitle}
+        </button>
+      )}
       {open && (
         <Portal selector="#portal">
           <div className={`${visible ? animation : ''} ${outerClassNames}`}>

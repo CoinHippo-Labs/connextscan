@@ -29,7 +29,7 @@ export default function DropdownNavigation() {
   const handleDropdownClick = () => setHidden(!hidden)
 
   return (
-    <div className="block lg:hidden relative">
+    <div className="block xl:hidden relative">
       <button
         ref={buttonRef}
         onClick={handleDropdownClick}

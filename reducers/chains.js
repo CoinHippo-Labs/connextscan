@@ -1,16 +1,16 @@
-import { CHAIN_DATA } from './types'
+import { CHAINS_DATA } from './types'
 
 export default function data(
   state = {
-    [`${CHAIN_DATA}`]: null,
+    [`${CHAINS_DATA}`]: null,
   },
   action
 ) {
   switch (action.type) {
-    case CHAIN_DATA:
+    case CHAINS_DATA:
       return {
         ...state,
-        [`${CHAIN_DATA}`]: action.value
+        [`${CHAINS_DATA}`]: action.value,
       }
     default:
       return state
