@@ -17,7 +17,7 @@ import Copy from '../../copy'
 import Popover from '../../popover'
 
 import { transactions as getTransactions } from '../../../lib/api/subgraph'
-import { contracts as getContracts } from '../../../lib/api/covalent'
+// import { contracts as getContracts } from '../../../lib/api/covalent'
 import { networks } from '../../../lib/menus'
 import { numberFormat, ellipseAddress } from '../../../lib/utils'
 
@@ -44,144 +44,144 @@ export default function Transactions({ useData, n, event, className = '' }) {
   const [loaded, setLoaded] = useState(false)
   const [statuses, setStatuses] = useState(filter_statuses.map(({ status }) => status))
 
-  const [web3, setWeb3] = useState(null)
-  const [chainId, setChainId] = useState(null)
+  // const [web3, setWeb3] = useState(null)
+  // const [chainId, setChainId] = useState(null)
 
-  useEffect(() => {
-    if (!web3) {
-      setWeb3(new Web3(Web3.givenProvider))
-    }
-    else {
-      try {
-        web3.currentProvider._handleChainChanged = e => {
-          try {
-            setChainId(Web3.utils.hexToNumber(e?.chainId))
-          } catch (error) {}
-        }
-      } catch (error) {}
-    }
-  }, [web3])
+  // useEffect(() => {
+  //   if (!web3) {
+  //     setWeb3(new Web3(Web3.givenProvider))
+  //   }
+  //   else {
+  //     try {
+  //       web3.currentProvider._handleChainChanged = e => {
+  //         try {
+  //           setChainId(Web3.utils.hexToNumber(e?.chainId))
+  //         } catch (error) {}
+  //       }
+  //     } catch (error) {}
+  //   }
+  // }, [web3])
 
-  useEffect(() => {
-    const controller = new AbortController()
+  // useEffect(() => {
+  //   const controller = new AbortController()
 
-    const getData = async isInterval => {
-      if (event && !useData && (!loaded || isInterval)) {
-        let data, allTransactions, _contracts_data = _.cloneDeep(contracts_data)
-        let txsSet = false
+  //   const getData = async isInterval => {
+  //     if (event && !useData && (!loaded || isInterval)) {
+  //       let data, allTransactions, _contracts_data = _.cloneDeep(contracts_data)
+  //       let txsSet = false
 
-        const _networks = networks.filter(_network => _network?.id && typeof _network.network_id === 'number' && !_network.disabled)
+  //       const _networks = networks.filter(_network => _network?.id && typeof _network.network_id === 'number' && !_network.disabled)
 
-        const filterStatuses = typeof event !== 'boolean' ? event.split('_') : []
+  //       const filterStatuses = typeof event !== 'boolean' ? event.split('_') : []
 
-        if (typeof event !== 'boolean') {
-          console.log(`Start query ${event}`)
-        }
+  //       if (typeof event !== 'boolean') {
+  //         console.log(`Start query ${event}`)
+  //       }
 
-        for (let h = 0; h < (typeof event !== 'boolean' ? filterStatuses.length : 1); h++) {
-          for (let i = 0; i < _networks.length; i++) {
-            if (!controller.signal.aborted) {
-              const network = _networks[i]
+  //       for (let h = 0; h < (typeof event !== 'boolean' ? filterStatuses.length : 1); h++) {
+  //         for (let i = 0; i < _networks.length; i++) {
+  //           if (!controller.signal.aborted) {
+  //             const network = _networks[i]
 
-              if (typeof event !== 'boolean') {
-                console.log(`querying ... status "${filterStatuses[h]}" on "${network.id}"`)
-              }
+  //             if (typeof event !== 'boolean') {
+  //               console.log(`querying ... status "${filterStatuses[h]}" on "${network.id}"`)
+  //             }
 
-              const response = await getTransactions(typeof event !== 'boolean' ? { chain_id: network.network_id, where: `{ status: "${filterStatuses[h]}" }`, size: 100, max_size: 1000 } : { chain_id: network.network_id }, _contracts_data)
+  //             const response = await getTransactions(typeof event !== 'boolean' ? { chain_id: network.network_id, where: `{ status: "${filterStatuses[h]}" }`, size: 100, max_size: 1000 } : { chain_id: network.network_id }, _contracts_data)
 
-              if (response) {
-                const _data = response.data || []
+  //             if (response) {
+  //               const _data = response.data || []
 
-                const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
+  //               const _contracts = _.groupBy(_.uniqBy(_data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(_contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
 
-                let new_contracts
+  //               let new_contracts
 
-                if (typeof event === 'boolean') {
-                  for (let j = 0; j < Object.entries(_contracts).length; j++) {
-                    if (!controller.signal.aborted) {
-                      const contract = Object.entries(_contracts)[j]
-                      let [key, value] = contract
-                      key = Number(key)
+  //               if (typeof event === 'boolean') {
+  //                 for (let j = 0; j < Object.entries(_contracts).length; j++) {
+  //                   if (!controller.signal.aborted) {
+  //                     const contract = Object.entries(_contracts)[j]
+  //                     let [key, value] = contract
+  //                     key = Number(key)
 
-                      const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
+  //                     const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
 
-                      if (resContracts?.data) {
-                        new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
-                      }
-                    }
-                  }
-                }
+  //                     if (resContracts?.data) {
+  //                       new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
+  //                     }
+  //                   }
+  //                 }
+  //               }
 
-                new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
+  //               new_contracts = _.uniqBy(_.concat(new_contracts || [], _contracts_data || []), 'id')
 
-                allTransactions = _.concat(allTransactions || [], _data)
+  //               allTransactions = _.concat(allTransactions || [], _data)
 
-                data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat(data || [], allTransactions.map(tx => {
-                  return {
-                    ...tx,
-                    sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
-                    receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
-                  }
-                }).map(tx => {
-                  return {
-                    ...tx,
-                    normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
-                  }
-                })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId, status: tx.status } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
-                .map(tx => { return { ...tx, crosschain_status: tx.status === 'Prepared' && tx.txs?.length === 1 && tx.txs[0]?.chain_id === tx.sendingChainId ? 'Preparing' : tx.status === 'Fulfilled' && tx.txs?.findIndex(_tx => _tx?.status === 'Prepared') > -1 ? 'Fulfilling' : tx.status } })
-                .filter(tx => typeof event !== 'boolean' && h > 0 ? _.isEqual(tx.txs?.map(_tx => _tx.status), filterStatuses) || tx.txs?.length === 1 && tx.txs[0]?.status?.toLowerCase() === filterStatuses[h]?.status?.toLowerCase() : true)
+  //               data = _.orderBy(Object.entries(_.groupBy(_.orderBy(_.concat(data || [], allTransactions.map(tx => {
+  //                 return {
+  //                   ...tx,
+  //                   sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
+  //                   receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
+  //                 }
+  //               }).map(tx => {
+  //                 return {
+  //                   ...tx,
+  //                   normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
+  //                 }
+  //               })), ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => { return { txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(tx => { return { id: tx.chainTx, chain_id: tx.chainId, status: tx.status } }), ...(_.maxBy(value, ['order', 'preparedTimestamp'])) } }), ['preparedTimestamp'], ['desc'])
+  //               .map(tx => { return { ...tx, crosschain_status: tx.status === 'Prepared' && tx.txs?.length === 1 && tx.txs[0]?.chain_id === tx.sendingChainId ? 'Preparing' : tx.status === 'Fulfilled' && tx.txs?.findIndex(_tx => _tx?.status === 'Prepared') > -1 ? 'Fulfilling' : tx.status } })
+  //               .filter(tx => typeof event !== 'boolean' && h > 0 ? _.isEqual(tx.txs?.map(_tx => _tx.status), filterStatuses) || tx.txs?.length === 1 && tx.txs[0]?.status?.toLowerCase() === filterStatuses[h]?.status?.toLowerCase() : true)
 
-                _contracts_data = new_contracts
+  //               _contracts_data = new_contracts
               
-                if ((!transactions || !isInterval) && !loaded && !txsSet && typeof event === 'boolean') {
-                  if (i === _networks.length - 1) {
-                    txsSet = true
-                  }
+  //               if ((!transactions || !isInterval) && !loaded && !txsSet && typeof event === 'boolean') {
+  //                 if (i === _networks.length - 1) {
+  //                   txsSet = true
+  //                 }
 
-                  if (data.length > 0) {
-                    setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
-                  }
-                }
-              }
-            }
-          }
-        }
+  //                 if (data.length > 0) {
+  //                   setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
+  //       }
 
-        if (typeof event !== 'boolean') {
-          console.log(`End query ${event}`)
-        }
+  //       if (typeof event !== 'boolean') {
+  //         console.log(`End query ${event}`)
+  //       }
 
-        if (!loaded && txsSet) {
-          setLoaded(true)
-        }
+  //       if (!loaded && txsSet) {
+  //         setLoaded(true)
+  //       }
 
-        setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
+  //       setTransactions({ data: data && typeof n === 'number' ? _.slice(data, 0, n) : data })
 
-        if (!controller.signal.aborted) {
-          if (_contracts_data && !(['/'].includes(pathname))) {
-            dispatch({
-              type: CONTRACTS_DATA,
-              value: _contracts_data,
-            })
-          }
-        }
-      }
-    }
+  //       if (!controller.signal.aborted) {
+  //         if (_contracts_data && !(['/'].includes(pathname))) {
+  //           dispatch({
+  //             type: CONTRACTS_DATA,
+  //             value: _contracts_data,
+  //           })
+  //         }
+  //       }
+  //     }
+  //   }
 
-    getData()
+  //   getData()
 
-    const interval = setInterval(() => getData(true), (typeof event !== 'boolean' ? 120 : loaded ? 2 : 4) * 60 * 1000)
-    return () => {
-      controller?.abort()
-      clearInterval(interval)
-    }
-  }, [loaded, event])
+  //   const interval = setInterval(() => getData(true), (typeof event !== 'boolean' ? 120 : loaded ? 2 : 4) * 60 * 1000)
+  //   return () => {
+  //     controller?.abort()
+  //     clearInterval(interval)
+  //   }
+  // }, [loaded, event])
 
-  useEffect(() => {
-    if (useData?.address) {
-      setTransactions(useData)
-    }
-  }, [useData])
+  // useEffect(() => {
+  //   if (useData?.address) {
+  //     setTransactions(useData)
+  //   }
+  // }, [useData])
 
   const addTokenToMetaMask = async (chain_id, contract) => {
     if (web3 && contract) {

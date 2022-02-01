@@ -1,17 +1,28 @@
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useSelector, shallowEqual } from 'react-redux'
 
+import _ from 'lodash'
 import { Img } from 'react-image'
 import { FaDiscord } from 'react-icons/fa'
 import { TiArrowRight } from 'react-icons/ti'
+import { FiBox } from 'react-icons/fi'
+import { MdOutlineRouter } from 'react-icons/md'
+import { RiFileCodeLine } from 'react-icons/ri'
 
 import { currency, currency_symbol } from '../../../lib/object/currency'
 import { numberFormat } from '../../../lib/utils'
 
 export default function SubNavbar() {
-  const { status, asset_balances } = useSelector(state => ({ status: state.status, asset_balances: state.asset_balances }), shallowEqual)
+  const { status, tokens, asset_balances, routers_assets } = useSelector(state => ({ status: state.status, tokens: state.tokens, asset_balances: state.asset_balances, routers_assets: state.routers_assets }), shallowEqual)
   const { status_data } = { ...status }
+  const { tokens_data } = { ...tokens }
   const { asset_balances_data } = { ...asset_balances }
+  const { routers_assets_data } = { ...routers_assets }
+
+  const router = useRouter()
+  const { query } = { ...router }
+  const { all } = { ...query }
 
   const { token_data } = { ...status_data }
 
@@ -127,6 +138,38 @@ export default function SubNavbar() {
               <span>-</span>
             }
           </div>
+        </>
+      )}
+      {asset_balances_data && (
+        <>
+          <span className="sm:ml-auto" />
+          <Link href="/status">
+            <a className="flex items-center text-indigo-600 dark:text-white space-x-1.5 mx-4">
+              <FiBox size={16} className="mb-0.5" />
+              <span className="space-x-1">
+                <span className="font-mono font-semibold">{numberFormat(Object.keys(asset_balances_data).length, '0,0')}</span>
+                <span className="uppercase font-semibold">chains</span>
+              </span>
+            </a>
+          </Link>
+          <Link href="/leaderboard/routers">
+            <a className="flex items-center text-indigo-600 dark:text-white space-x-1.5 mr-4">
+              <MdOutlineRouter size={18} className="mb-0.5" />
+              <span className="space-x-1">
+                <span className="font-mono font-semibold">{numberFormat(routers_assets_data?.filter(r => ['true'].includes(all) || _.sumBy(r?.asset_balances, 'amount_value') > 1).length, '0,0')}</span>
+                <span className="uppercase font-semibold">routers</span>
+              </span>
+            </a>
+          </Link>
+          <Link href="/routers">
+            <a className="flex items-center text-indigo-600 dark:text-white space-x-1.5">
+              <RiFileCodeLine size={18} className="mb-0.5" />
+              <span className="space-x-1">
+                <span className="font-mono font-semibold">{numberFormat(_.uniq(Object.entries(asset_balances_data).flatMap(([key, value]) => value?.map(v => `${key}_${v?.contract_address}`)).filter(a => a)).length, '0,0')}</span>
+                <span className="uppercase font-semibold">contracts</span>
+              </span>
+            </a>
+          </Link>
         </>
       )}
     </div>

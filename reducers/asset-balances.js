@@ -1,16 +1,16 @@
-import { ASSETS_DATA } from './types'
+import { ASSET_BALANCES_DATA } from './types'
 
 export default function data(
   state = {
-    [`${ASSETS_DATA}`]: null,
+    [`${ASSET_BALANCES_DATA}`]: null,
   },
   action
 ) {
   switch (action.type) {
-    case ASSETS_DATA:
+    case ASSET_BALANCES_DATA:
       return {
         ...state,
-        [`${ASSETS_DATA}`]: { ...state[`${ASSETS_DATA}`], ...action.value },
+        [`${ASSET_BALANCES_DATA}`]: { ...state[`${ASSET_BALANCES_DATA}`], ...action.value },
       }
     default:
       return state

@@ -5,7 +5,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import _ from 'lodash'
 import moment from 'moment'
 import { NxtpSdk } from '@connext/nxtp-sdk'
-import { providers, constants, Wallet, Contract } from 'ethers'
+import { providers, Wallet } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { FiMenu, FiMoon, FiSun } from 'react-icons/fi'
 
@@ -15,29 +15,34 @@ import Navigation from './navigation'
 import Search from './search'
 import Network from './network'
 import SubNavbar from './sub-navbar'
-// import PageTitle from './page-title'
+import PageTitle from './page-title'
 
-import { chains as getChains, assets as getAssets } from '../../lib/api/crosschain_config'
+import { chains as getChains } from '../../lib/api/crosschain_config'
 import { tokens as getTokens } from '../../lib/api/tokens'
 import { domains, getENS } from '../../lib/api/ens'
 import { coin } from '../../lib/api/coingecko'
 import { assetBalances } from '../../lib/api/subgraph'
 import { connext, chainExtraData } from '../../lib/object/chain'
 
-import { THEME, CHAINS_DATA, ASSETS_DATA, TOKENS_DATA, ENS_DATA, STATUS_DATA, CHAINS_STATUS_DATA, ROUTERS_STATUS_DATA, ROUTERS_STATUS_TRIGGER, ASSET_BALANCES_DATA, RPCS_DATA, SDK_DATA } from '../../reducers/types'
+import { THEME, CHAINS_DATA, TOKENS_DATA, ENS_DATA, STATUS_DATA, CHAINS_STATUS_DATA, ROUTERS_STATUS_DATA, ROUTERS_STATUS_TRIGGER, ASSET_BALANCES_DATA, ROUTERS_ASSETS_DATA, SDK_DATA, RPCS_DATA } from '../../reducers/types'
+
+BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Navbar() {
   const dispatch = useDispatch()
-  const { preferences, chains, routers_status, sdk } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, routers_status: state.routers_status, sdk: state.sdk }), shallowEqual)
+  const { preferences, chains, tokens, routers_status, asset_balances, sdk } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
+  const { tokens_data } = { ...tokens }
   const { routers_status_trigger } = { ...routers_status }
+  const { asset_balances_data } = { ...asset_balances }
   const { sdk_data } = { ...sdk }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
   const { blockchain_id } = { ...query }
 
+  // chains
   useEffect(() => {
     const getData = async () => {
       const response = await getChains()
@@ -51,19 +56,7 @@ export default function Navbar() {
     getData()
   }, [])
 
-  useEffect(() => {
-    const getData = async () => {
-      const response = await getAssets()
-
-      dispatch({
-        type: ASSETS_DATA,
-        value: response || [],
-      })
-    }
-
-    getData()
-  }, [])
-
+  // sdk & rpcs
   useEffect(async () => {
     if (chains_data) {
       const chainConfig = ['testnet'].includes(process.env.NEXT_PUBLIC_NETWORK) ?
@@ -95,6 +88,108 @@ export default function Navbar() {
     }
   }, [chains_data])
 
+  // status
+  useEffect(() => {
+    const getData = async () => {
+      if (chains_data) {
+        const chain = chains_data.find(c => c?.id === blockchain_id?.toLowerCase()) || connext
+
+        if (chain) {
+          const extra_data = chainExtraData(chain.chain_id)
+          const data = { ...chain, ...extra_data, token_data: null }
+
+          dispatch({
+            type: STATUS_DATA,
+            value: { ...data },
+          })
+
+          if (extra_data?.coingecko_id) {
+            const response = await coin(extra_data.coingecko_id)
+            data.token_data = !response?.error && response
+
+            dispatch({
+              type: STATUS_DATA,
+              value: { ...data },
+            })
+          }
+        }
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
+    return () => {
+      clearInterval(interval)
+    }
+  }, [chains_data, blockchain_id])
+
+  // chains-status
+  useEffect(() => {
+    const getChainStatus = async chain => {
+      if (sdk_data && chain) {
+        const response = await sdk_data.getSubgraphSyncStatus(chain.chain_id)
+
+        dispatch({
+          type: CHAINS_STATUS_DATA,
+          value: response?.latestBlock > -1 && {
+            ...chain,
+            ...response,
+          },
+        })
+      }
+    }
+
+    const getData = async () => {
+      if (sdk_data && chains_data) {
+        chains_data.filter(c => !c?.disabled).forEach(c => getChainStatus(c))
+      }
+    }
+
+    setTimeout(() => getData(), 15 * 1000)
+
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
+    return () => {
+      clearInterval(interval)
+    }
+  }, [sdk_data])
+
+  // routers-status
+  useEffect(() => {
+    const getData = async () => {
+      if (sdk_data) {
+        if (routers_status_trigger) {
+          dispatch({
+            type: ROUTERS_STATUS_DATA,
+            value: null,
+          })
+        }
+
+        const response = await sdk_data.getRouterStatus(process.env.NEXT_PUBLIC_APP_NAME)
+
+        if (response) {
+          dispatch({
+            type: ROUTERS_STATUS_DATA,
+            value: response?.filter(r => r?.supportedChains?.findIndex(id => id && chains_data?.findIndex(c => c?.chain_id === id) > -1) > -1),
+          })
+        }
+
+        dispatch({
+          type: ROUTERS_STATUS_TRIGGER,
+          value: null,
+        })
+      }
+    }
+
+    getData()
+
+    const interval = setInterval(() => getData(), 0.5 * 60 * 1000)
+    return () => {
+      clearInterval(interval)
+    }
+  }, [sdk_data, routers_status_trigger])
+
+  // assets-balances & tokens & ens
   useEffect(() => {
     const getAssetBalances = async chain => {
       if (chain) {
@@ -111,7 +206,7 @@ export default function Navbar() {
 
         if (contractAddresses.length > 0) {
           const responseTokens = await getTokens({ chain_id: chain.chain_id, addresses: contractAddresses.join(',') })
-          tokenContracts = response?.data?.map(t => { return { ...t, id: `${chain.chain_id}_${t.contract_address}` } })
+          tokenContracts = responseTokens?.data?.map(t => { return { ...t, id: `${chain.chain_id}_${t.contract_address}` } })
         }
 
         dispatch({
@@ -153,7 +248,7 @@ export default function Navbar() {
 
     const getData = async () => {
       if (chains_data) {
-        if (['/', '/routers', '/leaderboard/routers'].includes(pathname)) {
+        if (['/', '/routers', '/leaderboard/routers', '/[blockchain_id]'].includes(pathname)) {
           chains_data.forEach(c => getAssetBalances(c))
         }
       }
@@ -167,98 +262,53 @@ export default function Navbar() {
     }
   }, [chains_data, pathname])
 
+  // routers-assets
   useEffect(() => {
-    const getData = async () => {
-      if (chains_data) {
-        const chain = chains_data.find(c => c?.id === blockchain_id?.toLowerCase()) || connext
+    if (asset_balances_data && tokens_data) {
+      const routers = Object.entries(_.groupBy(Object.values(asset_balances_data || {}).flatMap(abs => abs), 'router.id')).map(([key, value]) => {
+        return {
+          router_id: key,
+          asset_balances: value?.map(ab => {
+            return {
+              ...ab,
+              asset: tokens_data.find(t => t?.chain_id === ab?.chain?.chain_id && t?.contract_address === ab?.contract_address),
+            }
+          }).map(ab => {
+            const decimals = ab?.asset?.contract_decimals
 
-        if (chain) {
-          const extra_data = chainExtraData(chain.chain_id)
-          const data = { ...chain, ...extra_data }
+            return {
+              ...ab,
+              amount: typeof decimals === 'number' && BigNumber(!isNaN(ab.amount) ? ab.amount : 0).shiftedBy(-decimals).toNumber(),
+              locked: typeof decimals === 'number' && BigNumber(!isNaN(ab.locked) ? ab.locked : 0).shiftedBy(-decimals).toNumber(),
+              lockedIn: typeof decimals === 'number' && BigNumber(!isNaN(ab.lockedIn) ? ab.lockedIn : 0).shiftedBy(-decimals).toNumber(),
+              supplied: typeof decimals === 'number' && BigNumber(!isNaN(ab.supplied) ? ab.supplied : 0).shiftedBy(-decimals).toNumber(),
+              removed: typeof decimals === 'number' && BigNumber(!isNaN(ab.removed) ? ab.removed : 0).shiftedBy(-decimals).toNumber(),
+              volume: typeof decimals === 'number' && BigNumber(!isNaN(ab.volume) ? ab.volume : 0).shiftedBy(-decimals).toNumber(),
+              volumeIn: typeof decimals === 'number' && BigNumber(!isNaN(ab.volumeIn) ? ab.volumeIn : 0).shiftedBy(-decimals).toNumber(),
+            }
+          }).map(ab => {
+            const price = ab?.asset?.price
 
-          if (extra_data?.coingecko_id) {
-            const response = await coin(extra_data.coingecko_id)
-            data.token_data = !response?.error && response
-          }
-
-          dispatch({
-            type: STATUS_DATA,
-            value: { ...data },
-          })
+            return {
+              ...ab,
+              amount_value: typeof price === 'number' && typeof ab.amount === 'number' && (price * ab.amount),
+              locked_value: typeof price === 'number' && typeof ab.locked === 'number' && (price * ab.locked),
+              lockedIn_value: typeof price === 'number' && typeof ab.lockedIn === 'number' && (price * ab.lockedIn),
+              supplied_value: typeof price === 'number' && typeof ab.supplied === 'number' && (price * ab.supplied),
+              removed_value: typeof price === 'number' && typeof ab.removed === 'number' && (price * ab.removed),
+              volume_value: typeof price === 'number' && typeof ab.volume === 'number' && (price * ab.volume),
+              volumeIn_value: typeof price === 'number' && typeof ab.volumeIn === 'number' && (price * ab.volumeIn),
+            }
+          }),
         }
-      }
+      })
+
+      dispatch({
+        type: ROUTERS_ASSETS_DATA,
+        value: routers,
+      })
     }
-
-    getData()
-
-    const interval = setInterval(() => getData(), 3 * 60 * 1000)
-    return () => {
-      clearInterval(interval)
-    }
-  }, [chains_data, blockchain_id])
-
-  useEffect(() => {
-    const getData = async () => {
-      if (sdk_data) {
-        if (routers_status_trigger) {
-          dispatch({
-            type: ROUTERS_STATUS_DATA,
-            value: null,
-          })
-        }
-
-        const response = await sdk_data.getRouterStatus(process.env.NEXT_PUBLIC_APP_NAME)
-
-        if (response) {
-          dispatch({
-            type: ROUTERS_STATUS_DATA,
-            value: response?.filter(r => r?.supportedChains?.findIndex(id => id && chains_data?.findIndex(c => c?.chain_id === id) > -1) > -1),
-          })
-        }
-
-        dispatch({
-          type: ROUTERS_STATUS_TRIGGER,
-          value: null,
-        })
-      }
-    }
-
-    getData()
-
-    const interval = setInterval(() => getData(), 0.5 * 60 * 1000)
-    return () => {
-      clearInterval(interval)
-    }
-  }, [sdk_data, routers_status_trigger])
-
-  useEffect(() => {
-    const getChainStatus = async chain => {
-      if (sdk_data && chain) {
-        const response = await sdk_data.getSubgraphSyncStatus(chain.chain_id)
-
-        dispatch({
-          type: CHAINS_STATUS_DATA,
-          value: response?.latestBlock > -1 && {
-            ...chain,
-            ...response,
-          },
-        })
-      }
-    }
-
-    const getData = async () => {
-      if (sdk_data && chains_data) {
-        chains_data.filter(c => !c?.disabled).forEach(c => getChainStatus(c))
-      }
-    }
-
-    setTimeout(() => getData(), 15 * 1000)
-
-    const interval = setInterval(() => getData(), 3 * 60 * 1000)
-    return () => {
-      clearInterval(interval)
-    }
-  }, [sdk_data])
+  }, [asset_balances_data, tokens_data])
 
   return (
     <>
@@ -291,7 +341,7 @@ export default function Navbar() {
         </div>
       </div>
       <SubNavbar />
-      {/*<PageTitle />*/}
+      <PageTitle />
     </>
   )
 }

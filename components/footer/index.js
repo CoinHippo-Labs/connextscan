@@ -1,17 +1,30 @@
+import Link from 'next/link'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import moment from 'moment'
+import { Img } from 'react-image'
 import { FaHeart } from 'react-icons/fa'
 
 export default function Footer() {
-  const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
+  const { preferences, chains } = useSelector(state => ({ preferences: state.preferences, chains: state.chains }), shallowEqual)
   const { theme } = { ...preferences }
+  const { chains_data } = { ...chains }
 
   return (
     <div className={`footer flex flex-col md:flex-row items-center text-xs font-light space-y-2 sm:space-y-0 p-3 ${theme}`}>
-      <span className="hidden md:block w-full md:w-1/3 flex items-center justify-center md:justify-start text-gray-400">
-      </span>
-      <span className="hidden md:block w-full md:w-1/3 flex items-center justify-center text-gray-400">
+      <span className="w-full md:w-2/3 flex flex-wrap items-center justify-center md:justify-start">
+        <span className="leading-3 uppercase text-gray-400 dark:text-gray-600 text-2xs font-light mr-2 sm:mr-2.5">Supported</span>
+        {chains_data?.map((c, i) => (
+          <Link key={i} href={`/${c?.id}`}>
+            <a className="mr-1.5 sm:mr-2">
+              <Img
+                src={c?.image}
+                alt=""
+                className="w-4 sm:w-5 h-4 sm:h-5"
+              />
+            </a>
+          </Link>
+        ))}
       </span>
       <span className="w-full md:w-1/3 flex items-center justify-center md:justify-end text-gray-400 space-x-1">
         <span>© {moment().format('YYYY')} made with</span>

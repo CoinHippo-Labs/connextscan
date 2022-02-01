@@ -8,7 +8,6 @@ import moment from 'moment'
 import Loader from 'react-loader-spinner'
 import BigNumber from 'bignumber.js'
 
-import ChainInfo from '../components/crosschain/chain-info'
 import TimeRange from '../components/time-range'
 // import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
 // import TotalVolume from '../components/crosschain/summary/total-volume'
@@ -19,7 +18,6 @@ import TimeRange from '../components/time-range'
 // import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
 // import TopLiquidity from '../components/crosschain/top-liquidity'
 // import Transactions from '../components/crosschain/transactions'
-import SupportedNetworks from '../components/crosschain/supported-networks'
 import SectionTitle from '../components/section-title'
 import Widget from '../components/widget'
 
@@ -243,7 +241,7 @@ export default function Index() {
         title="Overview"
         subtitle={network?.title}
         right={contracts_data && timely_data ?
-          <ChainInfo />
+          null
           :
           <div className="flex items-center text-sm sm:text-base space-x-2 my-1 sm:my-0 py-1.5">
             <Loader type="ThreeDots" color="gray" width="24" height="24" />
@@ -370,9 +368,6 @@ export default function Index() {
             <Transactions n={10} event={true} />
           </Widget>
         </div>
-      </div>
-      <div className="pb-2">
-        <SupportedNetworks />
       </div>*/}
       <div className="dark:bg-black" />
       <div className="border-indigo-300" />
