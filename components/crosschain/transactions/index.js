@@ -87,7 +87,7 @@ export default function Transactions({ useData, n, event, className = '' }) {
                 console.log(`querying ... status "${filterStatuses[h]}" on "${network.id}"`)
               }
 
-              const response = await getTransactions(typeof event !== 'boolean' ? { chain_id: network.id, where: `{ status: "${filterStatuses[h]}" }`, size: 100, max_size: 1000 } : { chain_id: network.id }, _contracts_data)
+              const response = await getTransactions(typeof event !== 'boolean' ? { chain_id: network.network_id, where: `{ status: "${filterStatuses[h]}" }`, size: 100, max_size: 1000 } : { chain_id: network.network_id }, _contracts_data)
 
               if (response) {
                 const _data = response.data || []

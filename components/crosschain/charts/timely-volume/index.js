@@ -57,7 +57,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null
 }
 
-export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTheTransaction, setTheFees }) {
+export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTheTransaction }) {
   const dispatch = useDispatch()
   const { timely } = useSelector(state => ({ timely: state.timely }), shallowEqual)
   const { timely_data } = { ...timely }
@@ -71,15 +71,14 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
       return {
         assets: value && _.groupBy(value, 'chain_data.id'),
         time: Number(key),
-        volume: _.sumBy(value, 'normalize_volume'),
+        volume: _.sumBy(value, 'volume_value'),
         receiving_tx_count: _.sumBy(value, 'receivingTxCount'),
-        volumeIn: _.sumBy(value, 'normalize_volumeIn'),
-        fees: _.sumBy(value, 'normalize_relayerFee')/*_.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume')*/,
+        volumeIn: _.sumBy(value, 'volumeIn_value'),
       }
     }).map(timely => {
       return {
         ...timely,
-        volume_by_chain: Object.fromEntries(Object.entries(timely?.assets || {}).map(([key, value]) => [key, _.sumBy(value, 'normalize_volume')])),
+        volume_by_chain: Object.fromEntries(Object.entries(timely?.assets || {}).map(([key, value]) => [key, _.sumBy(value, 'volume_value')])),
         receiving_tx_by_chain: Object.fromEntries(Object.entries(timely?.assets || {}).map(([key, value]) => [key, _.sumBy(value, 'receivingTxCount')])),
       }
     }), ['time'], ['asc'])
@@ -90,7 +89,7 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, receiving_tx_count: 0, volumeIn: 0, fees: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, receiving_tx_count: 0, volumeIn: 0 })
       }
 
       _data = _data.map((timely, i) => {
@@ -124,7 +123,6 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
           volume: _.sumBy(data_time_range, 'volume'),
           receiving_tx_count: _.sumBy(data_time_range, 'receiving_tx_count'),
           volumeIn: _.sumBy(data_time_range, 'volumeIn'),
-          fees: _.sumBy(data_time_range, 'fees'),
           day_string: _.head(data_time_range)?.time && moment(_.head(data_time_range)?.time * 1000).utc().format('MMM D, YYYY [(UTC)]'),
         },
       })
@@ -136,9 +134,6 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
       }
       if (setTheTransaction) {
         setTheTransaction(_.last(_data))
-      }
-      if (setTheFees) {
-        setTheFees(_.last(_data))
       }
     }
   }, [timeRange, timely_data])
@@ -160,9 +155,6 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
                 if (setTheTransaction) {
                   setTheTransaction(event?.activePayload?.[0]?.payload)
                 }
-                if (setTheFees) {
-                  setTheFees(event?.activePayload?.[0]?.payload)
-                }
               }
             }}
             onMouseMove={event => {
@@ -173,9 +165,6 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
                 if (setTheTransaction) {
                   setTheTransaction(event?.activePayload?.[0]?.payload)
                 }
-                if (setTheFees) {
-                  setTheFees(event?.activePayload?.[0]?.payload)
-                }
               }
             }}
             onMouseLeave={() => {
@@ -185,9 +174,6 @@ export default function TimelyVolume({ timeRange, theVolume, setTheVolume, setTh
                 }
                 if (setTheTransaction) {
                   setTheTransaction(_.last(data))
-                }
-                if (setTheFees) {
-                  setTheFees(_.last(data))
                 }
               }
             }}

@@ -144,7 +144,7 @@ export default function CrosschainAddress() {
           const network = networks[i]
 
           if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-            const response = await user(address, { chain_id: network.id }, _contracts_data)
+            const response = await user(address, { chain_id: network.network_id }, _contracts_data)
 
             if (response) {
               const _data = response.data?.transactions || []

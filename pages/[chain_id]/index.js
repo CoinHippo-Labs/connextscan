@@ -4,6 +4,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
+import BigNumber from 'bignumber.js'
 
 import TimelyVolume from '../../components/charts/timely-volume'
 import TimelyTransaction from '../../components/charts/timely-transaction'
@@ -21,6 +22,8 @@ import { daily_time_ranges, daily_time_range, query_daily_time_range, hourly_tim
 import { numberFormat, getName } from '../../lib/utils'
 
 import { CONTRACTS_DATA } from '../../reducers/types'
+
+BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Chain() {
   const dispatch = useDispatch()
@@ -51,7 +54,7 @@ export default function Chain() {
         let response, new_contracts
 
         if (!controller.signal.aborted) {
-          response = await getRouters({ chain_id: network.id }, contracts_data)
+          response = await getRouters({ chain_id: network.network_id }, contracts_data)
 
           if (response) {
             let data = response.data || []
@@ -112,7 +115,7 @@ export default function Chain() {
         // const currentHour = moment().utc().startOf('hour')
 
         // if (!controller.signal.aborted) {
-        //   response = await hourly({ chain_id, where: `{ hourStartTimestamp_gte: ${moment(currentHour).subtract(hourly_time_range, 'hours').unix()} }` })
+        //   response = await hourly({ chain_id: network?.network_id, where: `{ hourStartTimestamp_gte: ${moment(currentHour).subtract(hourly_time_range, 'hours').unix()} }` })
 
         //   if (response) {
         //     let data = response.data || []
@@ -177,7 +180,7 @@ export default function Chain() {
         if (chain_id) {
           const resDayMetrics = await dayMetrics({
             query: {
-              match: { chain_id },
+              match: { chain_id: network?.network_id },
             },
             aggs: {
               chains: {
@@ -189,12 +192,6 @@ export default function Chain() {
                       versions: {
                         terms: { field: 'version.keyword' },
                       },
-                      volumes: {
-                        sum: { field: 'normalize_volume' },
-                      },
-                      txs: {
-                        sum: { field: 'txCount' },
-                      },
                       sending_txs: {
                         sum: { field: 'sendingTxCount' },
                       },
@@ -204,11 +201,14 @@ export default function Chain() {
                       cancel_txs: {
                         sum: { field: 'cancelTxCount' },
                       },
-                      volume_ins: {
-                        sum: { field: 'normalize_volumeIn' },
+                      volume_values: {
+                        sum: { field: 'volume_value' },
                       },
-                      relayer_fees: {
-                        sum: { field: 'normalize_relayerFee' },
+                      volume_in_values: {
+                        sum: { field: 'volumeIn_value' },
+                      },
+                      relayer_fee_values: {
+                        sum: { field: 'relayerFee_value' },
                       },
                     },
                   },
@@ -239,11 +239,11 @@ export default function Chain() {
         const today = moment().utc().startOf('day')
 
         if (!controller.signal.aborted) {
-          const response = await daily({ chain_id: chain_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+          const response = await daily({ chain_id: network?.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
           _timelyData = {
             ..._timelyData,
-            [`${chain_id}`]: _.concat(response?.data || [], dayMetricsData[`${chain_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            [`${chain_id}`]: _.concat(response?.data || [], dayMetricsData[`${network?.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
         }
 
@@ -274,18 +274,13 @@ export default function Chain() {
               chain_data: networks.find(network => network.id === key),
             }
           }).map(timely => {
+            const price = timely.data?.prices?.[0]?.price
+
             return {
               ...timely,
-              normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
-              normalize_volumeIn: timely?.data?.contract_decimals && (timely.volumeIn / Math.pow(10, timely.data.contract_decimals)),
-              normalize_relayerFee: timely?.data?.contract_decimals && (timely.relayerFee / Math.pow(10, timely.data.contract_decimals)),
-            }
-          }).map(timely => {
-            return {
-              ...timely,
-              normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
-              normalize_volumeIn: typeof timely?._normalize_volumeIn === 'number' ? timely._normalize_volumeIn : typeof timely?.normalize_volumeIn === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volumeIn * timely.data.prices[0].price),
-              normalize_relayerFee: typeof timely?._normalize_relayerFee === 'number' ? timely._normalize_relayerFee : typeof timely?.normalize_relayerFee === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_relayerFee * timely.data.prices[0].price),
+              volume_value: typeof timely?.volume_value === 'number' ? timely.volume_value : timely?.volume && typeof price === 'number' && (BigNumber(timely.volume).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+              volumeIn_value: typeof timely?.volumeIn_value === 'number' ? timely.volumeIn_value : timely?.volumeIn && typeof price === 'number' && (BigNumber(timely.volumeIn).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+              relayerFee_value: typeof timely?.relayerFee_value === 'number' ? timely.relayerFee_value : timely?.relayerFee && typeof price === 'number' && (BigNumber(timely.relayerFee).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
             }
           }).filter(timely => timely?.data)
         ]

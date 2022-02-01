@@ -62,15 +62,14 @@ export default function TimelyVolume({ timelyData, timeRange, theVolume, setTheV
         chain_data: _.head(value?.map(v => v?.chain_data)),
         assets: value && _.groupBy(value, 'chain_data.id'),
         time: Number(key),
-        volume: _.sumBy(value, 'normalize_volume'),
+        volume: _.sumBy(value, 'volume_value'),
         receiving_tx_count: _.sumBy(value, 'receivingTxCount'),
-        volumeIn: _.sumBy(value, 'normalize_volumeIn'),
-        fees: _.sumBy(value, 'normalize_relayerFee')/*_.sumBy(value, 'normalize_volumeIn') - _.sumBy(value, 'normalize_volume')*/,
+        volumeIn: _.sumBy(value, 'volumeIn_value'),
       }
     }).map(timely => {
       return {
         ...timely,
-        volume_by_chain: Object.fromEntries(Object.entries(timely?.assets || {}).map(([key, value]) => [key, _.sumBy(value, 'normalize_volume')])),
+        volume_by_chain: Object.fromEntries(Object.entries(timely?.assets || {}).map(([key, value]) => [key, _.sumBy(value, 'volume_value')])),
         receiving_tx_by_chain: Object.fromEntries(Object.entries(timely?.assets || {}).map(([key, value]) => [key, _.sumBy(value, 'receivingTxCount')])),
       }
     }), ['time'], ['asc'])
@@ -81,7 +80,7 @@ export default function TimelyVolume({ timelyData, timeRange, theVolume, setTheV
       _data = []
 
       for (let time = moment(today).subtract(daily_time_range, 'days').unix(); time <= today.unix(); time += day_s) {
-        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, receiving_tx_count: 0, volumeIn: 0, fees: 0 })
+        _data.push(__data.find(timely => timely.time === time) || { time, volume: 0, receiving_tx_count: 0, volumeIn: 0 })
       }
 
       _data = _data.map((timely, i) => {

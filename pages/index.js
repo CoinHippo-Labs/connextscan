@@ -6,19 +6,17 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import _ from 'lodash'
 import moment from 'moment'
 import Loader from 'react-loader-spinner'
+import BigNumber from 'bignumber.js'
 
 import ChainInfo from '../components/crosschain/chain-info'
 import TimeRange from '../components/time-range'
 import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
 import TotalVolume from '../components/crosschain/summary/total-volume'
 import TotalTransaction from '../components/crosschain/summary/total-transaction'
-import TotalFees from '../components/crosschain/summary/total-fees'
 import TimelyVolume from '../components/crosschain/charts/timely-volume'
 import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
-import TimelyFees from '../components/crosschain/charts/timely-fees'
 import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
 import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
-import FeesByChain from '../components/crosschain/charts/fees-by-chain'
 import TopLiquidity from '../components/crosschain/top-liquidity'
 import Transactions from '../components/crosschain/transactions'
 import SupportedNetworks from '../components/crosschain/supported-networks'
@@ -34,6 +32,8 @@ import { networks } from '../lib/menus'
 import { numberFormat } from '../lib/utils'
 
 import { TIMELY_DATA, TIMELY_SYNC_DATA } from '../reducers/types'
+
+BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Index() {
   const dispatch = useDispatch()
@@ -54,7 +54,6 @@ export default function Index() {
   const [timelyData, setTimelyData] = useState(null)
   const [theVolume, setTheVolume] = useState(null)
   const [theTransaction, setTheTransaction] = useState(null)
-  const [theFees, setTheFees] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -73,12 +72,6 @@ export default function Index() {
                       versions: {
                         terms: { field: 'version.keyword' },
                       },
-                      volumes: {
-                        sum: { field: 'normalize_volume' },
-                      },
-                      txs: {
-                        sum: { field: 'txCount' },
-                      },
                       sending_txs: {
                         sum: { field: 'sendingTxCount' },
                       },
@@ -88,11 +81,14 @@ export default function Index() {
                       cancel_txs: {
                         sum: { field: 'cancelTxCount' },
                       },
-                      volume_ins: {
-                        sum: { field: 'normalize_volumeIn' },
+                      volume_values: {
+                        sum: { field: 'volume_value' },
                       },
-                      relayer_fees: {
-                        sum: { field: 'normalize_relayerFee' },
+                      volume_in_values: {
+                        sum: { field: 'volumeIn_value' },
+                      },
+                      relayer_fee_values: {
+                        sum: { field: 'relayerFee_value' },
                       },
                     },
                   },
@@ -123,11 +119,11 @@ export default function Index() {
         for (let i = 0; i < _networks.length; i++) {
           const network = _networks[i]
 
-          const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+          const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
           _timelyData = {
             ..._timelyData,
-            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+            [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
           }
         }
 
@@ -151,11 +147,11 @@ export default function Index() {
             if (!controller.signal.aborted) {
               const network = _networks[i]
 
-              const response = await daily({ chain_id: network.id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+              const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
 
               _timelyData = {
                 ..._timelyData,
-                [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
+                [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
               }
 
               // setNumLoadedChains(i + 1)
@@ -204,18 +200,13 @@ export default function Index() {
               chain_data: networks.find(network => network.id === key),
             }
           }).map(timely => {
+            const price = timely.data?.prices?.[0]?.price
+
             return {
               ...timely,
-              normalize_volume: timely?.data?.contract_decimals && (timely.volume / Math.pow(10, timely.data.contract_decimals)),
-              normalize_volumeIn: timely?.data?.contract_decimals && (timely.volumeIn / Math.pow(10, timely.data.contract_decimals)),
-              normalize_relayerFee: timely?.data?.contract_decimals && (timely.relayerFee / Math.pow(10, timely.data.contract_decimals)),
-            }
-          }).map(timely => {
-            return {
-              ...timely,
-              normalize_volume: typeof timely?._normalize_volume === 'number' ? timely._normalize_volume : typeof timely?.normalize_volume === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volume * timely.data.prices[0].price),
-              normalize_volumeIn: typeof timely?._normalize_volumeIn === 'number' ? timely._normalize_volumeIn : typeof timely?.normalize_volumeIn === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_volumeIn * timely.data.prices[0].price),
-              normalize_relayerFee: typeof timely?._normalize_relayerFee === 'number' ? timely._normalize_relayerFee : typeof timely?.normalize_relayerFee === 'number' && typeof timely?.data?.prices?.[0].price === 'number' && (timely.normalize_relayerFee * timely.data.prices[0].price),
+              volume_value: typeof timely?.volume_value === 'number' ? timely.volume_value : timely?.volume && typeof price === 'number' && (BigNumber(timely.volume).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+              volumeIn_value: typeof timely?.volumeIn_value === 'number' ? timely.volumeIn_value : timely?.volumeIn && typeof price === 'number' && (BigNumber(timely.volumeIn).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
+              relayerFee_value: typeof timely?.relayerFee_value === 'number' ? timely.relayerFee_value : timely?.relayerFee && typeof price === 'number' && (BigNumber(timely.relayerFee).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
             }
           }).filter(timely => timely?.data)
         ]
@@ -305,14 +296,6 @@ export default function Index() {
               <TotalTransaction />
             </div>
           </Widget>
-          {/*<Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Fees</div>}
-            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-          >
-            <div className="mx-3">
-              <TotalFees />
-            </div>
-          </Widget>*/}
         </div>
         <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
           <Widget
@@ -337,7 +320,7 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheFees={_theFees => setTheFees(_theFees)} />
+              <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
             </div>
           </Widget>
         </div>
@@ -365,40 +348,10 @@ export default function Index() {
             className="lg:col-span-2 px-0 sm:px-4"
           >
             <div>
-              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheFees={_theFees => setTheFees(_theFees)} />
+              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
             </div>
           </Widget>
         </div>
-        {['true'].includes(debug) && (
-          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees by Chain</div>}
-              right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-              className="lg:col-span-2 px-0 sm:px-4"
-            >
-              <div>
-                <FeesByChain />
-              </div>
-            </Widget>
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Accumulated Fees</div>}
-              right={theVolume ?
-                <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                  <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theFees.fees === 'number' ? numberFormat(theFees.fees, '0,0') : ' -'}</div>
-                  <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theFees.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
-                </div>
-                :
-                timely_data && timelyData && <div style={{ height: '54px' }} />
-              }
-              contentClassName="items-start"
-              className="lg:col-span-2 px-0 sm:px-4"
-            >
-              <div>
-                <TimelyFees timeRange={timeRange} theFees={theFees} setTheFees={_theFees => setTheFees(_theFees)} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
-              </div>
-            </Widget>
-          </div>
-        )}
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
           <Link href="/routers">
             <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>

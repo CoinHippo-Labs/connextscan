@@ -219,7 +219,7 @@ export default function RouterAddress() {
             const network = networks[i]
 
             if (network && network.id && typeof network.network_id === 'number' && !network.disabled) {
-              const response = await getTransactions({ chain_id: network.id, where: `{ router: "${address.toLowerCase()}" }`, max_size: 500 }, _contracts_data)
+              const response = await getTransactions({ chain_id: network.network_id, where: `{ router: "${address.toLowerCase()}" }`, max_size: 500 }, _contracts_data)
 
               if (response) {
                 const _data = Array.isArray(response.data) ? response.data : []

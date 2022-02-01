@@ -59,7 +59,7 @@ export default function Transactions({ className = '' }) {
     const getData = async () => {
       if (network) {
         if (!controller.signal.aborted) {
-          const response = await getTransactions({ chain_id: network.id }, contracts_data)
+          const response = await getTransactions({ chain_id: network.network_id }, contracts_data)
 
           if (response) {
             let data = response.data || []

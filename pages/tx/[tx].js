@@ -47,13 +47,13 @@ export default function CrosschainTx() {
                 let response
 
                 if (!controller.signal.aborted) {
-                  response = await getTransactions({ chain_id: network.id }, _contracts_data, tx)
+                  response = await getTransactions({ chain_id: network.network_id }, _contracts_data, tx)
 
                   if (!(response?.data?.[0]) && ['search'].includes(source)) {
                     const txHashFields = ['prepareTransactionHash', 'fulfillTransactionHash', 'cancelTransactionHash']
 
                     for (let j = 0; j < txHashFields.length; j++) {
-                      const _response = await getTransactions({ chain_id: network.id, where: `{ ${txHashFields[j]}: "${tx.toLowerCase()}" }`, size: 1 }, _contracts_data)
+                      const _response = await getTransactions({ chain_id: network.network_id, where: `{ ${txHashFields[j]}: "${tx.toLowerCase()}" }`, size: 1 }, _contracts_data)
 
                       if (_response?.data?.[0]) {
                         const _data = _response.data[0]
@@ -120,7 +120,7 @@ export default function CrosschainTx() {
 
                       if (!controller.signal.aborted) {
                         if (next_chain && next_chain.id) {
-                          response = await getTransactions({ chain_id: next_chain.id }, _contracts_data, tx)
+                          response = await getTransactions({ chain_id: next_chain.network_id }, _contracts_data, tx)
 
                           if (response?.data?.[0]) {
                             _data = response.data[0]

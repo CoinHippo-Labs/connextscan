@@ -50,7 +50,7 @@ export default function ChainMeta() {
       if (network) {
         let chainData
 
-        let response = network.id && typeof network.network_id === 'number' && !network.disabled && await graphql({ chain_id: network.id, query: '{ _meta { block { hash, number } } }' })
+        let response = network.id && typeof network.network_id === 'number' && !network.disabled && await graphql({ chain_id: network.network_id, query: '{ _meta { block { hash, number } } }' })
 
         chainData = { ...chainData, ...response?.data?._meta }
 
@@ -110,7 +110,7 @@ export default function ChainMeta() {
         for (let i = 0; i < _networks.length; i++) {
           const network = _networks[i]
 
-          const response = await assetBalances({ chain_id: network.id })
+          const response = await assetBalances({ chain_id: network.network_id })
 
           assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
         }
@@ -143,7 +143,7 @@ export default function ChainMeta() {
           for (let i = 0; i < _networks.length; i++) {
             const network = _networks[i]
 
-            const response = await assetBalances({ chain_id: network.id })
+            const response = await assetBalances({ chain_id: network.network_id })
 
             assetsData = _.concat(assetsData || [], response?.data?.map(asset => { return { ...asset, chain_data: network } }) || [])
             routerIds = _.uniq(_.concat(routerIds || [], response?.data?.map(asset => asset?.router?.id).filter(id => id) || []))
