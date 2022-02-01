@@ -77,7 +77,7 @@ export default function PageTitle() {
           <span className="hidden xl:block uppercase text-sm xl:text-lg xl:pr-2">
             {ellipseAddress(tx, 24)}
           </span>
-          <Copy size={20} text={address} />
+          <Copy size={20} text={tx} />
         </div>
       )
       break
@@ -85,10 +85,15 @@ export default function PageTitle() {
       title = (
         <span className="flex flex-wrap items-center">
           <span className="mr-2">Router</span>
-          {ens_data?.[address?.toLowerCase()] && (
-            <span className="font-semibold">
-              {ellipseAddress(ens_data[address.toLowerCase()], 16)}
-            </span>
+          {ens_data?.[address?.toLowerCase()]?.name && (
+            <div className="flex items-center">
+              <Img
+                src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[address.toLowerCase()].name}`}
+                alt=""
+                className="w-6 h-6 rounded-full mr-2"
+              />
+              <span className="font-semibold">{ellipseAddress(ens_data[address.toLowerCase()].name, 16)}</span>
+            </div>
           )}
         </span>
       )
@@ -108,10 +113,15 @@ export default function PageTitle() {
       title = (
         <span className="flex flex-wrap items-center">
           <span className="mr-2">Address</span>
-          {ens_data?.[address?.toLowerCase()] && (
-            <span className="font-semibold">
-              {ellipseAddress(ens_data[address.toLowerCase()], 16)}
-            </span>
+          {ens_data?.[address?.toLowerCase()]?.name && (
+            <div className="flex items-center">
+              <Img
+                src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[address.toLowerCase()].name}`}
+                alt=""
+                className="w-6 h-6 rounded-full mr-2"
+              />
+              <span className="font-semibold">{ellipseAddress(ens_data[address.toLowerCase()].name, 16)}</span>
+            </div>
           )}
         </span>
       )

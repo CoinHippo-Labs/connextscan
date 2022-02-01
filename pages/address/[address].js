@@ -8,7 +8,6 @@ import { BiWallet } from 'react-icons/bi'
 
 import Balances from '../../components/crosschain/balances'
 import Transactions from '../../components/crosschain/transactions'
-import SectionTitle from '../../components/section-title'
 import Copy from '../../components/copy'
 import Widget from '../../components/widget'
 
@@ -210,29 +209,6 @@ export default function CrosschainAddress() {
 
   return (
     <>
-      <SectionTitle
-        title="Address"
-        subtitle={<div>
-          {ens_data?.[address?.toLowerCase()]?.name && (
-            <div className="flex items-center">
-              <Img
-                src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[address?.toLowerCase()].name}`}
-                alt=""
-                className="w-8 h-8 rounded-full mr-3"
-              />
-              <span>{ens_data?.[address?.toLowerCase()]?.name}</span>
-            </div>
-          )}
-          <Copy
-            size={ens_data?.[address?.toLowerCase()]?.name ? 12 : 24}
-            text={address}
-            copyTitle={<div className={`${ens_data?.[address?.toLowerCase()]?.name ? 'text-gray-400 dark:text-gray-500 text-xs font-normal mr-0.5' : 'uppercase text-gray-900 dark:text-gray-100 font-medium mr-1'}`}>
-              {ellipseAddress(address, 10)}
-            </div>}
-          />
-        </div>}
-        className="flex-col sm:flex-row items-start sm:items-center"
-      />
       <div className="max-w-6xl my-4 mx-auto pb-2">
         <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 pt-3 pb-6 px-4">
           <div className="flex flex-col sm:flex-row sm:items-start space-y-3 mx-3">

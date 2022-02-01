@@ -10,7 +10,6 @@ import TimelyVolume from '../../components/charts/timely-volume'
 import TimelyTransaction from '../../components/charts/timely-transaction'
 import Assets from '../../components/assets'
 // import Transactions from '../../components/transactions'
-import SectionTitle from '../../components/section-title'
 import Widget from '../../components/widget'
 
 import { daily, routers as getRouters } from '../../lib/api/subgraph'
@@ -253,19 +252,7 @@ export default function Chain() {
 
   return (
     <>
-      {/*<SectionTitle
-        title="Overview"
-        subtitle={<div className="flex items-center space-x-2 my-1">
-          <img
-            src={network?.icon}
-            alt=""
-            className="w-8 h-8 rounded-full"
-          />
-          <span>{network?.title}</span>
-        </div>}
-        className="flex-col sm:flex-row items-start sm:items-center"
-      />
-      <div className="max-w-6xl my-4 mx-auto pb-2">
+      {/*<div className="max-w-6xl my-4 mx-auto pb-2">
         <div>
           <div className="flex flex-col sm:flex-row sm:items-start space-y-3">
             <div className="flex items-center space-x-1 mt-auto">
