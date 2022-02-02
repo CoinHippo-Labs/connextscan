@@ -204,9 +204,9 @@ export default function Routers() {
     >
       <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-4 mb-2">
         {_.orderBy(r?.asset_balances?.flatMap(abs => abs) || [], ['amount_value', 'amount'], ['desc', 'desc']).map((ab, j) => {
-          const addToMetaMaskButton = (
+          const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
             <button
-              onClick={() => addTokenToMetaMask(ab.chain.chain_id, { ...ab.asset })}
+              onClick={() => addTokenToMetaMask(ab?.chain?.chain_id, { ...ab?.asset })}
               className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
             >
               <Img

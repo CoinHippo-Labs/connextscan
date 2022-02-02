@@ -23,12 +23,11 @@ import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
 export default function Assets({ assetBy = 'assets' }) {
-  const { preferences, chains, ens, routers_status, asset_balances, routers_assets } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, ens: state.ens, routers_status: state.routers_status, asset_balances: state.asset_balances, routers_assets: state.routers_assets }), shallowEqual)
+  const { preferences, chains, ens, routers_status, routers_assets } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, ens: state.ens, routers_status: state.routers_status, routers_assets: state.routers_assets }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
   const { ens_data } = { ...ens }
   const { routers_status_data } = { ...routers_status }
-  const { asset_balances_data } = { ...asset_balances }
   const { routers_assets_data } = { ...routers_assets }
 
   const router = useRouter()
@@ -124,29 +123,28 @@ export default function Assets({ assetBy = 'assets' }) {
 
   const chain = chains_data?.find(c => c?.id === blockchain_id)
 
-  const maxTransfers = null/*data?.chain_id === chain_id && data?.data && _.orderBy(
-    Object.values(_.groupBy(data.data.flatMap(_router => _router?.assetBalances.map(_asset => { return { ..._asset, router_id: _router.id } })), 'data.contract_address')).map(_assets => {
+  const maxTransfers = routers_assets_data && _.orderBy(
+    Object.values(_.groupBy(routers_assets_data.flatMap(ra => ra?.asset_balances?.filter(ab => ab?.chain?.chain_id === chain?.chain_id) || []), 'assetId')).map(a => {
       let assets_from_chains
 
-      if (_assets && routers_status_data) {
-        assets_from_chains = Object.fromEntries(networks.filter(_network => _network?.network_id && !_network.disabled).map(_network => {
-          const assets = _assets.filter(_asset => routers_status_data?.findIndex(_router => _router?.routerAddress?.toLowerCase() === _asset?.router_id?.toLowerCase() && _router?.supportedChains?.includes(network.network_id) && _router.supportedChains.includes(_network.network_id)) > -1)
+      if (a && routers_status_data) {
+        assets_from_chains = Object.fromEntries(chains_data?.filter(c => !c.disabled).map(c => {
+          const assets = a.filter(_a => routers_status_data?.findIndex(r => r?.routerAddress?.toLowerCase() === _a?.router?.id?.toLowerCase() && r?.supportedChains?.includes(c?.chain_id) && r?.supportedChains?.includes(chain?.chain_id)) > -1)
 
-          return [_network.id, _.maxBy(assets, 'normalize_amount')]
-        }).filter(([key, value]) => key !== network.id && value))
+          return [c.chain_id, _.maxBy(assets, 'amount')]
+        }).filter(([key, value]) => key !== chain?.chain_id && value))
       }
 
       return {
-        ..._.maxBy(_assets, 'normalize_amount'),
-        total_amount: _.sumBy(_assets, 'amount'),
-        total_normalize_amount: _.sumBy(_assets, 'normalize_amount'),
-        total_value: _.sumBy(_assets, 'value'),
+        ..._.maxBy(a, 'amount_value'),
+        total_amount: _.sumBy(a, 'amount'),
+        total_amount_value: _.sumBy(a, 'amount_value'),
         assets_from_chains,
       }
     }), ['value'], ['desc']
-  )*/
+  )
 
-  const routersComponent = _.cloneDeep(routers_assets_data)?.filter(ra => !routers_status_data || routers_status_data.findIndex(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase() && r?.supportedChains?.includes(chain?.chain_id)) > -1).map(ra => {
+  const routersComponent = routers_assets_data?.filter(ra => !routers_status_data || routers_status_data.findIndex(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase() && r?.supportedChains?.includes(chain?.chain_id)) > -1).map(ra => {
     return {
       ...ra,
       asset_balances: ra?.asset_balances?.filter(ab => ab?.chain?.chain_id === chain?.chain_id),
@@ -222,9 +220,9 @@ export default function Assets({ assetBy = 'assets' }) {
       >
         <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-4 mb-2">
           {_.orderBy(ra?.asset_balances?.flatMap(abs => abs) || [], ['amount_value', 'amount'], ['desc', 'desc']).map((ab, j) => {
-            const addToMetaMaskButton = (
+            const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
               <button
-                onClick={() => addTokenToMetaMask(ab.chain.chain_id, { ...ab.asset })}
+                onClick={() => addTokenToMetaMask(ab?.chain?.chain_id, { ...ab?.asset })}
                 className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
               >
                 <Img
@@ -370,125 +368,170 @@ export default function Assets({ assetBy = 'assets' }) {
               </div>
             </>
         :
-        <div className="w-full grid grid-flow-row grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-8 my-6">
-          {(maxTransfers ?
-            maxTransfers.map((assetBalance, i) => { return { ...assetBalance, i } })
+        !maxTransfers ?
+          <div className="w-full flex items-center justify-center">
+            <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
+          </div>
+          :
+          maxTransfers.length < 1 ?
+            <div className="w-full text-gray-400 dark:text-gray-600 text-base italic text-center">
+              No Assets
+            </div>
             :
-            [...Array(3).keys()].map(i => { return { i, skeleton: true } })
-          ).map((assetBalance, i) => (
-            !assetBalance.skeleton ?
-              <div key={i} className="bg-white dark:bg-gray-900 shadow-sm rounded-2xl p-4">
-                <div className="space-y-2">
-                  {assetBalance?.data && (
-                    <div className="flex items-center space-x-1.5">
-                      {assetBalance.data.logo_url && (
-                        <Img
-                          src={assetBalance.data.logo_url}
-                          alt=""
-                          className="w-8 h-8 rounded-full"
-                        />
+            <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              {maxTransfers.map((ab, i) => { return { ...ab, i } }).map((ab, i) => {
+                const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
+                  <button
+                    onClick={() => addTokenToMetaMask(ab?.chain?.chain_id, { ...ab?.asset })}
+                    className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1.5 px-2"
+                  >
+                    <Img
+                      src="/logos/wallets/metamask.png"
+                      alt=""
+                      className="w-4 h-4"
+                    />
+                  </button>
+                )
+
+                return (
+                  <div key={i} className="bg-white dark:bg-gray-900 shadow rounded-2xl space-y-4 p-4">
+                    <div className="space-y-2">
+                      {ab?.asset && (
+                        <div className="flex items-center">
+                          <Img
+                            src={ab.asset.image}
+                            alt=""
+                            className="w-8 h-8 rounded-full mr-1.5"
+                          />
+                          <div className="space-y-0.5">
+                            <div className="text-sm font-semibold">{ab.asset.name}</div>
+                            <div className="text-gray-400 dark:text-gray-600 text-xs">{ab.asset.symbol}</div>
+                          </div>
+                          <div className="min-w-max relative -top-1.5 -right-0.5 ml-auto">
+                            <Popover
+                              placement="left"
+                              title={<span className="normal-case text-xs">Add token</span>}
+                              content={<div className="w-32 text-2xs">Add <span className="font-semibold">{ab.asset.symbol}</span> to MetaMask</div>}
+                              titleClassName="py-1"
+                            >
+                              {addToMetaMaskButton}
+                            </Popover>
+                          </div>
+                        </div>
                       )}
-                      <div>
-                        <div className="text-sm font-semibold">{assetBalance.data.contract_name}</div>
-                        <div className="text-gray-600 dark:text-gray-400 text-xs font-normal">{assetBalance.data.contract_ticker_symbol}</div>
+                      {ab?.assetId && (
+                        <div className="flex items-center space-x-1">
+                          <Copy
+                            text={ab.assetId}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-600 font-normal">
+                              {ellipseAddress(ab.assetId, 6)}
+                            </span>}
+                          />
+                          {chain?.explorer?.url && (
+                            <a
+                              href={`${chain.explorer.url}${chain.explorer[`contract${ab.assetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', ab.assetId)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-white"
+                            >
+                              {chain.explorer.icon ?
+                                <Img
+                                  src={chain.explorer.icon}
+                                  alt=""
+                                  className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                                />
+                                :
+                                <TiArrowRight size={16} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-1">
+                      <div className="uppercase text-gray-600 dark:text-gray-400 text-2xs font-medium">Max Transfers Size</div>
+                      <div className="flex items-center space-x-2">
+                        {typeof ab?.amount === 'number' ?
+                          <>
+                            <span className="font-mono uppercase text-lg font-semibold">
+                              {numberFormat(ab.amount, ab.amount > 10000000 ? '0,0.00a' : ab.amount > 1000 ? '0,0' : '0,0.000')}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-600 text-lg">{ab?.asset?.symbol}</span>
+                          </>
+                          :
+                          <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                        }
+                        <div className="w-full flex items-center justify-end">
+                          {ab.assets_from_chains && (
+                            <Popover
+                              placement="left"
+                              title={<span className="text-xs">Transfer Routes</span>}
+                              content={<div className="w-40 flex-col space-y-1.5">
+                                {Object.entries(ab.assets_from_chains).length > 0 ?
+                                  _.orderBy(Object.entries(ab.assets_from_chains).map(([key, value]) => { return { key, value } }), ['value.amount'], ['desc']).map(({ key, value }) => (
+                                    <div key={key} className="flex items-center justify-between space-x-1">
+                                      <div className="flex items-center space-x-1.5">
+                                        <Img
+                                          src={chains_data?.find(c => c?.chain_id === Number(key))?.image}
+                                          alt=""
+                                          className="w-5 h-5 rounded-full"
+                                        />
+                                        <GoCode size={16} className="min-w-min" />
+                                        <Img
+                                          src={chain?.image}
+                                          alt=""
+                                          className="w-5 h-5 rounded-full"
+                                        />
+                                      </div>
+                                      <div className="text-3xs space-x-1">
+                                        <span className="font-mono">{numberFormat(value.amount, '0,0')}</span>
+                                        <span className="text-gray-400 dark:text-gray-600">{value.asset?.symbol}</span>
+                                      </div>
+                                    </div>
+                                  ))
+                                  :
+                                  'No Routes'
+                                }
+                              </div>}
+                              titleClassName="py-1.5"
+                            >
+                              <BsJournalCode size={20} />
+                            </Popover>
+                          )}
+                          {!routers_status_data && (
+                            <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="20" height="20" />
+                          )}
+                        </div>
                       </div>
                     </div>
-                  )}
-                  {assetBalance?.assetId && (
-                    <div className="flex items-center space-x-1">
-                      <Copy
-                        text={assetBalance.assetId}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-200 font-medium">
-                          {ellipseAddress(assetBalance.assetId, 6)}
-                        </span>}
-                      />
-                      {network?.explorer?.url && (
-                        <a
-                          href={`${network.explorer.url}${network.explorer[`contract${assetBalance.assetId.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', assetBalance.assetId)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-white"
-                        >
-                          {network.explorer.icon ?
-                            <Img
-                              src={network.explorer.icon}
-                              alt=""
-                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
-                            />
-                            :
-                            <TiArrowRight size={16} className="transform -rotate-45" />
-                          }
-                        </a>
-                      )}
+                    <div className="space-y-1">
+                      <div className="uppercase text-gray-600 dark:text-gray-400 text-2xs font-medium">Total Liquidity</div>
+                      <div className="flex items-center space-x-2">
+                        {typeof ab?.total_amount === 'number' ?
+                          <>
+                            <span className="font-mono uppercase text-lg font-semibold">
+                              {numberFormat(ab.total_amount, ab.total_amount > 10000000 ? '0,0.00a' : ab.total_amount > 1000 ? '0,0' : '0,0.000')}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-600 text-lg">{ab?.asset?.symbol}</span>
+                          </>
+                          :
+                          <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                        }
+                      </div>
+                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg font-mono text-sm py-1 px-2">
+                        {typeof ab?.total_amount_value === 'number' ?
+                          <span className={`uppercase ${ab?.total_amount_value > 100000 ? 'text-gray-800 dark:text-gray-200 font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
+                            {currency_symbol}{numberFormat(ab.total_amount_value, ab.total_amount_value > 1000000 ? '0,0.00a' : ab.total_amount_value > 1000 ? '0,0' : '0,0.000')}
+                          </span>
+                          :
+                          <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                        }
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="mt-4">
-                  <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Max Transfer Size</div>
-                  <div className="flex items-center">
-                    <div className="mr-2">
-                      <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.normalize_amount ? numberFormat(assetBalance.normalize_amount, '0,0') : assetBalance?.amount && !(assetBalance?.data) ? numberFormat(assetBalance.amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
-                      <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>
-                    </div>
-                    {assetBalance.assets_from_chains && (
-                      <Popover
-                        placement="bottom"
-                        title={<span className="text-xs">Transfer Routes</span>}
-                        content={<div className="w-40 flex-col space-y-1.5">
-                          {Object.entries(assetBalance.assets_from_chains).length > 0 ?
-                            _.orderBy(Object.entries(assetBalance.assets_from_chains).map(([key, value]) => { return { key, value } }), ['value.normalize_amount'], ['desc']).map(({ key, value }) => (
-                              <div key={key} className="flex items-center justify-between">
-                                <div className="flex items-center space-x-1.5 mr-1">
-                                  {networks?.find(_network => _network?.id === key)?.icon && (
-                                    <Img
-                                      src={networks.find(_network => _network?.id === key).icon}
-                                      alt=""
-                                      className="w-5 h-5 rounded-full"
-                                    />
-                                  )}
-                                  <GoCode size={16} className="min-w-min" />
-                                  {network.icon && (
-                                    <Img
-                                      src={network.icon}
-                                      alt=""
-                                      className="w-5 h-5 rounded-full"
-                                    />
-                                  )}
-                                </div>
-                                <div className="text-3xs space-x-1">
-                                  <span className="font-mono">{numberFormat(value.normalize_amount, '0,0')}</span>
-                                  <span className="text-gray-400 dark:text-gray-500">{value.data?.contract_ticker_symbol}</span>
-                                </div>
-                              </div>
-                            ))
-                            :
-                            'No Routes'
-                          }
-                        </div>}
-                        className=""
-                      >
-                        <BsJournalCode size={20} />
-                      </Popover>
-                    )}
-                    {!routers_status_data && (
-                      <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="20" height="20" />
-                    )}
                   </div>
-                  <div className="text-gray-500 dark:text-gray-400 font-medium">~{currency_symbol}{typeof assetBalance?.value === 'number' ? numberFormat(assetBalance.value, '0,0') : ' -'}</div>
-                </div>
-                <div className="mt-4">
-                  <div className="uppercase text-gray-400 dark:text-gray-500 text-2xs">Total Liquidity</div>
-                  <div>
-                    <span className="font-mono text-lg font-semibold mr-1.5">{assetBalance?.total_normalize_amount ? numberFormat(assetBalance.total_normalize_amount, '0,0') : assetBalance?.total_amount && !(assetBalance?.data) ? numberFormat(assetBalance.total_amount / Math.pow(10, network?.currency?.decimals), '0,0') : '-'}</span>
-                    <span className="text-gray-600 dark:text-gray-400 text-base">{assetBalance?.data?.contract_ticker_symbol}</span>
-                  </div>
-                  <div className="text-gray-500 dark:text-gray-400 font-medium">~{currency_symbol}{typeof assetBalance?.total_value === 'number' ? numberFormat(assetBalance.total_value, '0,0') : ' -'}</div>
-                </div>
-              </div>
-              :
-              <div key={i} className="skeleton h-60" style={{ borderRadius: '1rem' }} />
-          ))}
-        </div>
+                )
+              })}
+            </div>
       }
     </>
   )

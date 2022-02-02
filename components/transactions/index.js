@@ -472,7 +472,7 @@ export default function Transactions({ className = '' }) {
             accessor: 'receiving_amount',
             disableSortBy: true,
             Cell: props => {
-              const addSendingTokenToMetaMaskButton = props.row.original.sendingChain && props.row.original.sendingAsset && (
+              const addSendingTokenToMetaMaskButton = props.row.original.sendingChain && props.row.original.sendingAsset && props.row.original.sendingAssetId !== constants.AddressZero && (
                 <button
                   onClick={() => addTokenToMetaMask(props.row.original.sendingChain.chain_id, { ...props.row.original.sendingAsset })}
                   className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
@@ -485,7 +485,7 @@ export default function Transactions({ className = '' }) {
                 </button>
               )
 
-              const addReceivingTokenToMetaMaskButton = props.row.original.receivingChain && props.row.original.receivingAsset && (
+              const addReceivingTokenToMetaMaskButton = props.row.original.receivingChain && props.row.original.receivingAsset && props.row.original.receivingAssetId !== constants.AddressZero && (
                 <button
                   onClick={() => addTokenToMetaMask(props.row.original.receivingChain.chain_id, { ...props.row.original.receivingAsset })}
                   className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
