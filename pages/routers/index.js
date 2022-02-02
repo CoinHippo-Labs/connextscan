@@ -1,7 +1,9 @@
-import Routers from '../../components/crosschain/routers'
+import Routers from '../../components/routers'
 
 export default function RoutersIndex() {
   return (
-    <Routers />
+    <div className="max-w-8xl my-2 xl:mt-4 xl:mb-6 mx-auto">
+      <Routers />
+    </div>
   )
 }
