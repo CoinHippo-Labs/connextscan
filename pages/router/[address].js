@@ -12,7 +12,7 @@ import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { BsFileEarmarkCheck } from 'react-icons/bs'
 
-import Transactions from '../../components/crosschain/transactions'
+import Transactions from '../../components/transactions'
 import SectionTitle from '../../components/section-title'
 import Copy from '../../components/copy'
 import Widget from '../../components/widget'

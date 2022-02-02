@@ -177,7 +177,7 @@ export default function Routers() {
                       {ellipseAddress(r.router_id, 8)}
                     </a>
                   </Link>
-                  <Copy text={router.router_id} />
+                  <Copy text={r.router_id} />
                 </>
               }
             </div>

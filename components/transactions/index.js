@@ -77,13 +77,16 @@ export default function Transactions({ className = '' }) {
   }, [chainId, addTokenData])
 
   useEffect(() => {
-    if (pathname || address) {
+    if (pathname || address || blockchain_id) {
       dispatch({
         type: TRANSACTIONS_DATA,
         value: null,
       })
+
+      setTxs(null)
+      setStatuses(filter_statuses.filter(({ status }) => !blockchain_id || !status?.endsWith('ing')).map(({ status }) => status))
     }
-  }, [pathname, address])
+  }, [pathname, address, blockchain_id])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -127,7 +130,7 @@ export default function Transactions({ className = '' }) {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [chains_data, tokens_data, sdk_data])
+  }, [pathname, address, blockchain_id, chains_data, tokens_data, sdk_data])
 
   useEffect(async () => {
     if (tokens_data && transactions_data) {
@@ -161,7 +164,7 @@ export default function Transactions({ className = '' }) {
       }), ['preparedTimestamp'], ['desc']).map(t => {
         return {
           ...t,
-          crosschain_status: t.status === 'Prepared' && t.txs?.length === 1 && t.txs[0]?.chain_id === t.sendingChainId ? 'Preparing' : t.status === 'Fulfilled' && t.txs?.findIndex(_t => _t?.status === 'Prepared') > -1 ? 'Fulfilling' : t.status,
+          crosschain_status: blockchain_id ? t.status : t.status === 'Prepared' && t.txs?.length === 1 && t.txs[0]?.chain_id === t.sendingChainId ? 'Preparing' : t.status === 'Fulfilled' && t.txs?.findIndex(_t => _t?.status === 'Prepared') > -1 ? 'Fulfilling' : t.status,
         }
       })
 
@@ -259,11 +262,11 @@ export default function Transactions({ className = '' }) {
     <>
       <div className="flex flex-wrap items-center sm:justify-end mb-2 sm:mx-3">
         <span className="hidden sm:block text-gray-400 dark:text-gray-600 mr-3">Filter:</span>
-        {filter_statuses.map(({ status, color }, i) => (
+        {filter_statuses.filter(({ status }) => !blockchain_id || !status?.endsWith('ing')).map(({ status, color }, i) => (
           <button
             key={i}
             onClick={() => setStatuses(_.uniq(statuses.includes(status) ? statuses.filter(s => s !== status) : _.concat(statuses, status)))}
-            className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-${status?.endsWith('ing') ? 400 : 500} text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-gray-800 dark:text-gray-200 dark:hover:text-white`} text-xs my-1 mr-${i === filter_statuses.length - 1 ? 0 : '2 md:mr-3'} py-2 px-1.5`}
+            className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-${status?.endsWith('ing') ? 400 : 500} text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-gray-800 dark:text-gray-200 dark:hover:text-white`} text-xs my-1 mr-${i === filter_statuses.filter(({ status }) => !blockchain_id || !status?.endsWith('ing')).length - 1 ? 0 : '2 md:mr-3'} py-2 px-1.5`}
           >
             {status}
           </button>
