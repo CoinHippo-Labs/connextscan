@@ -17,7 +17,7 @@ import TimeRange from '../components/time-range'
 // import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
 // import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
 // import TopLiquidity from '../components/crosschain/top-liquidity'
-// import Transactions from '../components/crosschain/transactions'
+// import Transactions from '../components/transactions'
 import SectionTitle from '../components/section-title'
 import Widget from '../components/widget'
 

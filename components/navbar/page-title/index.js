@@ -1,8 +1,8 @@
 import { useRouter } from 'next/router'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
-import { Img } from 'react-image'
 import moment from 'moment'
+import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
 import { MdRefresh } from 'react-icons/md'
 import { RiFileCodeLine } from 'react-icons/ri'

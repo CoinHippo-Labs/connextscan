@@ -6,37 +6,54 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 import _ from 'lodash'
 import moment from 'moment'
 import Web3 from 'web3'
-import { utils } from 'ethers'
+import { constants, utils } from 'ethers'
+import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
+import Loader from 'react-loader-spinner'
 import { TiArrowRight } from 'react-icons/ti'
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa'
-import { MdPending } from 'react-icons/md'
+import { FaCheckCircle, FaRegCheckCircle, FaTimesCircle } from 'react-icons/fa'
+import { GoCode } from 'react-icons/go'
 
 import Datatable from '../datatable'
 import Copy from '../copy'
 import Popover from '../popover'
 
 import { transactions as getTransactions } from '../../lib/api/subgraph'
-import { contracts as getContracts } from '../../lib/api/covalent'
-import { networks } from '../../lib/menus'
+import { domains, getENS } from '../../lib/api/ens'
+import { chainTitle } from '../../lib/object/chain'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
-import { CONTRACTS_DATA } from '../../reducers/types'
+import { ENS_DATA, TRANSACTIONS_DATA } from '../../reducers/types'
+
+const filter_statuses = [
+  { status: 'Preparing', color: 'blue' },
+  { status: 'Prepared', color: 'yellow' },
+  { status: 'Fulfilling', color: 'green' },
+  { status: 'Fulfilled', color: 'green' },
+  { status: 'Cancelled', color: 'red' },
+]
+
+BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Transactions({ className = '' }) {
   const dispatch = useDispatch()
-  const { contracts } = useSelector(state => ({ contracts: state.contracts }), shallowEqual)
-  const { contracts_data } = { ...contracts }
+  const { preferences, chains, tokens, ens, transactions, sdk } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, ens: state.ens, transactions: state.transactions, sdk: state.sdk }), shallowEqual)
+  const { theme } = { ...preferences }
+  const { chains_data } = { ...chains }
+  const { tokens_data } = { ...tokens }
+  const { ens_data } = { ...ens }
+  const { transactions_data } = { ...transactions }
+  const { sdk_data } = { ...sdk }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
-  const { chain_id } = { ...query }
-  const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+  const { address, blockchain_id } = { ...query }
 
-  const [transactions, setTransactions] = useState(null)
-
+  const [txs, setTxs] = useState(null)
+  const [statuses, setStatuses] = useState(filter_statuses.map(({ status }) => status))
   const [web3, setWeb3] = useState(null)
   const [chainId, setChainId] = useState(null)
+  const [addTokenData, setAddTokenData] = useState(null)
 
   useEffect(() => {
     if (!web3) {
@@ -54,100 +71,165 @@ export default function Transactions({ className = '' }) {
   }, [web3])
 
   useEffect(() => {
+    if (addTokenData?.chain_id === chainId && addTokenData?.contract) {
+      addTokenToMetaMask(addTokenData.chain_id, addTokenData.contract)
+    }
+  }, [chainId, addTokenData])
+
+  useEffect(() => {
+    if (pathname || address) {
+      dispatch({
+        type: TRANSACTIONS_DATA,
+        value: null,
+      })
+    }
+  }, [pathname, address])
+
+  useEffect(() => {
     const controller = new AbortController()
 
-    const getData = async () => {
-      if (network) {
+    const getTxs = async chain => {
+      if (chain && !chain.disabled) {
         if (!controller.signal.aborted) {
-          const response = await getTransactions({ chain_id: network.network_id }, contracts_data)
+          let params
 
-          if (response) {
-            let data = response.data || []
-
-            const _contracts = _.groupBy(_.uniqBy(data.flatMap(tx => [{ id: tx.sendingAssetId, chain_id: tx.sendingChainId, data: tx.sendingAsset }, { id: tx.receivingAssetId, chain_id: tx.receivingChainId, data: tx.receivingAsset }]).filter(asset => asset.id && !(asset?.data) && !(contracts_data?.findIndex(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-`, '') === asset.id && contract.data) > -1)).map(asset => { return { ...asset, _id: `${networks.find(_network => _network.network_id === asset?.chain_id)?.id}-${asset?.id}` } }), '_id'), 'chain_id')
-
-            let new_contracts
-
-            for (let i = 0; i < Object.entries(_contracts).length; i++) {
-              if (!controller.signal.aborted) {
-                const contract = Object.entries(_contracts)[i]
-                let [key, value] = contract
-                key = Number(key)
-
-                const resContracts = await getContracts(key, value?.map(_contract => _contract.id).join(','))
-
-                if (resContracts?.data) {
-                  new_contracts = _.uniqBy(_.concat(resContracts.data.filter(_contract => _contract).map(_contract => { return { id: _contract?.contract_address, chain_id: key, data: { ..._contract }, id: `${networks.find(_network => _network.network_id === key)?.id}-${_contract?.contract_address}` } }), new_contracts || []), 'id')
-                }
-              }
+          if (address) {
+            if (['/router/[address]'].includes(pathname)) {
+              params = { where: `{ router: "${address.toLowerCase()}" }`, max_size: 500 }
             }
+            else if (['/address/[address]'].includes(pathname)) {
+              params = { where: `{ user: "${address.toLowerCase()}" }`, max_size: 500 }
+            }
+          }
 
-            new_contracts = _.uniqBy(_.concat(new_contracts || [], contracts_data || []), 'id')
+          if (!blockchain_id || chain.id === blockchain_id) {
+            const response = await getTransactions(sdk_data, chain.chain_id, null, params, chains_data, tokens_data)
 
-            data = data.map(tx => {
-              return {
-                ...tx,
-                sendingAsset: tx.sendingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.sendingChainId)?.id}-`, '') === tx.sendingAssetId && contract.data)?.data,
-                receivingAsset: tx.receivingAsset || new_contracts?.find(contract => contract.id?.replace(`${networks.find(_network => _network.network_id === tx.receivingChainId)?.id}-`, '') === tx.receivingAssetId && contract.data)?.data,
-              }
-            }).map(tx => {
-              return {
-                ...tx,
-                normalize_amount: ((tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals)) && (tx.amount / Math.pow(10, (tx.sendingChainId === network.network_id && tx.sendingAsset?.contract_decimals) || (tx.receivingChainId === network.network_id && tx.receivingAsset?.contract_decimals))),
-              }
+            dispatch({
+              type: TRANSACTIONS_DATA,
+              value: { [`${chain.chain_id}`]: response?.data || [] },
             })
-
-            setTransactions({ data, chain_id })
-
-            if (!controller.signal.aborted) {
-              if (new_contracts) {
-                dispatch({
-                  type: CONTRACTS_DATA,
-                  value: new_contracts,
-                })
-              }
-            }
           }
         }
       }
     }
 
+    const getData = () => {
+      if (chains_data && tokens_data && sdk_data) {
+        chains_data.forEach(c => getTxs(c))
+      }
+    }
+
     getData()
 
-    const interval = setInterval(() => getData(), 2 * 60 * 1000)
+    const interval = setInterval(() => getData(), 3 * 60 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [network])
+  }, [chains_data, tokens_data, sdk_data])
+
+  useEffect(async () => {
+    if (tokens_data && transactions_data) {
+      let data = Object.entries(transactions_data).flatMap(([key, value]) => {
+        return value?.filter(t => t).map(t => {
+          return {
+            ...t,
+            sendingAsset: t.sendingAsset || tokens_data?.find(_t => _t?.chain_id === t.sendingChainId && _t?.contract_address === t.sendingAssetId),
+            receivingAsset: t.receivingAsset || tokens_data?.find(_t => _t?.chain_id === t.receivingChainId && _t?.contract_address === t.receivingAssetId),
+          }
+        })
+      }).map(t => {
+        return {
+          ...t,
+          sending_amount: t.sendingAsset && BigNumber(!isNaN(t.amount) ? t.amount : 0).shiftedBy(-t.sendingAsset.contract_decimals).toNumber(),
+          receiving_amount: t.receivingAsset && BigNumber(!isNaN(t.amount) ? t.amount : 0).shiftedBy(-t.receivingAsset.contract_decimals).toNumber(),
+        }
+      })
+
+      data = _.orderBy(Object.entries(_.groupBy(_.orderBy(data, ['order', 'preparedTimestamp'], ['desc', 'desc']), 'transactionId')).map(([key, value]) => {
+        return {
+          txs: _.orderBy(_.uniqBy(value, 'chainId'), ['order', 'preparedTimestamp'], ['asc', 'asc']).map(t => {
+            return {
+              id: t.chainTx,
+              chain_id: t.chainId,
+              status: t.status,
+            }
+          }),
+          ...(_.maxBy(value, ['order', 'preparedTimestamp'])),
+        }
+      }), ['preparedTimestamp'], ['desc']).map(t => {
+        return {
+          ...t,
+          crosschain_status: t.status === 'Prepared' && t.txs?.length === 1 && t.txs[0]?.chain_id === t.sendingChainId ? 'Preparing' : t.status === 'Fulfilled' && t.txs?.findIndex(_t => _t?.status === 'Prepared') > -1 ? 'Fulfilling' : t.status,
+        }
+      })
+
+      if ((data.length > 0 || blockchain_id) && Object.keys(transactions_data).length > (blockchain_id ? 0 : 3)) {
+        setTxs({ data })
+      }
+
+      if (Object.keys(transactions_data).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)) {
+        const evmAddresses = _.slice(_.uniq(data.flatMap(t => [t?.sendingAddress?.toLowerCase(), t?.receivingAddress?.toLowerCase()]).filter(id => id && !ens_data?.[id])), 0, 100)
+        if (evmAddresses.length > 0) {
+          let ensData
+
+          const addressChunk = _.chunk(evmAddresses, 20)
+
+          for (let i = 0; i < addressChunk.length; i++) {
+            const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+            ensData = _.concat(ensData || [], domainsResponse?.data || [])
+          }
+
+          if (ensData?.length > 0) {
+            const ensResponses = {}
+
+            for (let i = 0; i < evmAddresses.length; i++) {
+              const evmAddress = evmAddresses[i]?.toLowerCase()
+
+              if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
+                ensResponses[evmAddress] = await getENS(evmAddress)
+              }
+            }
+
+            dispatch({
+              type: ENS_DATA,
+              value: Object.fromEntries(ensData.filter(domain => !ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()]?.reverseRecord || domain?.name === ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()].reverseRecord).map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+            })
+          }
+        }
+      }
+    }
+  }, [tokens_data, transactions_data])
 
   const addTokenToMetaMask = async (chain_id, contract) => {
     if (web3 && contract) {
       if (chain_id === chainId) {
         try {
-          const image = _.head(contract.logo_url || [])
-
           const response = await web3.currentProvider.request({
             method: 'wallet_watchAsset',
             params: {
               type: 'ERC20',
               options: {
                 address: contract.contract_address,
-                symbol: contract.contract_ticker_symbol,
+                symbol: contract.symbol,
                 decimals: contract.contract_decimals,
-                image: `${image?.startsWith('/') ? process.env.NEXT_PUBLIC_SITE_URL : ''}${image}`,
+                image: `${contract.image?.startsWith('/') ? process.env.NEXT_PUBLIC_SITE_URL : ''}${contract.image}`,
               },
             },
           })
         } catch (error) {}
+
+        setAddTokenData(null)
       }
       else {
-        switchNetwork(chain_id)
+        switchNetwork(chain_id, contract)
       }
     }
   }
 
-  const switchNetwork = async chain_id => {
+  const switchNetwork = async (chain_id, contract) => {
     try {
       await web3.currentProvider.request({
         method: 'wallet_switchEthereumChain',
@@ -158,90 +240,120 @@ export default function Transactions({ className = '' }) {
         try {
           await web3.currentProvider.request({
             method: 'wallet_addEthereumChain',
-            params: networks?.find(c => c.network_id === chain_id)?.provider_params,
+            params: chains_data?.find(c => c.chain_id === chain_id)?.provider_params,
           })
         } catch (error) {
           console.log(error)
         }
       }
     }
+
+    if (contract) {
+      setAddTokenData({ chain_id, contract })
+    }
   }
+
+  const filteredTxs = txs?.data?.filter(t => statuses.length < 1 || statuses.includes(t.crosschain_status))
 
   return (
     <>
+      <div className="flex flex-wrap items-center sm:justify-end mb-2 sm:mx-3">
+        <span className="hidden sm:block text-gray-400 dark:text-gray-600 mr-3">Filter:</span>
+        {filter_statuses.map(({ status, color }, i) => (
+          <button
+            key={i}
+            onClick={() => setStatuses(_.uniq(statuses.includes(status) ? statuses.filter(s => s !== status) : _.concat(statuses, status)))}
+            className={`btn btn-sm btn-raised min-w-max btn-rounded flex items-center ${statuses.includes(status) ? `bg-${color}-${status?.endsWith('ing') ? 400 : 500} text-white` : `bg-transparent hover:bg-${color}-50 text-${color}-500 hover:text-${color}-600 dark:hover:bg-gray-800 dark:text-gray-200 dark:hover:text-white`} text-xs my-1 mr-${i === filter_statuses.length - 1 ? 0 : '2 md:mr-3'} py-2 px-1.5`}
+          >
+            {status}
+          </button>
+        ))}
+      </div>
       <Datatable
         columns={[
           {
-            Header: 'TX ID',
+            Header: 'Tx ID',
             accessor: 'transactionId',
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <>
+                <div className="space-y-1 my-1">
                   <div className="flex items-center space-x-1">
                     <Link href={`/tx/${props.value}`}>
-                      <a className="uppercase text-indigo-600 dark:text-white font-medium">
-                        {ellipseAddress(props.value, 6)}
+                      <a className="uppercase text-blue-600 dark:text-white font-semibold">
+                        {ellipseAddress(props.value, 8)}
                       </a>
                     </Link>
-                    <Copy text={props.value} />
+                    <Copy size={14} text={props.value} />
                   </div>
-                  {props.row.original.chainTx && network?.explorer?.url && (
-                    <div className="flex items-center space-x-1 mt-1">
-                      <Copy
-                        size={12}
-                        text={props.row.original.chainTx}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-light">
-                          {ellipseAddress(props.row.original.chainTx, 6)}
-                        </span>}
-                      />
-                      <a
-                        href={`${network.explorer.url}${network.explorer.transaction_path?.replace('{tx}', props.row.original.chainTx)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-indigo-600 dark:text-white"
-                      >
-                        {network?.explorer?.icon ?
-                          <img
-                            src={network.explorer.icon}
-                            alt=""
-                            className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
-                          />
-                          :
-                          <TiArrowRight size={16} className="transform -rotate-45" />
-                        }
-                      </a>
-                    </div>
-                  )}
-                </>
+                  {props.row.original.txs?.filter(t => t.id && (t.chain_id === props.row.original.sendingChain?.chain_id || t.chain_id === props.row.original.receivingChain?.chain_id)).map((t, i) => {
+                    const chain = t.chain_id === props.row.original.sendingChain?.chain_id ? props.row.original.sendingChain : props.row.original.receivingChain
+
+                    return (
+                      <div key={i} className="flex items-center space-x-1">
+                        <Copy
+                          size={12}
+                          text={t.id}
+                          copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-light">
+                            {ellipseAddress(t.id, 8)}
+                          </span>}
+                        />
+                        {chain?.explorer?.url && (
+                          <a
+                            href={`${chain.explorer.url}${chain.explorer.transaction_path?.replace('{tx}', t.id)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-white"
+                          >
+                            {chain.explorer.icon ?
+                              <Img
+                                src={chain.explorer.icon}
+                                alt=""
+                                className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                              />
+                              :
+                              <TiArrowRight size={16} className="transform -rotate-45" />
+                            }
+                          </a>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
                 :
-                <>
-                  <div className="skeleton w-32 h-4" />
-                  <div className="skeleton w-24 h-3 mt-3" />
-                </>
+                <div className="flex flex-col space-y-2 my-1">
+                  <div className="skeleton w-32 h-5" />
+                  <div className="skeleton w-28 h-4" />
+                </div>
             ),
           },
           {
             Header: 'Status',
-            accessor: 'status',
+            accessor: 'crosschain_status',
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
                 <Link href={`/tx/${props.row.original.transactionId}`}>
-                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Prepared' ? 'yellow-500' : 'red-700'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
+                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Fulfilling' ? 'green-400' : props.value === 'Prepared' ? 'yellow-500' : props.value === 'Preparing' ? 'blue-600' : 'red-700'} rounded-lg flex items-center space-x-1 my-1 py-1 px-1.5`}>
                     {props.value === 'Fulfilled' ?
-                      <FaCheckCircle size={14} className="text-green-500 dark:text-white" />
+                      <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                       :
-                      props.value === 'Prepared' ?
-                        <MdPending size={14} className="text-yellow-500 dark:text-white" />
+                      props.value === 'Fulfilling' ?
+                        <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#22C55E'} width="14" height="14" />
                         :
-                        <FaTimesCircle size={14} className="text-red-500 dark:text-white" />
+                        props.value === 'Prepared' ?
+                          <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
+                          :
+                          props.value === 'Preparing' ?
+                            <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                            :
+                            <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                     }
-                    <div className="uppercase text-gray-900 dark:text-white text-xs font-semibold">{props.value}</div>
+                    <span className="uppercase text-xs font-semibold">{props.value}</span>
                   </a>
                 </Link>
                 :
-                <div className="skeleton w-20 h-6" />
+                <div className="skeleton w-20 h-6 my-1" />
             ),
           },
           {
@@ -251,53 +363,51 @@ export default function Transactions({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <div className="min-w-max">
+                  <div className="min-w-max space-y-1.5 my-1">
                     <div className="flex items-center space-x-1">
                       <Link href={`/address/${props.value}`}>
-                        <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
-                          {ellipseAddress(props.value, 6)}
+                        <a className={`text-blue-600 dark:text-white text-xs ${ens_data?.[props.value?.toLowerCase()]?.name ? 'font-semibold' : ''}`}>
+                          {ellipseAddress(ens_data?.[props.value?.toLowerCase()]?.name || props.value, 8)}
                         </a>
                       </Link>
-                      <Copy text={props.value} />
+                      <Copy size={14} text={props.value} />
                       {props.row.original.sendingChain?.explorer?.url && (
                         <a
                           href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.address_path?.replace('{address}', props.value)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-white"
+                          className="text-blue-600 dark:text-white"
                         >
                           {props.row.original.sendingChain.explorer.icon ?
-                            <img
+                            <Img
                               src={props.row.original.sendingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                              className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
                             />
                             :
-                            <TiArrowRight size={16} className="transform -rotate-45" />
+                            <TiArrowRight size={14} className="transform -rotate-45" />
                           }
                         </a>
                       )}
                     </div>
                     {props.row.original.sendingChain && (
-                      <div className="flex items-center space-x-1.5 mt-1">
-                        {props.row.original.sendingChain.icon && (
-                          <img
-                            src={props.row.original.sendingChain.icon}
-                            alt=""
-                            className="w-4 h-4 rounded-full"
-                          />
-                        )}
-                        <span className="text-gray-700 dark:text-gray-300 text-2xs">{props.row.original.sendingChain.short_name || props.row.original.sendingChain.title}</span>
+                      <div className="flex items-center space-x-2">
+                        <Img
+                          src={props.row.original.sendingChain.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="text-gray-400 dark:text-gray-600 text-xs">{chainTitle(props.row.original.sendingChain)}</span>
                       </div>
                     )}
                   </div>
                   :
-                  <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
+                  <div className="text-gray-400 dark:text-gray-600 font-light my-1">Unknown</div>
                 :
-                <>
-                  <div className="skeleton w-24 h-4" />
-                  <div className="skeleton w-16 h-3 mt-3" />
-                </>
+                <div className="flex flex-col space-y-2.5 my-1">
+                  <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-20 h-4" />
+                </div>
             ),
           },
           {
@@ -307,209 +417,233 @@ export default function Transactions({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 props.value ?
-                  <div className="min-w-max">
+                  <div className="min-w-max space-y-1.5 my-1">
                     <div className="flex items-center space-x-1">
                       <Link href={`/address/${props.value}`}>
-                        <a className="uppercase text-indigo-600 dark:text-white text-xs font-medium">
-                          {ellipseAddress(props.value, 6)}
+                        <a className={`text-blue-600 dark:text-white text-xs ${ens_data?.[props.value?.toLowerCase()]?.name ? 'font-semibold' : ''}`}>
+                          {ellipseAddress(ens_data?.[props.value?.toLowerCase()]?.name || props.value, 8)}
                         </a>
                       </Link>
-                      <Copy text={props.value} />
+                      <Copy size={14} text={props.value} />
                       {props.row.original.receivingChain?.explorer?.url && (
                         <a
                           href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.address_path?.replace('{address}', props.value)}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-indigo-600 dark:text-white"
+                          className="text-blue-600 dark:text-white"
                         >
                           {props.row.original.receivingChain.explorer.icon ?
                             <img
                               src={props.row.original.receivingChain.explorer.icon}
                               alt=""
-                              className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
+                              className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
                             />
                             :
-                            <TiArrowRight size={16} className="transform -rotate-45" />
+                            <TiArrowRight size={14} className="transform -rotate-45" />
                           }
                         </a>
                       )}
                     </div>
                     {props.row.original.receivingChain && (
-                      <div className="flex items-center space-x-1.5 mt-1">
-                        {props.row.original.receivingChain.icon && (
-                          <img
-                            src={props.row.original.receivingChain.icon}
-                            alt=""
-                            className="w-4 h-4 rounded-full"
-                          />
-                        )}
-                        <span className="text-gray-700 dark:text-gray-300 text-2xs">{props.row.original.receivingChain.short_name || props.row.original.receivingChain.title}</span>
+                      <div className="flex items-center space-x-2">
+                        <Img
+                          src={props.row.original.receivingChain.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="text-gray-400 dark:text-gray-600 text-xs">{chainTitle(props.row.original.receivingChain)}</span>
                       </div>
                     )}
                   </div>
                   :
-                  <span className="text-gray-400 dark:text-gray-600 font-light">Unknown</span>
+                  <div className="text-gray-400 dark:text-gray-600 font-light my-1">Unknown</div>
                 :
-                <>
-                  <div className="skeleton w-24 h-4" />
-                  <div className="skeleton w-16 h-3 mt-3" />
-                </>
+                <div className="flex flex-col space-y-2.5 my-1">
+                  <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-20 h-4" />
+                </div>
             ),
           },
           {
             Header: 'Asset',
-            accessor: 'normalize_amount',
+            accessor: 'receiving_amount',
             disableSortBy: true,
             Cell: props => {
-              const addToMetaMaskButton = (
+              const addSendingTokenToMetaMaskButton = props.row.original.sendingChain && props.row.original.sendingAsset && (
                 <button
-                  onClick={() => addTokenToMetaMask(props.row.original?.receivingChainId, { ...props.row.original?.receivingAsset })}
-                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg flex items-center justify-center py-1.5 px-2"
+                  onClick={() => addTokenToMetaMask(props.row.original.sendingChain.chain_id, { ...props.row.original.sendingAsset })}
+                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
                 >
                   <Img
                     src="/logos/wallets/metamask.png"
                     alt=""
-                    className="w-4 h-4"
+                    className="w-3.5 h-3.5"
                   />
                 </button>
               )
 
+              const addReceivingTokenToMetaMaskButton = props.row.original.receivingChain && props.row.original.receivingAsset && (
+                <button
+                  onClick={() => addTokenToMetaMask(props.row.original.receivingChain.chain_id, { ...props.row.original.receivingAsset })}
+                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
+                >
+                  <Img
+                    src="/logos/wallets/metamask.png"
+                    alt=""
+                    className="w-3.5 h-3.5"
+                  />
+                </button>
+              )
+
+              const sendingAmount = props.row.original.sending_amount, recevingAmount = props.value
+
               return !props.row.original.skeleton ?
-                <>
-                  <div className="flex flex-row items-center justify-end space-x-2">
-                    {props.row.original.sendingAssetId ?
-                      <div className="flex flex-col">
-                        {props.row.original.sendingAsset && (
-                          <a
-                            href={`${props.row.original.sendingChain?.explorer?.url}${props.row.original.sendingChain?.explorer?.[`contract${props.row.original.sendingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center space-x-1.5"
-                          >
-                            {props.row.original.sendingAsset.logo_url && (
-                              <Img
-                                src={props.row.original.sendingAsset.logo_url}
-                                alt=""
-                                className="w-5 h-5 rounded-full"
-                              />
-                            )}
-                            <span className="h-5 text-xs font-medium">{props.row.original.sendingAsset.contract_ticker_symbol || props.row.original.sendingAsset.contract_name}</span>
-                          </a>
-                        )}
-                        <div className="flex items-center space-x-1">
+                <div className="min-w-max flex items-center justify-between space-x-2">
+                  <div className="flex flex-col items-start space-y-1.5">
+                    {props.row.original.sendingAssetId && (
+                      <div className="flex items-center">
+                        <Img
+                          src={props.row.original.sendingAsset?.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full mr-2"
+                        />
+                        {props.row.original.sendingAsset?.symbol ?
+                          <div className="flex items-center space-x-1">
+                            <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span>
+                            {/*<Copy size={14} text={props.row.original.sendingAssetId} />*/}
+                          </div>
+                          :
                           <Copy
                             size={12}
                             text={props.row.original.sendingAssetId}
-                            copyTitle={<span className="text-gray-400 dark:text-gray-200 text-2xs font-medium">
-                              {ellipseAddress(props.row.original.sendingAssetId, 6)}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-600 text-2xs">
+                              {ellipseAddress(props.row.original.sendingAssetId, 5)}
                             </span>}
                           />
-                          {!props.row.original.sendingAsset && props.row.original.sendingChain?.explorer?.url && (
-                            <a
-                              href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer[`contract${props.row.original.sendingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-indigo-600 dark:text-white"
-                            >
-                              {props.row.original.sendingChain.explorer.icon ?
-                                <img
-                                  src={props.row.original.sendingChain.explorer.icon}
-                                  alt=""
-                                  className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
-                                />
-                                :
-                                <TiArrowRight size={16} className="transform -rotate-45" />
-                              }
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      :
-                      <span className="text-gray-400 dark:text-gray-600 font-light">-</span>
-                    }
-                    <TiArrowRight size={18} />
-                    {props.row.original.receivingAssetId ?
-                      <div className="flex flex-col">
-                        {props.row.original.receivingAsset && (
-                          <div className="flex items-center space-x-2">
-                            <a
-                              href={`${props.row.original.receivingChain?.explorer?.url}${props.row.original.receivingChain?.explorer?.[`contract${props.row.original.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center space-x-1.5"
-                            >
-                              {props.row.original.receivingAsset.logo_url && (
-                                <Img
-                                  src={props.row.original.receivingAsset.logo_url}
-                                  alt=""
-                                  className="w-5 h-5 rounded-full"
-                                />
-                              )}
-                              <span className="h-5 text-xs font-medium">{props.row.original.receivingAsset.contract_ticker_symbol || props.row.original.receivingAsset.contract_name}</span>
-                            </a>
-                            {props.row.original.receivingChainId === chainId ?
-                              <Popover
-                                placement="top"
-                                title={<span className="normal-case text-xs">Add token</span>}
-                                content={<div className="w-36 text-xs">Add <span className="font-semibold">{props.row.original.receivingAsset.contract_ticker_symbol}</span> to MetaMask</div>}
-                              >
-                                {addToMetaMaskButton}
-                              </Popover>
+                        }
+                        {props.row.original.sendingChain?.explorer?.url && (
+                          <a
+                            href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.[`contract${props.row.original.sendingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-white mb-0.5 ml-1"
+                          >
+                            {props.row.original.sendingChain.explorer.icon ?
+                              <img
+                                src={props.row.original.sendingChain.explorer.icon}
+                                alt=""
+                                className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                              />
                               :
-                              <Popover
-                                placement="top"
-                                title={<span className="normal-case text-xs">Change wallet network</span>}
-                                content={<div className="w-40 text-xs">Click to switch your wallet network to <span className="font-semibold">{props.row.original.receivingChain?.title}</span>.</div>}
-                              >
-                                {addToMetaMaskButton}
-                              </Popover>
+                              <TiArrowRight size={12} className="transform -rotate-45" />
                             }
+                          </a>
+                        )}
+                        {addSendingTokenToMetaMaskButton && (
+                          <div className="ml-2">
+                            <Popover
+                              placement="top"
+                              title={<span className="normal-case text-3xs">Add token</span>}
+                              content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span> to MetaMask</div>}
+                              titleClassName="py-0.5"
+                              contentClassName="py-1.5"
+                            >
+                              {addSendingTokenToMetaMaskButton}
+                            </Popover>
                           </div>
                         )}
-                        <div className="flex items-center space-x-1">
+                      </div>
+                    )}
+                    <div className="font-mono text-2xs">
+                      {typeof sendingAmount === 'number' ?
+                        <>
+                          <span className="font-semibold mr-1">
+                            {numberFormat(sendingAmount, '0,0.000000')}
+                          </span>
+                          <span className="text-gray-400 dark:text-gray-600 font-medium">{props.row.original.sendingAsset?.symbol}</span>
+                        </>
+                        :
+                        <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                      }
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-center">
+                    <GoCode size={20} />
+                  </div>
+                  <div className="flex flex-col items-end space-y-1.5">
+                    {props.row.original.receivingAssetId && (
+                      <div className="flex items-center">
+                        <Img
+                          src={props.row.original.receivingAsset?.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full mr-2"
+                        />
+                        {props.row.original.receivingAsset?.symbol ?
+                          <div className="flex items-center space-x-1">
+                            <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span>
+                            {/*<Copy size={14} text={props.row.original.receivingAssetId} />*/}
+                          </div>
+                          :
                           <Copy
                             size={12}
                             text={props.row.original.receivingAssetId}
-                            copyTitle={<span className="text-gray-400 dark:text-gray-200 text-2xs font-medium">
-                              {ellipseAddress(props.row.original.receivingAssetId, 6)}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-600 text-2xs">
+                              {ellipseAddress(props.row.original.receivingAssetId, 5)}
                             </span>}
                           />
-                          {!props.row.original.receivingAsset && props.row.original.receivingChain?.explorer?.url && (
-                            <a
-                              href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer[`contract${props.row.original.receivingAssetId?.includes('0x0000000000000000000000000000000000000000') ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-indigo-600 dark:text-white"
+                        }
+                        {props.row.original.receivingChain?.explorer?.url && (
+                          <a
+                            href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.[`contract${props.row.original.receivingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 dark:text-white mb-0.5 ml-1"
+                          >
+                            {props.row.original.receivingChain.explorer.icon ?
+                              <img
+                                src={props.row.original.receivingChain.explorer.icon}
+                                alt=""
+                                className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                              />
+                              :
+                              <TiArrowRight size={12} className="transform -rotate-45" />
+                            }
+                          </a>
+                        )}
+                        {addReceivingTokenToMetaMaskButton && (
+                          <div className="ml-2">
+                            <Popover
+                              placement="top"
+                              title={<span className="normal-case text-3xs">Add token</span>}
+                              content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span> to MetaMask</div>}
+                              titleClassName="py-0.5"
+                              contentClassName="py-1.5"
                             >
-                              {props.row.original.receivingChain.explorer.icon ?
-                                <img
-                                  src={props.row.original.receivingChain.explorer.icon}
-                                  alt=""
-                                  className="w-4 h-4 rounded-full opacity-60 hover:opacity-100"
-                                />
-                                :
-                                <TiArrowRight size={16} className="transform -rotate-45" />
-                              }
-                            </a>
-                          )}
-                        </div>
+                              {addReceivingTokenToMetaMaskButton}
+                            </Popover>
+                          </div>
+                        )}
                       </div>
-                      :
-                      <span className="text-gray-400 dark:text-gray-600 font-light">-</span>
-                    }
-                  </div>
-                  {props.value && (
-                    <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded text-xs space-x-1 mt-1.5 mb-1 ml-auto py-0.5 px-1.5">
-                      <span className="font-semibold">{numberFormat(props.value, '0,0.00000000', true)}</span>
-                      <span className="uppercase text-gray-600 dark:text-gray-400">{props.row.original.sendingAsset?.contract_ticker_symbol || props.row.original.receivingAsset?.contract_ticker_symbol}</span>
+                    )}
+                    <div className="font-mono leading-4 text-2xs">
+                      {typeof recevingAmount === 'number' ?
+                        <>
+                          <span className="font-semibold mr-1">
+                            {numberFormat(recevingAmount, '0,0.000000')}
+                          </span>
+                          <span className="text-gray-400 dark:text-gray-600 font-medium">{props.row.original.receivingAsset?.symbol}</span>
+                        </>
+                        :
+                        <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                      }
                     </div>
-                  )}
-                </>
+                  </div>
+                </div>
                 :
-                <>
-                  <div className="skeleton w-32 h-4 ml-auto" />
-                  <div className="skeleton w-24 h-3 mt-3 ml-auto" />
-                </>
+                <div className="flex flex-col items-end space-y-2.5 my-1">
+                  <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-28 h-4" />
+                </div>
             },
             headerClassName: 'justify-end text-right',
           },
@@ -519,7 +653,7 @@ export default function Transactions({ className = '' }) {
             disableSortBy: true,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className="text-right">
+                <div className="text-right my-1">
                   <span className="text-gray-400 dark:text-gray-600">
                     {Number(moment().diff(moment(props.value), 'second')) > 59 ?
                       moment(props.value).fromNow()
@@ -529,22 +663,22 @@ export default function Transactions({ className = '' }) {
                   </span>
                 </div>
                 :
-                <div className="skeleton w-20 h-4 ml-auto" />
+                <div className="skeleton w-20 h-5 my-1 ml-auto" />
             ),
             headerClassName: 'justify-end text-right',
           },
         ]}
-        data={transactions?.chain_id === chain_id ?
-          (transactions?.data || []).map((transaction, i) => { return { ...transaction, i } })
+        data={txs ?
+          (filteredTxs || []).map((t, i) => { return { ...t, i } })
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
-        noPagination={!transactions || transactions.data?.length <= 10 ? true : false}
-        defaultPageSize={10}
+        noPagination={!txs || filteredTxs?.length <= 10 ? true : false}
+        defaultPageSize={100}
         className={`min-h-full ${className}`}
       />
-      {transactions && transactions.chain_id === chain_id && !(transactions.data?.length > 0) && (
-        <div className="bg-gray-50 dark:bg-gray-800 text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 py-2">
+      {txs && !(filteredTxs?.length > 0) && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 mx-2 py-2">
           No Transactions
         </div>
       )}

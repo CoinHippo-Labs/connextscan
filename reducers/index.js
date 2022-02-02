@@ -10,6 +10,7 @@ import routers_status from './routers-status'
 import asset_balances from './asset-balances'
 import routers_assets from './routers-assets'
 import stats from './stats'
+import transactions from './transactions'
 import sdk from './sdk'
 import rpcs from './rpcs'
 import wallet from './wallet'
@@ -25,6 +26,7 @@ export default combineReducers({
   asset_balances,
   routers_assets,
   stats,
+  transactions,
   sdk,
   rpcs,
   wallet,

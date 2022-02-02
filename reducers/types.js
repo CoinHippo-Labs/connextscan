@@ -23,6 +23,9 @@ export const ROUTERS_ASSETS_DATA = 'routers_assets_data'
 // analytics
 export const STATS_DATA = 'stats_data'
 
+// transactions
+export const TRANSACTIONS_DATA = 'transactions_data'
+
 // sdk
 export const SDK_DATA = 'sdk_data'
 

@@ -192,7 +192,7 @@ export default function Navbar() {
   // assets-balances & tokens & ens
   useEffect(() => {
     const getAssetBalances = async chain => {
-      if (chain) {
+      if (chain && !chain.disabled) {
         const response = await assetBalances({ chain_id: chain.chain_id })
         const data = response?.data?.map(a => { return { ...a, chain } })
 
@@ -248,7 +248,7 @@ export default function Navbar() {
 
     const getData = async () => {
       if (chains_data) {
-        if (['/', '/routers', '/leaderboard/routers', '/status', '/router/[address]', '/[blockchain_id]'].includes(pathname)) {
+        if (['/', '/routers', '/leaderboard/routers', '/transactions', '/status', '/router/[address]', '/[blockchain_id]'].includes(pathname)) {
           chains_data.forEach(c => getAssetBalances(c))
         }
       }
