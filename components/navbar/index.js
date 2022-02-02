@@ -248,7 +248,7 @@ export default function Navbar() {
 
     const getData = async () => {
       if (chains_data) {
-        if (['/', '/routers', '/leaderboard/routers', '/[blockchain_id]'].includes(pathname)) {
+        if (['/', '/routers', '/leaderboard/routers', '/status', '/router/[address]', '/[blockchain_id]'].includes(pathname)) {
           chains_data.forEach(c => getAssetBalances(c))
         }
       }
@@ -285,6 +285,7 @@ export default function Navbar() {
               removed: typeof decimals === 'number' && BigNumber(!isNaN(ab.removed) ? ab.removed : 0).shiftedBy(-decimals).toNumber(),
               volume: typeof decimals === 'number' && BigNumber(!isNaN(ab.volume) ? ab.volume : 0).shiftedBy(-decimals).toNumber(),
               volumeIn: typeof decimals === 'number' && BigNumber(!isNaN(ab.volumeIn) ? ab.volumeIn : 0).shiftedBy(-decimals).toNumber(),
+              receivingFulfillTxCount: Number(ab.receivingFulfillTxCount),
             }
           }).map(ab => {
             const price = ab?.asset?.price

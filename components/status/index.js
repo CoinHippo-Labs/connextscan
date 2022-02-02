@@ -40,13 +40,16 @@ export default function Status() {
     const interval = setInterval(() => run(), 0.5 * 1000)
     return () => clearInterval(interval)
   }, [timer])
-console.log(routers_assets_data)
+
   const chainsStatus = chains_data?.filter(c => !c?.disabled).map(c => {
+    const routers = routers_assets_data?.filter(r => ['true'].includes(all) || _.sumBy(r?.asset_balances || [], 'amount_value') > 1)
+
     return {
       ...c,
       ...chains_status_data?.find(_c => _c?.chain_id === c?.chain_id),
-      // ...chainsLiquidity?.find(_chain => _chain?.id === _network?.id),
-      routers: routers_status_data?.filter(r => r?.supportedChains?.includes(c?.chain_id) && (['true'].includes(all) || routers_assets_data?.findIndex(_r => _r?.router_id === r.routerAddress?.toLowerCase() && _.sumBy(_r?.asset_balances || [], 'amount_value')) > -1)),
+      amount_value: _.sumBy(routers?.flatMap(r => r?.asset_balances.filter(ab => ab?.chain?.chain_id === c?.chain_id) || []) || [], 'amount_value'),
+      volume_value: _.sumBy(routers?.flatMap(r => r?.asset_balances.filter(ab => ab?.chain?.chain_id === c?.chain_id) || []) || [], 'volume_value'),
+      routers: routers_status_data?.filter(r => r?.supportedChains?.includes(c?.chain_id) && routers?.findIndex(_r => _r?.router_id === r.routerAddress?.toLowerCase()) > -1),
     }
   })
 
@@ -70,7 +73,7 @@ console.log(routers_assets_data)
       }
       className="border-0 shadow-md rounded-2xl"
     >
-      <div className="flex items-center justify-between mt-1.5">
+      <div className="flex items-center justify-between mt-1">
         <div className="flex items-center text-2xs space-x-1.5">
           <FiBox size={16} className="mb-0.5" />
           {chains_status_data ?
@@ -115,44 +118,42 @@ console.log(routers_assets_data)
       </div>
       <div className="flex items-center justify-between mt-1.5">
         <div className="flex items-center space-x-1.5">
-          <span className="text-gray-400 dark:text-gray-600 text-xs">Volume:</span>
+          <span className="text-gray-400 dark:text-gray-500 text-xs">Volume:</span>
           {routers_assets_data ?
-            <span className="font-mono font-semibold">
-              {currency_symbol}{numberFormat(cs.volume, '0,0')}
+            <span className="font-mono uppercase text-xs font-semibold">
+              {currency_symbol}{numberFormat(cs.volume_value, cs.volume_value > 10000000 ? '0,0.00a' : '0,0')}
             </span>
             :
             <div className="skeleton w-16 h-4" />
           }
         </div>
         <div className="flex items-center text-sm space-x-1.5">
-          <MdOutlineRouter size={20} className="mb-0.5" />
+          <MdOutlineRouter size={18} className="text-gray-400 dark:text-gray-500 mb-0.5" />
           {routers_status_data ?
-            <span className="font-mono font-semibold">
+            <span className="font-mono text-xs font-semibold">
               {numberFormat(cs.routers?.length, '0,0')}
             </span>
             :
             <div className="skeleton w-6 h-4" />
           }
-          <span className="text-gray-600 dark:text-gray-400">Router{!routers_status_data || cs.routers?.length > 1 ? 's' : ''}</span>
+          <span className="text-gray-400 dark:text-gray-500">Router{!routers_status_data || cs.routers?.length > 1 ? 's' : ''}</span>
         </div>
       </div>
-      <div className="flex items-center justify-between mt-1.5">
-        <div className="flex items-center text-sm space-x-2">
-          <span className="text-gray-400 dark:text-gray-600 text-xs">Liquidity:</span>
+      <div className="flex items-center justify-between mt-0.5">
+        <div className="flex items-center text-sm space-x-1.5">
+          <span className="text-gray-400 dark:text-gray-500 text-xs">Liquidity:</span>
           {routers_assets_data ?
-            <span className="font-mono font-semibold">
-              {currency_symbol}{numberFormat(cs.liquidity, '0,0')}
+            <span className="font-mono uppercase text-xs font-semibold">
+              {currency_symbol}{numberFormat(cs.amount_value, cs.amount_value > 10000000 ? '0,0.00a' : '0,0')}
             </span>
             :
             <div className="skeleton w-16 h-4" />
           }
         </div>
         <Link href={`/${cs.id}`}>
-          <a
-            className="flex items-center text-indigo-600 dark:text-indigo-500 font-semibold"
-          >
+          <a className="flex items-center text-blue-600 dark:text-blue-500 text-xs">
             <span>Liquidity</span>
-            <TiArrowRight size={20} className="transform -rotate-45 -mr-1" />
+            <TiArrowRight size={16} className="transform -rotate-45 -mr-0.5" />
           </a>
         </Link>
       </div>
@@ -163,8 +164,8 @@ console.log(routers_assets_data)
     <>
       <StackGrid
         columnWidth={280}
-        gutterWidth={12}
-        gutterHeight={12}
+        gutterWidth={16}
+        gutterHeight={16}
         className="hidden sm:block"
       >
         {chainsStatusComponent}

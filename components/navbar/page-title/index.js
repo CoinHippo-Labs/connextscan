@@ -5,6 +5,7 @@ import { Img } from 'react-image'
 import moment from 'moment'
 import Loader from 'react-loader-spinner'
 import { MdRefresh } from 'react-icons/md'
+import { RiFileCodeLine } from 'react-icons/ri'
 
 import SectionTitle from '../../section-title'
 import Copy from '../../copy'
@@ -82,30 +83,62 @@ export default function PageTitle() {
       )
       break
     case '/router/[address]':
+      const routerStatus = routers_status_data?.find(r => r?.routerAddress?.toLowerCase() === address?.toLowerCase())
+
       title = (
         <span className="flex flex-wrap items-center">
           <span className="mr-2">Router</span>
           {ens_data?.[address?.toLowerCase()]?.name && (
-            <div className="flex items-center">
+            <div className="flex items-center mr-2">
               <Img
                 src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[address.toLowerCase()].name}`}
                 alt=""
                 className="w-6 h-6 rounded-full mr-2"
               />
-              <span className="font-semibold">{ellipseAddress(ens_data[address.toLowerCase()].name, 16)}</span>
+              <span className="normal-case text-black dark:text-white text-base font-semibold mb-0.5">
+                {ellipseAddress(ens_data[address.toLowerCase()].name, 16)}
+              </span>
+            </div>
+          )}
+          {routerStatus?.isRouterContract && (
+            <div className="max-w-min bg-blue-600 dark:bg-blue-500 rounded-lg capitalize flex items-center text-white text-xs space-x-1 mb-0.5 py-1 px-2">
+              <RiFileCodeLine size={16} className="-ml-0.5" />
+              <span className="font-medium">Contract</span>
             </div>
           )}
         </span>
       )
       subtitle = (
-        <div className="flex items-center space-x-2 xl:space-x-0">
-          <span className="xl:hidden uppercase text-sm xl:text-lg">
-            {ellipseAddress(address, 12)}
-          </span>
-          <span className="hidden xl:block uppercase text-sm xl:text-lg xl:pr-2">
-            {ellipseAddress(address, 16)}
-          </span>
-          <Copy size={20} text={address} />
+        <Copy
+          size={18}
+          text={address}
+          copyTitle={<span className="text-gray-400 dark:text-gray-600 font-normal">
+            <span className="xl:hidden text-base">
+              {ellipseAddress(address, 12)}
+            </span>
+            <span className="hidden xl:block text-sm">
+              {ellipseAddress(address, 16)}
+            </span>
+          </span>}
+        />
+      )
+      right = routerStatus && (
+        <div className="sm:text-right">
+          <div className="uppercase text-gray-400 dark:text-gray-600 text-sm sm:text-xs font-medium">Supported Chains</div>
+          <div className="max-w-md flex flex-wrap items-center sm:justify-end mt-2">
+            {routerStatus.supportedChains?.length > 0 ?
+              chains_data && routerStatus.supportedChains.map((id, i) => (
+                <Img
+                  key={i}
+                  src={chains_data.find(c => c?.chain_id === id)?.image}
+                  alt=""
+                  className="w-5 sm:w-6 h-5 sm:h-6 rounded-full mb-2 ml-0 sm:ml-2 mr-2 sm:mr-0"
+                />
+              ))
+              :
+              <span>-</span>
+            }
+          </div>
         </div>
       )
       break
@@ -120,21 +153,26 @@ export default function PageTitle() {
                 alt=""
                 className="w-6 h-6 rounded-full mr-2"
               />
-              <span className="font-semibold">{ellipseAddress(ens_data[address.toLowerCase()].name, 16)}</span>
+              <span className="normal-case text-black dark:text-white text-base font-semibold mb-0.5">
+                {ellipseAddress(ens_data[address.toLowerCase()].name, 16)}
+              </span>
             </div>
           )}
         </span>
       )
       subtitle = (
-        <div className="flex items-center space-x-2 xl:space-x-0">
-          <span className="xl:hidden uppercase text-sm xl:text-lg">
-            {ellipseAddress(address, 12)}
-          </span>
-          <span className="hidden xl:block uppercase text-sm xl:text-lg xl:pr-2">
-            {ellipseAddress(address, 16)}
-          </span>
-          <Copy size={20} text={address} />
-        </div>
+        <Copy
+          size={18}
+          text={address}
+          copyTitle={<span className="text-gray-400 dark:text-gray-600 font-normal">
+            <span className="xl:hidden text-base">
+              {ellipseAddress(address, 12)}
+            </span>
+            <span className="hidden xl:block text-sm">
+              {ellipseAddress(address, 16)}
+            </span>
+          </span>}
+        />
       )
       break
     case '/[blockchain_id]':
