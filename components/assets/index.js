@@ -269,7 +269,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                                   className="text-blue-600 dark:text-white"
                                 >
                                   {ab.chain.explorer.icon ?
-                                    <img
+                                    <Img
                                       src={ab.chain.explorer.icon}
                                       alt=""
                                       className="w-3 h-3 rounded-full opacity-60 hover:opacity-100"

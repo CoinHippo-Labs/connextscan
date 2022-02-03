@@ -248,7 +248,7 @@ export default function Navbar() {
 
     const getData = async () => {
       if (chains_data) {
-        if (['/', '/routers', '/leaderboard/routers', '/transactions', '/status', '/router/[address]', '/[blockchain_id]'].includes(pathname)) {
+        if (['/', '/routers', '/leaderboard/routers', '/transactions', '/status', '/router/[address]', '/address/[address]', '/[blockchain_id]'].includes(pathname)) {
           chains_data.forEach(c => getAssetBalances(c))
         }
       }

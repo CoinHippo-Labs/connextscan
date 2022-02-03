@@ -439,7 +439,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                             className="text-blue-600 dark:text-white"
                           >
                             {props.row.original.receivingChain.explorer.icon ?
-                              <img
+                              <Img
                                 src={props.row.original.receivingChain.explorer.icon}
                                 alt=""
                                 className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
@@ -535,7 +535,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                               className="text-blue-600 dark:text-white mb-0.5 ml-1"
                             >
                               {props.row.original.sendingChain.explorer.icon ?
-                                <img
+                                <Img
                                   src={props.row.original.sendingChain.explorer.icon}
                                   alt=""
                                   className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
@@ -606,7 +606,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                               className="text-blue-600 dark:text-white mb-0.5 ml-1"
                             >
                               {props.row.original.receivingChain.explorer.icon ?
-                                <img
+                                <Img
                                   src={props.row.original.receivingChain.explorer.icon}
                                   alt=""
                                   className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
