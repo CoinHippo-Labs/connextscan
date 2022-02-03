@@ -30,13 +30,16 @@ BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_
 
 export default function Navbar() {
   const dispatch = useDispatch()
-  const { preferences, chains, tokens, routers_status, asset_balances, sdk } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk }), shallowEqual)
+  const { preferences, chains, tokens, routers_status, asset_balances, sdk, rpcs, wallet } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs, wallet: state.wallet }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
   const { tokens_data } = { ...tokens }
   const { routers_status_trigger } = { ...routers_status }
   const { asset_balances_data } = { ...asset_balances }
   const { sdk_data } = { ...sdk }
+  const { rpcs_data } = { ...rpcs }
+  const { wallet_data } = { ...wallet }
+  const { signer } = { ...wallet_data }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
@@ -78,15 +81,17 @@ export default function Navbar() {
 
       dispatch({
         type: SDK_DATA,
-        value: await NxtpSdk.create({ chainConfig, signer: Wallet.createRandom(), skipPolling: false }),
+        value: await NxtpSdk.create({ chainConfig, signer: signer || Wallet.createRandom(), skipPolling: false }),
       })
 
-      dispatch({
-        type: RPCS_DATA,
-        value: rpcs,
-      })
+      if (!rpcs_data) {
+        dispatch({
+          type: RPCS_DATA,
+          value: rpcs,
+        })
+      }
     }
-  }, [chains_data])
+  }, [chains_data, rpcs_data, signer])
 
   // status
   useEffect(() => {

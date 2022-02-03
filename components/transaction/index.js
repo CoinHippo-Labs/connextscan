@@ -8,7 +8,7 @@ import _ from 'lodash'
 import moment from 'moment'
 import { decodeAuctionBid } from '@connext/nxtp-utils'
 import Web3 from 'web3'
-import { constants, utils } from 'ethers'
+import { providers, constants, utils } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
@@ -16,7 +16,7 @@ import HeadShake from 'react-reveal/HeadShake'
 import Switch from 'react-switch'
 import { MdOutlineRouter, MdInfoOutline } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
-import { FaCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
+import { FaCheckCircle, FaRegCheckCircle, FaClock, FaTimesCircle, FaQuestion } from 'react-icons/fa'
 import { BsFileEarmarkX } from 'react-icons/bs'
 import { IoWalletOutline } from 'react-icons/io5'
 import { GoCode } from 'react-icons/go'
@@ -315,7 +315,6 @@ export default function Transaction() {
       try {
         setTransferResponse({ status: 'pending', message: 'Wait for Claiming' })
 
-        sdk_data.changeInjectedSigner(signer)
         const response = await sdk_data.fulfillTransfer({
           txData: {
             ...txData,
@@ -346,7 +345,6 @@ export default function Transaction() {
       try {
         const signature = '0x'
 
-        sdk_data.changeInjectedSigner(signer)
         const response = await sdk_data.cancel({
           txData: {
             ...txData,
@@ -574,6 +572,7 @@ export default function Transaction() {
                 cancelButtonTitle="No"
                 confirmButtonTitle="Yes, cancel it"
                 onConfirm={() => cancel(canCancelSendingTx ? sendingTx : receivingTx, canCancelSendingTx ? generalTx?.sendingChainId : generalTx?.receivingChainId)}
+                modalClassName="max-w-sm"
               />
             )
 
@@ -701,6 +700,7 @@ export default function Transaction() {
                     cancelButtonTitle="No"
                     confirmButtonTitle="Yes"
                     onConfirm={() => fulfill(receivingTx)}
+                    modalClassName="max-w-sm"
                   />
                 </HeadShake>
               )
@@ -1099,7 +1099,7 @@ export default function Transaction() {
             </div>}
             className="overflow-x-auto border-0 shadow-md rounded-2xl ml-auto px-5 lg:px-3 xl:px-5"
           >
-            <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between space-y-4 sm:space-y-0 my-2">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-between space-y-8 sm:space-y-0 my-2">
               {transaction ?
                 generalTx?.sendingAddress ?
                   <div className="min-w-max">
@@ -1158,28 +1158,28 @@ export default function Transaction() {
               <div className="flex flex-col items-center justify-center mx-auto">
                 {transaction ?
                   <>
-                    <div className={`max-w-min h-7 bg-gray-100 dark:bg-${sendingTx?.status ? ['Fulfilled'].includes(sendingTx.status) ? 'green-600' : ['Prepared'].includes(sendingTx.status) ? 'yellow-500' : 'red-700' : sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    <div className={`max-w-min h-6 bg-gray-100 dark:bg-${sendingTx?.status ? ['Fulfilled'].includes(sendingTx.status) ? 'green-600' : ['Prepared'].includes(sendingTx.status) ? 'yellow-500' : 'red-700' : sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                       {sendingTx?.status ?
                         ['Fulfilled'].includes(sendingTx.status) ?
                           <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                           :
                           ['Prepared'].includes(sendingTx.status) ?
                             transferResponse && !transferResponse.error && transfering === 'cancel' && canCancelSendingTx ?
-                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" className="mr-0.5" />
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
                               :
-                              <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#EAB308'} width="14" height="14" />
+                              <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
                             <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                         :
                         sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ?
                           <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                           :
-                          <FaClock size={14} className="text-gray-300 dark:text-white" />
+                          <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                       }
                       <div className={`uppercase ${sendingTx?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sendingTx?.status || (sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                     </div>
                     {sendingTx?.chainTx && sendingTx?.sendingChain?.explorer?.url && (
-                      <div className="flex items-center space-x-1 mt-0.5">
+                      <div className="flex items-center space-x-1 mt-1">
                         <Copy
                           size={12}
                           text={sendingTx.chainTx}
@@ -1220,7 +1220,7 @@ export default function Transaction() {
                 }
               </div>
               <div className="mx-auto">
-                <div className="min-w-max grid grid-flow-row grid-cols-3 gap-2 sm:mt-1 xl:mt-0">
+                <div className="min-w-max grid grid-flow-row grid-cols-3 gap-2 sm:mt-1">
                   {transaction ?
                     <Img
                       src={generalTx?.sendingChain?.image}
@@ -1275,7 +1275,7 @@ export default function Transaction() {
                         </Link>
                         <Copy size={12} text={generalTx.router.id} />
                       </div>
-                      <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-600 text-xs font-medium space-x-1 mt-0.5">
+                      <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs font-medium space-x-1 mt-0.5">
                         <MdOutlineRouter size={16} className="mb-0.5" />
                         <span>Router</span>
                       </div>
@@ -1285,16 +1285,16 @@ export default function Transaction() {
               <div className="flex flex-col items-center justify-center mx-auto">
                 {transaction ?
                   <>
-                    <div className={`min-w-max max-w-min h-7 bg-gray-100 dark:bg-${receivingTx?.status ? ['Fulfilled'].includes(receivingTx.status) ? 'green-600' : ['Prepared'].includes(receivingTx.status) ? 'yellow-500' : 'red-700' : sendingTx?.status === 'Cancelled' ? 'red-700' : receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                    <div className={`min-w-max max-w-min h-6 bg-gray-100 dark:bg-${receivingTx?.status ? ['Fulfilled'].includes(receivingTx.status) ? 'green-600' : ['Prepared'].includes(receivingTx.status) ? 'yellow-500' : 'red-700' : sendingTx?.status === 'Cancelled' ? 'red-700' : receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                       {receivingTx?.status ?
                         ['Fulfilled'].includes(receivingTx.status) ?
                           <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                           :
                           ['Prepared'].includes(receivingTx.status) ?
                             transferResponse && !transferResponse.error && !(transfering === 'cancel' && canCancelSendingTx) ?
-                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" className="mr-0.5" />
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
                               :
-                              <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#EAB308'} width="14" height="14" />
+                              <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
                             <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                         :
@@ -1304,7 +1304,7 @@ export default function Transaction() {
                           receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ?
                             <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                             :
-                            <FaClock size={14} className="text-gray-300 dark:text-white" />
+                            <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                       }
                       <div className={`uppercase ${receivingTx?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receivingTx?.status ? receivingTx.status : sendingTx?.status === 'Cancelled' ? 'Skipped' : receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                     </div>
@@ -1320,7 +1320,7 @@ export default function Transaction() {
                       </div>
                     )}
                     {receivingTx?.chainTx && receivingTx?.receivingChain?.explorer?.url && (
-                      <div className="flex items-center space-x-1 mt-0.5">
+                      <div className="flex items-center space-x-1 mt-1">
                         <Copy
                           size={12}
                           text={receivingTx.chainTx}
@@ -1453,7 +1453,7 @@ export default function Transaction() {
                         <Copy size={18} text={t.prepareTransactionHash} />
                       </div>
                       :
-                      <span className="font-mono text-xs lg:text-base">n/a</span>
+                      <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                     :
                     <div className="skeleton w-72 h-4 lg:h-6 mt-1" />
                   }
@@ -1478,7 +1478,7 @@ export default function Transaction() {
                         <Copy size={18} text={t?.fulfillTransactionHash || t?.cancelTransactionHash} />
                       </div>
                       :
-                      <span className="font-mono text-xs lg:text-base">n/a</span>
+                      <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                     :
                     <div className="skeleton w-72 h-4 lg:h-6 mt-1" />
                   }
@@ -1499,7 +1499,7 @@ export default function Transaction() {
                         :
                         <span className="text-xs lg:text-base">{numberFormat(t.preparedBlockNumber, '0,0')}</span>
                       :
-                      <span className="font-mono text-xs lg:text-base">n/a</span>
+                      <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                     :
                     <div className="skeleton w-24 h-4 lg:h-6 mt-1" />
                   }
@@ -1508,37 +1508,37 @@ export default function Transaction() {
                   <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Status:</span>
                   {transaction ?
                     i === 0 ?
-                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${t?.status ? ['Fulfilled'].includes(t.status) ? 'green-600' : ['Prepared'].includes(t.status) ? 'yellow-500' : 'red-700' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      <div className={`max-w-min h-6 bg-gray-100 dark:bg-${t?.status ? ['Fulfilled'].includes(t.status) ? 'green-600' : ['Prepared'].includes(t.status) ? 'yellow-500' : 'red-700' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                         {t?.status ?
                           ['Fulfilled'].includes(t.status) ?
                             <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                             :
                             ['Prepared'].includes(t.status) ?
                               transferResponse && !transferResponse.error && transfering === 'cancel' && canCancelSendingTx ?
-                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" className="mr-0.5" />
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
                                 :
-                                <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#EAB308'} width="14" height="14" />
+                                <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                               :
                               <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                           :
                           t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ?
                             <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                             :
-                            <FaClock size={14} className="text-gray-300 dark:text-white" />
+                            <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                         }
                         <div className={`uppercase ${t?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{t?.status || (t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                       </div>
                       :
-                      <div className={`max-w-min h-7 bg-gray-100 dark:bg-${t?.status ? ['Fulfilled'].includes(t.status) ? 'green-600' : ['Prepared'].includes(t.status) ? 'yellow-500' : 'red-700' : sendingTx?.status === 'Cancelled' ? 'red-700' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1.5 px-2`}>
+                      <div className={`max-w-min h-6 bg-gray-100 dark:bg-${t?.status ? ['Fulfilled'].includes(t.status) ? 'green-600' : ['Prepared'].includes(t.status) ? 'yellow-500' : 'red-700' : sendingTx?.status === 'Cancelled' ? 'red-700' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'gray-700' : 'blue-600'} rounded-lg flex items-center space-x-1 py-1 px-1.5`}>
                         {t?.status ?
                           ['Fulfilled'].includes(t.status) ?
                             <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                             :
                             ['Prepared'].includes(t.status) ?
                               transferResponse && !transferResponse.error && !(transfering === 'cancel' && canCancelSendingTx) ?
-                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" className="mr-0.5" />
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
                                 :
-                                <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#EAB308'} width="14" height="14" />
+                                <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                               :
                               <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                           :
@@ -1548,7 +1548,7 @@ export default function Transaction() {
                             t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ?
                               <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                               :
-                              <FaClock size={14} className="text-gray-300 dark:text-white" />
+                              <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                         }
                         <div className={`uppercase ${t?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{t?.status ? t.status : sendingTx?.status === 'Cancelled' ? 'Skipped' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                       </div>
@@ -1565,7 +1565,7 @@ export default function Transaction() {
                         <span>({moment(t.preparedTimestamp).format('MMM D, YYYY h:mm:ss A')})</span>
                       </span>
                       :
-                      <span className="font-mono text-xs lg:text-base">n/a</span>
+                      <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                     :
                     <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
                   }
@@ -1580,7 +1580,7 @@ export default function Transaction() {
                           <span>({moment(t.expiry).format('MMM D, YYYY h:mm:ss A')})</span>
                         </span>
                         :
-                        <span className="font-mono text-xs lg:text-base">n/a</span>
+                        <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                       :
                       <div className="skeleton w-60 h-4 lg:h-6 mt-1" />
                     }
@@ -1602,7 +1602,7 @@ export default function Transaction() {
                       <Copy size={20} text={generalTx.bidSignature} />
                     </div>
                     :
-                    <span className="font-mono text-xs lg:text-base">n/a</span>
+                    <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                   :
                   <div className="skeleton w-full sm:w-96 h-4 lg:h-6 mt-1" />
                 }
@@ -1616,7 +1616,7 @@ export default function Transaction() {
                       <Copy size={20} text={generalTx.signature} />
                     </div>
                     :
-                    <span className="font-mono text-xs lg:text-base">n/a</span>
+                    <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                   :
                   <div className="skeleton w-full sm:w-96 h-4 lg:h-6 mt-1" />
                 }
@@ -1661,7 +1661,7 @@ export default function Transaction() {
                     <Copy size={20} text={decoded ? JSON.stringify(convertToJson(decodeAuctionBid(generalTx.encodedBid))) : generalTx.encodedBid} className="mt-4" />
                   </div>
                   :
-                  <span className="font-mono text-xs lg:text-base">n/a</span>
+                  <span className="font-mono text-gray-400 dark:text-gray-600 text-xs lg:text-base">n/a</span>
                 :
                 <div className="flex flex-col space-y-3">
                   {[...Array(8).keys()].map(i => (
