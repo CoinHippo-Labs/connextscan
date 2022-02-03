@@ -175,11 +175,11 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
       }
 
       if (Object.keys(transactions_data).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)) {
-        const evmAddresses = _.slice(_.uniq(data.flatMap(t => [t?.sendingAddress?.toLowerCase(), t?.receivingAddress?.toLowerCase()]).filter(id => id && !ens_data?.[id])), 0, 100)
+        const evmAddresses = _.slice(_.uniq(data.flatMap(t => [t?.sendingAddress?.toLowerCase(), t?.receivingAddress?.toLowerCase()]).filter(id => id && !ens_data?.[id])), 0, 50)
         if (evmAddresses.length > 0) {
           let ensData
 
-          const addressChunk = _.chunk(evmAddresses, 20)
+          const addressChunk = _.chunk(evmAddresses, 25)
 
           for (let i = 0; i < addressChunk.length; i++) {
             const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })

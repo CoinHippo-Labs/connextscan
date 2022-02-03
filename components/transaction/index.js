@@ -242,7 +242,7 @@ export default function Transaction() {
             if (evmAddresses.length > 0) {
               let ensData
 
-              const addressChunk = _.chunk(evmAddresses, 20)
+              const addressChunk = _.chunk(evmAddresses, 25)
 
               for (let i = 0; i < addressChunk.length; i++) {
                 const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
@@ -1175,7 +1175,7 @@ export default function Transaction() {
                           alt=""
                           className="w-6 h-6 rounded-full"
                         />
-                        <span className="text-gray-200 dark:text-gray-800 text-sm font-medium">{chainTitle(generalTx.sendingChain)}</span>
+                        <span className="text-gray-800 dark:text-gray-200 text-sm font-medium">{chainTitle(generalTx.sendingChain)}</span>
                       </div>
                     )}
                   </div>
@@ -1435,7 +1435,7 @@ export default function Transaction() {
                           alt=""
                           className="w-6 h-6 rounded-full"
                         />
-                        <span className="text-gray-200 dark:text-gray-800 text-sm font-medium">{chainTitle(generalTx.receivingChain)}</span>
+                        <span className="text-gray-800 dark:text-gray-200 text-sm font-medium">{chainTitle(generalTx.receivingChain)}</span>
                       </div>
                     )}
                   </div>
