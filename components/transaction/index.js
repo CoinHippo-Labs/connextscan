@@ -6,6 +6,7 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
+import { NxtpSdk } from '@connext/nxtp-sdk'
 import { decodeAuctionBid } from '@connext/nxtp-utils'
 import Web3 from 'web3'
 import { providers, constants, utils } from 'ethers'
@@ -258,6 +259,9 @@ export default function Transaction() {
                   if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
                     ensResponses[evmAddress] = await getENS(evmAddress)
                   }
+                  else {
+                    ensData.push({ resolvedAddress: { id: evmAddress } })
+                  }
                 }
 
                 dispatch({
@@ -280,7 +284,7 @@ export default function Transaction() {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [tx, chains_data, sdk_data, transaction])
+  }, [tx, sdk_data, transaction])
 
   useEffect(() => {
     if (generalTx && !decodedBid && convertToJson(decodeAuctionBid(generalTx.encodedBid))) {
@@ -307,28 +311,54 @@ export default function Transaction() {
     }
   }, [transaction, rpcs_data])
 
+  const newNxtpSdk = async () => {
+    let sdk
+
+    if (chains_data && signer) {
+      const chainConfig = ['testnet'].includes(process.env.NEXT_PUBLIC_NETWORK) ?
+        { 1: { providers: ['https://api.mycryptoapi.com/eth', 'https://cloudflare-eth.com'] } }
+        :
+        {}
+
+      for (let i = 0; i < chains_data.length; i++) {
+        const chain = chains_data[i]
+
+        chainConfig[chain?.chain_id] = {
+          providers: chain?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')) || [],
+        }
+      }
+
+      sdk = await NxtpSdk.create({ chainConfig, signer, skipPolling: true })
+    }
+
+    return sdk
+  }
+
   const fulfill = async txData => {
     setTransfering('fulfill')
     setTransferResponse(null)
 
-    if (sdk_data && signer && txData) {
+    if (signer && txData) {
       try {
         setTransferResponse({ status: 'pending', message: 'Wait for Claiming' })
 
-        const response = await sdk_data.fulfillTransfer({
-          txData: {
-            ...txData,
-            user: txData.user?.id,
-            router: txData.router?.id,
-            preparedBlockNumber: Number(txData.preparedBlockNumber),
-            expiry: txData.expiry / 1000,
-          },
-          encryptedCallData: txData.encryptedCallData,
-          encodedBid: txData.encodedBid,
-          bidSignature: txData.bidSignature,
-        }, 0, false)
+        const sdk = await newNxtpSdk()
+        if (sdk) {
+          const response = await sdk.fulfillTransfer({
+            txData: {
+              ...txData,
+              user: txData.user?.id,
+              router: txData.router?.id,
+              preparedBlockNumber: Number(txData.preparedBlockNumber),
+              expiry: txData.expiry / 1000,
+            },
+            encryptedCallData: txData.encryptedCallData,
+            encodedBid: txData.encodedBid,
+            bidSignature: txData.bidSignature,
+          }, 0, false)
 
-        setTransferResponse({ status: 'pending', message: 'Wait for Claiming Confirmation', tx_hash: response?.hash || response?.transactionHash, ...response })
+          setTransferResponse({ status: 'pending', message: 'Wait for Claiming Confirmation', tx_hash: response?.hash || response?.transactionHash, ...response })
+        }
       } catch (error) {
         setTransferResponse({ status: 'failed', message: error?.reason || error?.data?.message || error?.message })
       }
@@ -341,22 +371,24 @@ export default function Transaction() {
     setTransfering('cancel')
     setTransferResponse(null)
 
-    if (sdk_data && signer && txData) {
+    if (signer && txData) {
       try {
         const signature = '0x'
+        const sdk = await newNxtpSdk()
+        if (sdk) {
+          const response = await sdk.cancel({
+            txData: {
+              ...txData,
+              user: txData.user?.id,
+              router: txData.router?.id,
+              preparedBlockNumber: Number(txData.preparedBlockNumber),
+              expiry: txData.expiry / 1000,
+            },
+            signature,
+          }, chain_id)
 
-        const response = await sdk_data.cancel({
-          txData: {
-            ...txData,
-            user: txData.user?.id,
-            router: txData.router?.id,
-            preparedBlockNumber: Number(txData.preparedBlockNumber),
-            expiry: txData.expiry / 1000,
-          },
-          signature,
-        }, chain_id)
-
-        setTransferResponse({ status: 'pending', message: 'Wait for Cancellation Confirmation', tx_hash: response?.hash, ...response })
+          setTransferResponse({ status: 'pending', message: 'Wait for Cancellation Confirmation', tx_hash: response?.hash, ...response })
+        }
       } catch (error) {
         setTransferResponse({ status: 'failed', message: error?.reason || error?.data?.message || error?.message })
       }
@@ -1143,7 +1175,7 @@ export default function Transaction() {
                           alt=""
                           className="w-6 h-6 rounded-full"
                         />
-                        <span className="text-gray-400 dark:text-gray-600 text-sm font-medium">{chainTitle(generalTx.sendingChain)}</span>
+                        <span className="text-gray-200 dark:text-gray-800 text-sm font-medium">{chainTitle(generalTx.sendingChain)}</span>
                       </div>
                     )}
                   </div>
@@ -1403,7 +1435,7 @@ export default function Transaction() {
                           alt=""
                           className="w-6 h-6 rounded-full"
                         />
-                        <span className="text-gray-400 dark:text-gray-600 text-sm font-medium">{chainTitle(generalTx.receivingChain)}</span>
+                        <span className="text-gray-200 dark:text-gray-800 text-sm font-medium">{chainTitle(generalTx.receivingChain)}</span>
                       </div>
                     )}
                   </div>

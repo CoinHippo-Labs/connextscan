@@ -81,7 +81,7 @@ export default function Navbar() {
 
       dispatch({
         type: SDK_DATA,
-        value: await NxtpSdk.create({ chainConfig, signer: signer || Wallet.createRandom(), skipPolling: false }),
+        value: await NxtpSdk.create({ chainConfig, signer: Wallet.createRandom(), skipPolling: false }),
       })
 
       if (!rpcs_data) {
@@ -91,7 +91,7 @@ export default function Navbar() {
         })
       }
     }
-  }, [chains_data, rpcs_data, signer])
+  }, [chains_data])
 
   // status
   useEffect(() => {
@@ -239,6 +239,9 @@ export default function Navbar() {
 
               if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
                 ensResponses[evmAddress] = await getENS(evmAddress)
+              }
+              else {
+                ensData.push({ resolvedAddress: { id: evmAddress } })
               }
             }
 

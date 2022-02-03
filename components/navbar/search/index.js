@@ -66,6 +66,9 @@ export default function Search() {
               if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
                 ensResponses[evmAddress] = await getENS(evmAddress)
               }
+              else {
+                ensData.push({ resolvedAddress: { id: evmAddress } })
+              }
             }
 
             dispatch({

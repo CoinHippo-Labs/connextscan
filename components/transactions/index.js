@@ -120,7 +120,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
     }
 
     const getData = () => {
-      if (chains_data && tokens_data && sdk_data) {
+      if (chains_data && sdk_data) {
         chains_data.forEach(c => getTxs(c))
       }
     }
@@ -132,7 +132,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
       controller?.abort()
       clearInterval(interval)
     }
-  }, [pathname, address, blockchain_id, chains_data, tokens_data, sdk_data])
+  }, [pathname, address, blockchain_id, sdk_data])
 
   useEffect(async () => {
     if (tokens_data && transactions_data) {
@@ -196,6 +196,9 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
               if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
                 ensResponses[evmAddress] = await getENS(evmAddress)
               }
+              else {
+                ensData.push({ resolvedAddress: { id: evmAddress } })
+              }
             }
 
             dispatch({
@@ -206,7 +209,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         }
       }
     }
-  }, [tokens_data, transactions_data])
+  }, [tokens_data, ens_data, transactions_data])
 
   const addTokenToMetaMask = addTokenToMetaMaskFunction || (async (chain_id, contract) => {
     if (web3 && contract) {
