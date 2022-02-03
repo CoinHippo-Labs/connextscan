@@ -7,7 +7,6 @@ import { providers, utils } from 'ethers'
 import { Img } from 'react-image'
 import { IoWalletOutline } from 'react-icons/io5'
 
-import { networks } from '../../lib/menus'
 import { WALLET_DATA, WALLET_RESET } from '../../reducers/types'
 
 const providerOptions = {
@@ -67,10 +66,11 @@ let web3Modal
 
 export default function Wallet({ chainIdToConnect, main, hidden, disabled = false, buttonConnectTitle, buttonConnectClassName, buttonDisconnectTitle, buttonDisconnectClassName, onChangeNetwork }) {
   const dispatch = useDispatch()
-  const { wallet, preferences } = useSelector(state => ({ wallet: state.wallet, preferences: state.preferences }), shallowEqual)
+  const { preferences, chains, wallet } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, wallet: state.wallet }), shallowEqual)
+  const { chains_data } = { ...chains }
+  const { theme } = { ...preferences }
   const { wallet_data } = { ...wallet }
   const { provider, web3_provider, chain_id } = { ...wallet_data }
-  const { theme } = { ...preferences }
 
   const [defaultChainId, setDefaultChainId] = useState(null)
 
@@ -155,7 +155,7 @@ export default function Wallet({ chainIdToConnect, main, hidden, disabled = fals
           try {
             await provider.request({
               method: 'wallet_addEthereumChain',
-              params: networks?.find(_chain => _chain.network_id === chainIdToConnect)?.provider_params,
+              params: chains_data?.find(c => c.chain_id === chainIdToConnect)?.provider_params,
             })
           } catch (error) {
             console.log(error)
