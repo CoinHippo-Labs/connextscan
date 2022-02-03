@@ -262,7 +262,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
 
   return (
     <>
-      <div className="flex flex-wrap items-center sm:justify-end mb-2 sm:mx-3">
+      <div className="flex flex-wrap items-center sm:justify-end mb-2 mx-3">
         <span className="hidden sm:block text-gray-400 dark:text-gray-600 mr-3">Filter:</span>
         {filter_statuses.filter(({ status }) => !blockchain_id || !status?.endsWith('ing')).map(({ status, color }, i) => (
           <button

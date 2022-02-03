@@ -9,7 +9,9 @@ import { providers, constants, Contract, utils } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
-import { TiArrowRight } from 'react-icons/ti'
+import { HiStatusOnline } from 'react-icons/hi'
+import { AiOutlineNumber } from 'react-icons/ai'
+import { BiGasPump } from 'react-icons/bi'
 
 import Assets from '../../components/assets'
 import Transactions from '../../components/transactions'
@@ -21,7 +23,8 @@ import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
 export default function RouterIndex() {
-  const { chains, ens, routers_status, routers_assets } = useSelector(state => ({ chains: state.chains, ens: state.ens, routers_status: state.routers_status, routers_assets: state.routers_assets }), shallowEqual)
+  const { preferences, chains, ens, routers_status, routers_assets } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, ens: state.ens, routers_status: state.routers_status, routers_assets: state.routers_assets }), shallowEqual)
+  const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
   const { ens_data } = { ...ens }
   const { routers_status_data } = { ...routers_status }
@@ -316,81 +319,134 @@ export default function RouterIndex() {
   const routerAssets = routers_assets_data?.find(ra => ra?.router_id?.toLowerCase() === address?.toLowerCase())
 
   return (
-    <div className="max-w-6xl space-y-4 sm:space-y-8 my-2 xl:mt-4 xl:mb-6 mx-auto">
-      <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 xl:grid-cols-5 gap-4 mt-8">
+    <div className="max-w-6xl space-y-8 my-2 xl:mt-4 xl:mb-6 mx-auto">
+      <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 mt-8 mx-3">
         <Widget
-          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Router Version</div>}
+          title={<div className="flex items-center text-black dark:text-white space-x-2.5">
+            <HiStatusOnline size={20} />
+            <span className="uppercase text-base font-semibold">Status</span>
+          </div>}
+          className="max-h-40 overflow-y-auto border-0 shadow-md rounded-2xl p-4"
         >
-          <div className="mx-3">
-            <div className="font-mono text-xl font-semibold mt-1">
+          <div className="flex flex-col space-y-3.5 mt-2.5">
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Version</span>
               {routers_status_data ?
                 routerStatus?.routerVersion ?
-                  routerStatus.routerVersion
+                  <span className="font-mono font-semibold">{routerStatus.routerVersion}</span>
                   :
-                  '-'
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <div className="skeleton w-20 h-6 mt-2" />
+                <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
               }
             </div>
-          </div>
-        </Widget>
-        <Widget
-          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Active TXs</div>}
-        >
-          <div className="mx-3">
-            <div className="font-mono text-xl font-semibold mt-1">
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Active TXs</span>
               {routers_status_data ?
-                routerStatus ?
-                  numberFormat(routerStatus.activeTransactionsLength, '0,0')
+                typeof routerStatus?.activeTransactionsLength === 'number' ?
+                  <span className="font-mono font-semibold">{numberFormat(routerStatus.activeTransactionsLength, '0,0')}</span>
                   :
-                  '-'
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <div className="skeleton w-20 h-6 mt-2" />
+                <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
               }
             </div>
-          </div>
-        </Widget>
-        <Widget
-          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Processing TXs</div>}
-        >
-          <div className="mx-3">
-            <div className="font-mono text-xl font-semibold mt-1">
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Processing TXs</span>
               {routers_status_data ?
-                routerStatus ?
-                  numberFormat(routerStatus.trackerLength, '0,0')
+                typeof routerStatus?.trackerLength === 'number' ?
+                  <span className="font-mono font-semibold">{numberFormat(routerStatus.trackerLength, '0,0')}</span>
                   :
-                  '-'
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <div className="skeleton w-20 h-6 mt-2" />
+                <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
               }
             </div>
           </div>
         </Widget>
         <Widget
-          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Volume</div>}
+          title={<div className="flex items-center text-black dark:text-white space-x-2">
+            <AiOutlineNumber size={20} />
+            <span className="uppercase text-base font-semibold">Statistics</span>
+          </div>}
+          className="col-span-1 lg:col-span-2 max-h-40 overflow-y-auto border-0 shadow-md rounded-2xl p-4"
         >
-          <div className="mx-3">
-            <div className="font-mono text-xl font-semibold mt-1">
+          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-2 gap-y-3.5 gap-x-6 mt-2.5">
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Volume</span>
               {routerAssets ?
-                `${currency_symbol}${numberFormat(routerAssets.liquidity_volume, '0,0')}`
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'volume_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <div className="skeleton w-20 h-6 mt-2" />
+                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Transactions</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'receivingFulfillTxCount'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Liquidity</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Locked</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'locked_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Supplied</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'supplied_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Locked In</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
               }
             </div>
           </div>
         </Widget>
         <Widget
-          title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mx-3">Transactions</div>}
+          title={<div className="flex items-center text-black dark:text-white space-x-2">
+            <BiGasPump size={20} />
+            <span className="uppercase text-base font-semibold">Available Gas</span>
+          </div>}
+          className="col-span-1 lg:col-span-2 max-h-40 overflow-y-auto border-0 shadow-md rounded-2xl p-4"
         >
-          <div className="mx-3">
-            <div className="font-mono text-xl font-semibold mt-1">
-              {routerAssets ?
-                numberFormat(routerAssets.total_receivingFulfillTxCount, '0,0')
-                :
-                <div className="skeleton w-20 h-6 mt-2" />
-              }
-            </div>
-          </div>
         </Widget>
       </div>
       <Assets assetBy="routers" addTokenToMetaMaskFunction={addTokenToMetaMask} />
