@@ -20,7 +20,7 @@ import { numberFormat, ellipseAddress } from '../../lib/utils'
 
 import { CONTRACTS_DATA, ENS_DATA } from '../../reducers/types'
 
-export default function CrosschainAddress() {
+export default function AddressIndex() {
   const dispatch = useDispatch()
   const { contracts, assets, ens } = useSelector(state => ({ contracts: state.contracts, assets: state.assets, ens: state.ens }), shallowEqual)
   const { contracts_data } = { ...contracts }

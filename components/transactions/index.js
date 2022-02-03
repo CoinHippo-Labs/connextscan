@@ -35,7 +35,7 @@ const filter_statuses = [
 
 BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
-export default function Transactions({ className = '' }) {
+export default function Transactions({ addTokenToMetaMaskFunction, className = '' }) {
   const dispatch = useDispatch()
   const { preferences, chains, tokens, ens, transactions, sdk } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, ens: state.ens, transactions: state.transactions, sdk: state.sdk }), shallowEqual)
   const { theme } = { ...preferences }
@@ -56,17 +56,19 @@ export default function Transactions({ className = '' }) {
   const [addTokenData, setAddTokenData] = useState(null)
 
   useEffect(() => {
-    if (!web3) {
-      setWeb3(new Web3(Web3.givenProvider))
-    }
-    else {
-      try {
-        web3.currentProvider._handleChainChanged = e => {
-          try {
-            setChainId(Web3.utils.hexToNumber(e?.chainId))
-          } catch (error) {}
-        }
-      } catch (error) {}
+    if (!addTokenToMetaMaskFunction) {
+      if (!web3) {
+        setWeb3(new Web3(Web3.givenProvider))
+      }
+      else {
+        try {
+          web3.currentProvider._handleChainChanged = e => {
+            try {
+              setChainId(Web3.utils.hexToNumber(e?.chainId))
+            } catch (error) {}
+          }
+        } catch (error) {}
+      }
     }
   }, [web3])
 
@@ -168,7 +170,7 @@ export default function Transactions({ className = '' }) {
         }
       })
 
-      if ((data.length > 0 || blockchain_id) && Object.keys(transactions_data).length > (blockchain_id ? 0 : 3)) {
+      if ((data.length > 0 || address || blockchain_id) && Object.keys(transactions_data).length > (blockchain_id ? 0 : 3)) {
         setTxs({ data })
       }
 
@@ -206,7 +208,7 @@ export default function Transactions({ className = '' }) {
     }
   }, [tokens_data, transactions_data])
 
-  const addTokenToMetaMask = async (chain_id, contract) => {
+  const addTokenToMetaMask = addTokenToMetaMaskFunction || (async (chain_id, contract) => {
     if (web3 && contract) {
       if (chain_id === chainId) {
         try {
@@ -230,7 +232,7 @@ export default function Transactions({ className = '' }) {
         switchNetwork(chain_id, contract)
       }
     }
-  }
+  })
 
   const switchNetwork = async (chain_id, contract) => {
     try {
@@ -272,335 +274,169 @@ export default function Transactions({ className = '' }) {
           </button>
         ))}
       </div>
-      <Datatable
-        columns={[
-          {
-            Header: 'Tx ID',
-            accessor: 'transactionId',
-            disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                <div className="space-y-1 my-1">
-                  <div className="flex items-center space-x-1">
-                    <Link href={`/tx/${props.value}`}>
-                      <a className="uppercase text-blue-600 dark:text-white font-semibold">
-                        {ellipseAddress(props.value, 8)}
-                      </a>
-                    </Link>
-                    <Copy size={14} text={props.value} />
-                  </div>
-                  {props.row.original.txs?.filter(t => t.id && (t.chain_id === props.row.original.sendingChain?.chain_id || t.chain_id === props.row.original.receivingChain?.chain_id)).map((t, i) => {
-                    const chain = t.chain_id === props.row.original.sendingChain?.chain_id ? props.row.original.sendingChain : props.row.original.receivingChain
+      <div>
+        <Datatable
+          columns={[
+            {
+              Header: 'Tx ID',
+              accessor: 'transactionId',
+              disableSortBy: true,
+              Cell: props => (
+                !props.row.original.skeleton ?
+                  <div className="space-y-1 my-1">
+                    <div className="flex items-center space-x-1">
+                      <Link href={`/tx/${props.value}`}>
+                        <a className="uppercase text-blue-600 dark:text-white font-semibold">
+                          {ellipseAddress(props.value, 8)}
+                        </a>
+                      </Link>
+                      <Copy size={14} text={props.value} />
+                    </div>
+                    {props.row.original.txs?.filter(t => t.id && (t.chain_id === props.row.original.sendingChain?.chain_id || t.chain_id === props.row.original.receivingChain?.chain_id)).map((t, i) => {
+                      const chain = t.chain_id === props.row.original.sendingChain?.chain_id ? props.row.original.sendingChain : props.row.original.receivingChain
 
-                    return (
-                      <div key={i} className="flex items-center space-x-1">
-                        <Copy
-                          size={12}
-                          text={t.id}
-                          copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-light">
-                            {ellipseAddress(t.id, 8)}
-                          </span>}
-                        />
-                        {chain?.explorer?.url && (
+                      return (
+                        <div key={i} className="flex items-center space-x-1">
+                          <Copy
+                            size={12}
+                            text={t.id}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-light">
+                              {ellipseAddress(t.id, 8)}
+                            </span>}
+                          />
+                          {chain?.explorer?.url && (
+                            <a
+                              href={`${chain.explorer.url}${chain.explorer.transaction_path?.replace('{tx}', t.id)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-white"
+                            >
+                              {chain.explorer.icon ?
+                                <Img
+                                  src={chain.explorer.icon}
+                                  alt=""
+                                  className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                                />
+                                :
+                                <TiArrowRight size={16} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  :
+                  <div className="flex flex-col space-y-2 my-1">
+                    <div className="skeleton w-32 h-5" />
+                    <div className="skeleton w-28 h-4" />
+                  </div>
+              ),
+            },
+            {
+              Header: 'Status',
+              accessor: 'crosschain_status',
+              disableSortBy: true,
+              Cell: props => (
+                !props.row.original.skeleton ?
+                  <Link href={`/tx/${props.row.original.transactionId}`}>
+                    <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Fulfilling' ? 'green-400' : props.value === 'Prepared' ? 'yellow-500' : props.value === 'Preparing' ? 'blue-600' : 'red-700'} rounded-lg flex items-center space-x-1 my-1 py-1 px-1.5`}>
+                      {props.value === 'Fulfilled' ?
+                        <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
+                        :
+                        props.value === 'Fulfilling' ?
+                          <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#22C55E'} width="14" height="14" />
+                          :
+                          props.value === 'Prepared' ?
+                            <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
+                            :
+                            props.value === 'Preparing' ?
+                              <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                              :
+                              <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
+                      }
+                      <span className="uppercase text-xs font-semibold">{props.value}</span>
+                    </a>
+                  </Link>
+                  :
+                  <div className="skeleton w-20 h-6 my-1" />
+              ),
+            },
+            {
+              Header: 'Initiator',
+              accessor: 'sendingAddress',
+              disableSortBy: true,
+              Cell: props => (
+                !props.row.original.skeleton ?
+                  props.value ?
+                    <div className="min-w-max space-y-1.5 my-1">
+                      <div className="flex items-center space-x-1">
+                        <Link href={`/address/${props.value}`}>
+                          <a className={`text-blue-600 dark:text-white text-xs ${ens_data?.[props.value?.toLowerCase()]?.name ? 'font-semibold' : ''}`}>
+                            {ellipseAddress(ens_data?.[props.value?.toLowerCase()]?.name || props.value, 8)}
+                          </a>
+                        </Link>
+                        <Copy size={14} text={props.value} />
+                        {props.row.original.sendingChain?.explorer?.url && (
                           <a
-                            href={`${chain.explorer.url}${chain.explorer.transaction_path?.replace('{tx}', t.id)}`}
+                            href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.address_path?.replace('{address}', props.value)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 dark:text-white"
                           >
-                            {chain.explorer.icon ?
-                              <Img
-                                src={chain.explorer.icon}
-                                alt=""
-                                className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
-                              />
-                              :
-                              <TiArrowRight size={16} className="transform -rotate-45" />
-                            }
-                          </a>
-                        )}
-                      </div>
-                    )
-                  })}
-                </div>
-                :
-                <div className="flex flex-col space-y-2 my-1">
-                  <div className="skeleton w-32 h-5" />
-                  <div className="skeleton w-28 h-4" />
-                </div>
-            ),
-          },
-          {
-            Header: 'Status',
-            accessor: 'crosschain_status',
-            disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                <Link href={`/tx/${props.row.original.transactionId}`}>
-                  <a className={`max-w-min h-6 bg-gray-100 dark:bg-${props.value === 'Fulfilled' ? 'green-600' : props.value === 'Fulfilling' ? 'green-400' : props.value === 'Prepared' ? 'yellow-500' : props.value === 'Preparing' ? 'blue-600' : 'red-700'} rounded-lg flex items-center space-x-1 my-1 py-1 px-1.5`}>
-                    {props.value === 'Fulfilled' ?
-                      <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
-                      :
-                      props.value === 'Fulfilling' ?
-                        <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#22C55E'} width="14" height="14" />
-                        :
-                        props.value === 'Prepared' ?
-                          <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
-                          :
-                          props.value === 'Preparing' ?
-                            <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
-                            :
-                            <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
-                    }
-                    <span className="uppercase text-xs font-semibold">{props.value}</span>
-                  </a>
-                </Link>
-                :
-                <div className="skeleton w-20 h-6 my-1" />
-            ),
-          },
-          {
-            Header: 'Initiator',
-            accessor: 'sendingAddress',
-            disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                props.value ?
-                  <div className="min-w-max space-y-1.5 my-1">
-                    <div className="flex items-center space-x-1">
-                      <Link href={`/address/${props.value}`}>
-                        <a className={`text-blue-600 dark:text-white text-xs ${ens_data?.[props.value?.toLowerCase()]?.name ? 'font-semibold' : ''}`}>
-                          {ellipseAddress(ens_data?.[props.value?.toLowerCase()]?.name || props.value, 8)}
-                        </a>
-                      </Link>
-                      <Copy size={14} text={props.value} />
-                      {props.row.original.sendingChain?.explorer?.url && (
-                        <a
-                          href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.address_path?.replace('{address}', props.value)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 dark:text-white"
-                        >
-                          {props.row.original.sendingChain.explorer.icon ?
-                            <Img
-                              src={props.row.original.sendingChain.explorer.icon}
-                              alt=""
-                              className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
-                            />
-                            :
-                            <TiArrowRight size={14} className="transform -rotate-45" />
-                          }
-                        </a>
-                      )}
-                    </div>
-                    {props.row.original.sendingChain && (
-                      <div className="flex items-center space-x-2">
-                        <Img
-                          src={props.row.original.sendingChain.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full"
-                        />
-                        <span className="text-gray-400 dark:text-gray-600 text-xs">{chainTitle(props.row.original.sendingChain)}</span>
-                      </div>
-                    )}
-                  </div>
-                  :
-                  <div className="text-gray-400 dark:text-gray-600 font-light my-1">Unknown</div>
-                :
-                <div className="flex flex-col space-y-2.5 my-1">
-                  <div className="skeleton w-28 h-5" />
-                  <div className="skeleton w-20 h-4" />
-                </div>
-            ),
-          },
-          {
-            Header: 'Receiver',
-            accessor: 'receivingAddress',
-            disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                props.value ?
-                  <div className="min-w-max space-y-1.5 my-1">
-                    <div className="flex items-center space-x-1">
-                      <Link href={`/address/${props.value}`}>
-                        <a className={`text-blue-600 dark:text-white text-xs ${ens_data?.[props.value?.toLowerCase()]?.name ? 'font-semibold' : ''}`}>
-                          {ellipseAddress(ens_data?.[props.value?.toLowerCase()]?.name || props.value, 8)}
-                        </a>
-                      </Link>
-                      <Copy size={14} text={props.value} />
-                      {props.row.original.receivingChain?.explorer?.url && (
-                        <a
-                          href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.address_path?.replace('{address}', props.value)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 dark:text-white"
-                        >
-                          {props.row.original.receivingChain.explorer.icon ?
-                            <img
-                              src={props.row.original.receivingChain.explorer.icon}
-                              alt=""
-                              className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
-                            />
-                            :
-                            <TiArrowRight size={14} className="transform -rotate-45" />
-                          }
-                        </a>
-                      )}
-                    </div>
-                    {props.row.original.receivingChain && (
-                      <div className="flex items-center space-x-2">
-                        <Img
-                          src={props.row.original.receivingChain.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full"
-                        />
-                        <span className="text-gray-400 dark:text-gray-600 text-xs">{chainTitle(props.row.original.receivingChain)}</span>
-                      </div>
-                    )}
-                  </div>
-                  :
-                  <div className="text-gray-400 dark:text-gray-600 font-light my-1">Unknown</div>
-                :
-                <div className="flex flex-col space-y-2.5 my-1">
-                  <div className="skeleton w-28 h-5" />
-                  <div className="skeleton w-20 h-4" />
-                </div>
-            ),
-          },
-          {
-            Header: 'Asset',
-            accessor: 'receiving_amount',
-            disableSortBy: true,
-            Cell: props => {
-              const addSendingTokenToMetaMaskButton = props.row.original.sendingChain && props.row.original.sendingAsset && props.row.original.sendingAssetId !== constants.AddressZero && (
-                <button
-                  onClick={() => addTokenToMetaMask(props.row.original.sendingChain.chain_id, { ...props.row.original.sendingAsset })}
-                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
-                >
-                  <Img
-                    src="/logos/wallets/metamask.png"
-                    alt=""
-                    className="w-3.5 h-3.5"
-                  />
-                </button>
-              )
-
-              const addReceivingTokenToMetaMaskButton = props.row.original.receivingChain && props.row.original.receivingAsset && props.row.original.receivingAssetId !== constants.AddressZero && (
-                <button
-                  onClick={() => addTokenToMetaMask(props.row.original.receivingChain.chain_id, { ...props.row.original.receivingAsset })}
-                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
-                >
-                  <Img
-                    src="/logos/wallets/metamask.png"
-                    alt=""
-                    className="w-3.5 h-3.5"
-                  />
-                </button>
-              )
-
-              const sendingAmount = props.row.original.sending_amount, recevingAmount = props.value
-
-              return !props.row.original.skeleton ?
-                <div className="min-w-max flex items-center justify-between space-x-2">
-                  <div className="flex flex-col items-start space-y-1.5">
-                    {props.row.original.sendingAssetId && (
-                      <div className="flex items-center">
-                        <Img
-                          src={props.row.original.sendingAsset?.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full mr-2"
-                        />
-                        {props.row.original.sendingAsset?.symbol ?
-                          <div className="flex items-center space-x-1">
-                            <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span>
-                            {/*<Copy size={14} text={props.row.original.sendingAssetId} />*/}
-                          </div>
-                          :
-                          <Copy
-                            size={12}
-                            text={props.row.original.sendingAssetId}
-                            copyTitle={<span className="text-gray-400 dark:text-gray-600 text-2xs">
-                              {ellipseAddress(props.row.original.sendingAssetId, 5)}
-                            </span>}
-                          />
-                        }
-                        {props.row.original.sendingChain?.explorer?.url && (
-                          <a
-                            href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.[`contract${props.row.original.sendingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 dark:text-white mb-0.5 ml-1"
-                          >
                             {props.row.original.sendingChain.explorer.icon ?
-                              <img
+                              <Img
                                 src={props.row.original.sendingChain.explorer.icon}
                                 alt=""
                                 className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
                               />
                               :
-                              <TiArrowRight size={12} className="transform -rotate-45" />
+                              <TiArrowRight size={14} className="transform -rotate-45" />
                             }
                           </a>
                         )}
-                        {addSendingTokenToMetaMaskButton && (
-                          <div className="ml-2">
-                            <Popover
-                              placement="top"
-                              title={<span className="normal-case text-3xs">Add token</span>}
-                              content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span> to MetaMask</div>}
-                              titleClassName="py-0.5"
-                              contentClassName="py-1.5"
-                            >
-                              {addSendingTokenToMetaMaskButton}
-                            </Popover>
-                          </div>
-                        )}
                       </div>
-                    )}
-                    <div className="font-mono text-2xs">
-                      {typeof sendingAmount === 'number' ?
-                        <>
-                          <span className="font-semibold mr-1">
-                            {numberFormat(sendingAmount, '0,0.000000')}
-                          </span>
-                          <span className="text-gray-400 dark:text-gray-600 font-medium">{props.row.original.sendingAsset?.symbol}</span>
-                        </>
-                        :
-                        <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                      }
-                    </div>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <GoCode size={20} />
-                  </div>
-                  <div className="flex flex-col items-end space-y-1.5">
-                    {props.row.original.receivingAssetId && (
-                      <div className="flex items-center">
-                        <Img
-                          src={props.row.original.receivingAsset?.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full mr-2"
-                        />
-                        {props.row.original.receivingAsset?.symbol ?
-                          <div className="flex items-center space-x-1">
-                            <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span>
-                            {/*<Copy size={14} text={props.row.original.receivingAssetId} />*/}
-                          </div>
-                          :
-                          <Copy
-                            size={12}
-                            text={props.row.original.receivingAssetId}
-                            copyTitle={<span className="text-gray-400 dark:text-gray-600 text-2xs">
-                              {ellipseAddress(props.row.original.receivingAssetId, 5)}
-                            </span>}
+                      {props.row.original.sendingChain && (
+                        <div className="flex items-center space-x-2">
+                          <Img
+                            src={props.row.original.sendingChain.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full"
                           />
-                        }
+                          <span className="text-gray-400 dark:text-gray-600 text-xs">{chainTitle(props.row.original.sendingChain)}</span>
+                        </div>
+                      )}
+                    </div>
+                    :
+                    <div className="text-gray-400 dark:text-gray-600 font-light my-1">Unknown</div>
+                  :
+                  <div className="flex flex-col space-y-2.5 my-1">
+                    <div className="skeleton w-28 h-5" />
+                    <div className="skeleton w-20 h-4" />
+                  </div>
+              ),
+            },
+            {
+              Header: 'Receiver',
+              accessor: 'receivingAddress',
+              disableSortBy: true,
+              Cell: props => (
+                !props.row.original.skeleton ?
+                  props.value ?
+                    <div className="min-w-max space-y-1.5 my-1">
+                      <div className="flex items-center space-x-1">
+                        <Link href={`/address/${props.value}`}>
+                          <a className={`text-blue-600 dark:text-white text-xs ${ens_data?.[props.value?.toLowerCase()]?.name ? 'font-semibold' : ''}`}>
+                            {ellipseAddress(ens_data?.[props.value?.toLowerCase()]?.name || props.value, 8)}
+                          </a>
+                        </Link>
+                        <Copy size={14} text={props.value} />
                         {props.row.original.receivingChain?.explorer?.url && (
                           <a
-                            href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.[`contract${props.row.original.receivingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
+                            href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.address_path?.replace('{address}', props.value)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-blue-600 dark:text-white mb-0.5 ml-1"
+                            className="text-blue-600 dark:text-white"
                           >
                             {props.row.original.receivingChain.explorer.icon ?
                               <img
@@ -609,82 +445,250 @@ export default function Transactions({ className = '' }) {
                                 className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
                               />
                               :
-                              <TiArrowRight size={12} className="transform -rotate-45" />
+                              <TiArrowRight size={14} className="transform -rotate-45" />
                             }
                           </a>
                         )}
-                        {addReceivingTokenToMetaMaskButton && (
-                          <div className="ml-2">
-                            <Popover
-                              placement="top"
-                              title={<span className="normal-case text-3xs">Add token</span>}
-                              content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span> to MetaMask</div>}
-                              titleClassName="py-0.5"
-                              contentClassName="py-1.5"
-                            >
-                              {addReceivingTokenToMetaMaskButton}
-                            </Popover>
-                          </div>
-                        )}
                       </div>
-                    )}
-                    <div className="font-mono leading-4 text-2xs">
-                      {typeof recevingAmount === 'number' ?
-                        <>
-                          <span className="font-semibold mr-1">
-                            {numberFormat(recevingAmount, '0,0.000000')}
-                          </span>
-                          <span className="text-gray-400 dark:text-gray-600 font-medium">{props.row.original.receivingAsset?.symbol}</span>
-                        </>
-                        :
-                        <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                      }
+                      {props.row.original.receivingChain && (
+                        <div className="flex items-center space-x-2">
+                          <Img
+                            src={props.row.original.receivingChain.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full"
+                          />
+                          <span className="text-gray-400 dark:text-gray-600 text-xs">{chainTitle(props.row.original.receivingChain)}</span>
+                        </div>
+                      )}
+                    </div>
+                    :
+                    <div className="text-gray-400 dark:text-gray-600 font-light my-1">Unknown</div>
+                  :
+                  <div className="flex flex-col space-y-2.5 my-1">
+                    <div className="skeleton w-28 h-5" />
+                    <div className="skeleton w-20 h-4" />
+                  </div>
+              ),
+            },
+            {
+              Header: 'Asset',
+              accessor: 'receiving_amount',
+              disableSortBy: true,
+              Cell: props => {
+                const addSendingTokenToMetaMaskButton = props.row.original.sendingChain && props.row.original.sendingAsset && props.row.original.sendingAssetId !== constants.AddressZero && (
+                  <button
+                    onClick={() => addTokenToMetaMask(props.row.original.sendingChain.chain_id, { ...props.row.original.sendingAsset })}
+                    className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
+                  >
+                    <Img
+                      src="/logos/wallets/metamask.png"
+                      alt=""
+                      className="w-3.5 h-3.5"
+                    />
+                  </button>
+                )
+
+                const addReceivingTokenToMetaMaskButton = props.row.original.receivingChain && props.row.original.receivingAsset && props.row.original.receivingAssetId !== constants.AddressZero && (
+                  <button
+                    onClick={() => addTokenToMetaMask(props.row.original.receivingChain.chain_id, { ...props.row.original.receivingAsset })}
+                    className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
+                  >
+                    <Img
+                      src="/logos/wallets/metamask.png"
+                      alt=""
+                      className="w-3.5 h-3.5"
+                    />
+                  </button>
+                )
+
+                const sendingAmount = props.row.original.sending_amount, recevingAmount = props.value
+
+                return !props.row.original.skeleton ?
+                  <div className="min-w-max flex items-center justify-between space-x-2">
+                    <div className="flex flex-col items-start space-y-1.5">
+                      {props.row.original.sendingAssetId && (
+                        <div className="flex items-center">
+                          <Img
+                            src={props.row.original.sendingAsset?.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full mr-2"
+                          />
+                          {props.row.original.sendingAsset?.symbol ?
+                            <div className="flex items-center space-x-1">
+                              <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span>
+                              {/*<Copy size={14} text={props.row.original.sendingAssetId} />*/}
+                            </div>
+                            :
+                            <Copy
+                              size={12}
+                              text={props.row.original.sendingAssetId}
+                              copyTitle={<span className="text-gray-400 dark:text-gray-600 text-2xs">
+                                {ellipseAddress(props.row.original.sendingAssetId, 5)}
+                              </span>}
+                            />
+                          }
+                          {props.row.original.sendingChain?.explorer?.url && (
+                            <a
+                              href={`${props.row.original.sendingChain.explorer.url}${props.row.original.sendingChain.explorer.[`contract${props.row.original.sendingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.sendingAssetId)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-white mb-0.5 ml-1"
+                            >
+                              {props.row.original.sendingChain.explorer.icon ?
+                                <img
+                                  src={props.row.original.sendingChain.explorer.icon}
+                                  alt=""
+                                  className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                                />
+                                :
+                                <TiArrowRight size={12} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                          {addSendingTokenToMetaMaskButton && (
+                            <div className="ml-2">
+                              <Popover
+                                placement="top"
+                                title={<span className="normal-case text-3xs">Add token</span>}
+                                content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span> to MetaMask</div>}
+                                titleClassName="py-0.5"
+                                contentClassName="py-1.5"
+                              >
+                                {addSendingTokenToMetaMaskButton}
+                              </Popover>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="font-mono text-2xs">
+                        {typeof sendingAmount === 'number' ?
+                          <>
+                            <span className="font-semibold mr-1">
+                              {numberFormat(sendingAmount, '0,0.000000')}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-600 font-medium">{props.row.original.sendingAsset?.symbol}</span>
+                          </>
+                          :
+                          <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                        }
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <GoCode size={20} />
+                    </div>
+                    <div className="flex flex-col items-end space-y-1.5">
+                      {props.row.original.receivingAssetId && (
+                        <div className="flex items-center">
+                          <Img
+                            src={props.row.original.receivingAsset?.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full mr-2"
+                          />
+                          {props.row.original.receivingAsset?.symbol ?
+                            <div className="flex items-center space-x-1">
+                              <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span>
+                              {/*<Copy size={14} text={props.row.original.receivingAssetId} />*/}
+                            </div>
+                            :
+                            <Copy
+                              size={12}
+                              text={props.row.original.receivingAssetId}
+                              copyTitle={<span className="text-gray-400 dark:text-gray-600 text-2xs">
+                                {ellipseAddress(props.row.original.receivingAssetId, 5)}
+                              </span>}
+                            />
+                          }
+                          {props.row.original.receivingChain?.explorer?.url && (
+                            <a
+                              href={`${props.row.original.receivingChain.explorer.url}${props.row.original.receivingChain.explorer.[`contract${props.row.original.receivingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.receivingAssetId)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-white mb-0.5 ml-1"
+                            >
+                              {props.row.original.receivingChain.explorer.icon ?
+                                <img
+                                  src={props.row.original.receivingChain.explorer.icon}
+                                  alt=""
+                                  className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                                />
+                                :
+                                <TiArrowRight size={12} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                          {addReceivingTokenToMetaMaskButton && (
+                            <div className="ml-2">
+                              <Popover
+                                placement="top"
+                                title={<span className="normal-case text-3xs">Add token</span>}
+                                content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span> to MetaMask</div>}
+                                titleClassName="py-0.5"
+                                contentClassName="py-1.5"
+                              >
+                                {addReceivingTokenToMetaMaskButton}
+                              </Popover>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      <div className="font-mono leading-4 text-2xs">
+                        {typeof recevingAmount === 'number' ?
+                          <>
+                            <span className="font-semibold mr-1">
+                              {numberFormat(recevingAmount, '0,0.000000')}
+                            </span>
+                            <span className="text-gray-400 dark:text-gray-600 font-medium">{props.row.original.receivingAsset?.symbol}</span>
+                          </>
+                          :
+                          <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                        }
+                      </div>
                     </div>
                   </div>
-                </div>
-                :
-                <div className="flex flex-col items-end space-y-2.5 my-1">
-                  <div className="skeleton w-28 h-5" />
-                  <div className="skeleton w-28 h-4" />
-                </div>
+                  :
+                  <div className="flex flex-col items-end space-y-2.5 my-1">
+                    <div className="skeleton w-28 h-5" />
+                    <div className="skeleton w-28 h-4" />
+                  </div>
+              },
+              headerClassName: 'justify-end text-right',
             },
-            headerClassName: 'justify-end text-right',
-          },
-          {
-            Header: 'Time',
-            accessor: 'preparedTimestamp',
-            disableSortBy: true,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                <div className="text-right my-1">
-                  <span className="text-gray-400 dark:text-gray-600">
-                    {Number(moment().diff(moment(props.value), 'second')) > 59 ?
-                      moment(props.value).fromNow()
-                      :
-                      <>{moment().diff(moment(props.value), 'second')}s ago</>
-                    }
-                  </span>
-                </div>
-                :
-                <div className="skeleton w-20 h-5 my-1 ml-auto" />
-            ),
-            headerClassName: 'justify-end text-right',
-          },
-        ]}
-        data={txs ?
-          (filteredTxs || []).map((t, i) => { return { ...t, i } })
-          :
-          [...Array(10).keys()].map(i => { return { i, skeleton: true } })
-        }
-        noPagination={!txs || filteredTxs?.length <= 10 ? true : false}
-        defaultPageSize={100}
-        className={`min-h-full ${className}`}
-      />
-      {txs && !(filteredTxs?.length > 0) && (
-        <div className="bg-white dark:bg-gray-900 rounded-xl text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 mx-2 py-2">
-          No Transactions
-        </div>
-      )}
+            {
+              Header: 'Time',
+              accessor: 'preparedTimestamp',
+              disableSortBy: true,
+              Cell: props => (
+                !props.row.original.skeleton ?
+                  <div className="text-right my-1">
+                    <span className="text-gray-400 dark:text-gray-600">
+                      {Number(moment().diff(moment(props.value), 'second')) > 59 ?
+                        moment(props.value).fromNow()
+                        :
+                        <>{moment().diff(moment(props.value), 'second')}s ago</>
+                      }
+                    </span>
+                  </div>
+                  :
+                  <div className="skeleton w-20 h-5 my-1 ml-auto" />
+              ),
+              headerClassName: 'justify-end text-right',
+            },
+          ]}
+          data={txs ?
+            (filteredTxs || []).map((t, i) => { return { ...t, i } })
+            :
+            [...Array(10).keys()].map(i => { return { i, skeleton: true } })
+          }
+          noPagination={!txs || filteredTxs?.length <= 10 ? true : false}
+          defaultPageSize={address || blockchain_id ? 25 : 100}
+          className={`min-h-full ${className}`}
+        />
+        {txs && !(filteredTxs?.length > 0) && (
+          <div className="bg-white dark:bg-gray-900 rounded-xl text-gray-300 dark:text-gray-500 text-base font-medium italic text-center m-2 py-2">
+            No Transactions
+          </div>
+        )}
+      </div>
     </>
   )
 }

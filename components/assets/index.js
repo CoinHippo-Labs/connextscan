@@ -22,7 +22,7 @@ import Widget from '../widget'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
-export default function Assets({ assetBy = 'assets' }) {
+export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction }) {
   const { preferences, chains, ens, routers_status, routers_assets } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, ens: state.ens, routers_status: state.routers_status, routers_assets: state.routers_assets }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
@@ -32,7 +32,7 @@ export default function Assets({ assetBy = 'assets' }) {
 
   const router = useRouter()
   const { query } = { ...router }
-  const { blockchain_id } = { ...query }
+  const { address, blockchain_id } = { ...query }
 
   const [web3, setWeb3] = useState(null)
   const [chainId, setChainId] = useState(null)
@@ -40,17 +40,19 @@ export default function Assets({ assetBy = 'assets' }) {
   const [timer, setTimer] = useState(null)
 
   useEffect(() => {
-    if (!web3) {
-      setWeb3(new Web3(Web3.givenProvider))
-    }
-    else {
-      try {
-        web3.currentProvider._handleChainChanged = e => {
-          try {
-            setChainId(Web3.utils.hexToNumber(e?.chainId))
-          } catch (error) {}
-        }
-      } catch (error) {}
+    if (!addTokenToMetaMaskFunction) {
+      if (!web3) {
+        setWeb3(new Web3(Web3.givenProvider))
+      }
+      else {
+        try {
+          web3.currentProvider._handleChainChanged = e => {
+            try {
+              setChainId(Web3.utils.hexToNumber(e?.chainId))
+            } catch (error) {}
+          }
+        } catch (error) {}
+      }
     }
   }, [web3])
 
@@ -71,7 +73,7 @@ export default function Assets({ assetBy = 'assets' }) {
     return () => clearInterval(interval)
   }, [timer])
 
-  const addTokenToMetaMask = async (chain_id, contract) => {
+  const addTokenToMetaMask = addTokenToMetaMaskFunction || (async (chain_id, contract) => {
     if (web3 && contract) {
       if (chain_id === chainId) {
         try {
@@ -95,7 +97,7 @@ export default function Assets({ assetBy = 'assets' }) {
         switchNetwork(chain_id, contract)
       }
     }
-  }
+  })
 
   const switchNetwork = async (chain_id, contract) => {
     try {
@@ -144,81 +146,83 @@ export default function Assets({ assetBy = 'assets' }) {
     }), ['value'], ['desc']
   )
 
-  const routersComponent = routers_assets_data?.filter(ra => !routers_status_data || routers_status_data.findIndex(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase() && r?.supportedChains?.includes(chain?.chain_id)) > -1).map(ra => {
+  const routersComponent = routers_assets_data?.filter(ra => blockchain_id ? !routers_status_data || routers_status_data.findIndex(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase() && r?.supportedChains?.includes(chain?.chain_id)) > -1 : ra?.router_id?.toLowerCase() === address?.toLowerCase()).map(ra => {
     return {
       ...ra,
-      asset_balances: ra?.asset_balances?.filter(ab => ab?.chain?.chain_id === chain?.chain_id),
+      asset_balances: ra?.asset_balances?.filter(ab => ab?.chain?.chain_id === chain?.chain_id || address),
     }
   }).filter(ra => ra?.asset_balances?.length > 0).map((ra, i) => {
-    const routerStatus = routers_status_data?.find(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase())
+    const routerStatus = blockchain_id && routers_status_data?.find(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase())
 
     return (
       <Widget
         key={i}
-        title={<div className="flex items-center justify-between space-x-2">
-          <div className={`flex items-${ens_data?.[ra?.router_id.toLowerCase()]?.name ? 'start' : 'center'} space-x-1.5`}>
-            <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
-            {ra?.router_id && (
-              <div className="space-y-0.5">
-                {ens_data?.[ra.router_id.toLowerCase()]?.name && (
-                  <div className="flex items-center">
-                    <Img
-                      src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[ra.router_id.toLowerCase()].name}`}
-                      alt=""
-                      className="w-6 h-6 rounded-full mr-2"
-                    />
-                    <Link href={`/router/${ra.router_id}`}>
-                      <a className="text-blue-600 dark:text-white sm:text-base font-semibold">
-                        {ellipseAddress(ens_data[ra.router_id.toLowerCase()].name, 16)}
-                      </a>
-                    </Link>
-                  </div>
-                )}
-                <div className="flex items-center space-x-1">
-                  {ens_data?.[ra.router_id.toLowerCase()]?.name ?
-                    <Copy
-                      text={ra.router_id}
-                      copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
-                        {ellipseAddress(ra.router_id, 8)}
-                      </span>}
-                    />
-                    :
-                    <>
+        title={!address && (
+          <div className="flex items-center justify-between space-x-2">
+            <div className={`flex items-${ens_data?.[ra?.router_id.toLowerCase()]?.name ? 'start' : 'center'} space-x-1.5`}>
+              <MdOutlineRouter size={20} className="text-gray-400 dark:text-gray-600 mb-0.5" />
+              {ra?.router_id && (
+                <div className="space-y-0.5">
+                  {ens_data?.[ra.router_id.toLowerCase()]?.name && (
+                    <div className="flex items-center">
+                      <Img
+                        src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[ra.router_id.toLowerCase()].name}`}
+                        alt=""
+                        className="w-6 h-6 rounded-full mr-2"
+                      />
                       <Link href={`/router/${ra.router_id}`}>
-                        <a className="text-blue-600 dark:text-white text-xs font-normal">
-                          {ellipseAddress(ra.router_id, 8)}
+                        <a className="text-blue-600 dark:text-white sm:text-base font-semibold">
+                          {ellipseAddress(ens_data[ra.router_id.toLowerCase()].name, 16)}
                         </a>
                       </Link>
-                      <Copy text={ra.router_id} />
-                    </>
+                    </div>
+                  )}
+                  <div className="flex items-center space-x-1">
+                    {ens_data?.[ra.router_id.toLowerCase()]?.name ?
+                      <Copy
+                        text={ra.router_id}
+                        copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
+                          {ellipseAddress(ra.router_id, 8)}
+                        </span>}
+                      />
+                      :
+                      <>
+                        <Link href={`/router/${ra.router_id}`}>
+                          <a className="text-blue-600 dark:text-white text-xs font-normal">
+                            {ellipseAddress(ra.router_id, 8)}
+                          </a>
+                        </Link>
+                        <Copy text={ra.router_id} />
+                      </>
+                    }
+                  </div>
+                </div>
+              )}
+            </div>
+            {routerStatus && (
+              <div className="text-right space-y-1.5">
+                <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-600 text-3xs font-medium">Supported Chains</div>
+                <div className="w-32 sm:w-48 flex flex-wrap items-center justify-end">
+                  {routerStatus.supportedChains?.length > 0 ?
+                    chains_data && routerStatus.supportedChains.map((id, i) => (
+                      <Img
+                        key={i}
+                        src={chains_data.find(c => c?.chain_id === id)?.image}
+                        alt=""
+                        className="w-4 h-4 rounded-full mb-1 ml-1"
+                      />
+                    ))
+                    :
+                    <span>-</span>
                   }
                 </div>
               </div>
             )}
           </div>
-          {routerStatus && (
-            <div className="text-right space-y-1.5">
-              <div className="whitespace-nowrap uppercase text-gray-400 dark:text-gray-600 text-3xs font-medium">Supported Chains</div>
-              <div className="w-32 sm:w-48 flex flex-wrap items-center justify-end">
-                {routerStatus.supportedChains?.length > 0 ?
-                  chains_data && routerStatus.supportedChains.map((id, i) => (
-                    <Img
-                      key={i}
-                      src={chains_data.find(c => c?.chain_id === id)?.image}
-                      alt=""
-                      className="w-4 h-4 rounded-full mb-1 ml-1"
-                    />
-                  ))
-                  :
-                  <span>-</span>
-                }
-              </div>
-            </div>
-          )}
-        </div>}
-        className="border-0 shadow-md rounded-2xl"
+        )}
+        className={`border-0 ${address ? 'bg-transaparent py-0' : 'shadow-md'} rounded-2xl`}
       >
-        <div className="grid grid-flow-row grid-cols-2 sm:grid-cols-3 gap-0 mt-4 mb-2">
+        <div className={`grid grid-flow-row grid-cols-2 ${address ? 'sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7' : 'sm:grid-cols-3 mt-4 mb-2'} gap-0`}>
           {_.orderBy(ra?.asset_balances?.flatMap(abs => abs) || [], ['amount_value', 'amount'], ['desc', 'desc']).map((ab, j) => {
             const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
               <button
@@ -344,29 +348,32 @@ export default function Assets({ assetBy = 'assets' }) {
   return (
     <>
       {assetBy === 'routers' ?
-        !routers_status_data ?
-          <div className="w-full flex items-center justify-center">
-            <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
-          </div>
+        address ?
+          routersComponent
           :
-          routersComponent.length < 1 ?
-            <div className="w-full text-gray-400 dark:text-gray-600 text-base italic text-center">
-              No Routers Supported
+          !routers_status_data ?
+            <div className="w-full flex items-center justify-center">
+              <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
             </div>
             :
-            <>
-              <StackGrid
-                columnWidth={458}
-                gutterWidth={16}
-                gutterHeight={16}
-                className="hidden sm:block"
-              >
-                {routersComponent}
-              </StackGrid>
-              <div className="block sm:hidden space-y-3">
-                {routersComponent}
+            routersComponent.length < 1 ?
+              <div className="w-full text-gray-400 dark:text-gray-600 text-base italic text-center">
+                No Routers Supported
               </div>
-            </>
+              :
+              <>
+                <StackGrid
+                  columnWidth={458}
+                  gutterWidth={16}
+                  gutterHeight={16}
+                  className="hidden sm:block"
+                >
+                  {routersComponent}
+                </StackGrid>
+                <div className="block sm:hidden space-y-3">
+                  {routersComponent}
+                </div>
+              </>
         :
         !maxTransfers ?
           <div className="w-full flex items-center justify-center">
@@ -401,7 +408,7 @@ export default function Assets({ assetBy = 'assets' }) {
                           <Img
                             src={ab.asset.image}
                             alt=""
-                            className="w-8 h-8 rounded-full mr-1.5"
+                            className="w-8 h-8 rounded-full mr-2.5"
                           />
                           <div className="space-y-0.5">
                             <div className="text-sm font-semibold">{ab.asset.name}</div>
