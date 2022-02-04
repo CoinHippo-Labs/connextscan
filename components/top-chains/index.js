@@ -42,6 +42,7 @@ export default function TopChains({ className = '' }) {
           amount_value: _.sumBy(value, 'amount_value'),
           volume: _.sumBy(value, 'volume'),
           volume_value: _.sumBy(value, 'volume_value'),
+          receivingFulfillTxCount: _.sumBy(value, 'receivingFulfillTxCount'),
           assets: _.groupBy(value, 'symbol'),
         }
       }), ['volume_value', 'volume', 'amount_value', 'amount'], ['desc', 'desc', 'desc', 'desc'])
@@ -49,7 +50,7 @@ export default function TopChains({ className = '' }) {
       data = data.map(c => {
         return {
           ...c,
-          proportion: c?.volume_value / _.sumBy(data, 'volume_value'),
+          proportion: c?.amount_value / _.sumBy(data, 'amount_value'),
         }
       })
 
@@ -101,7 +102,7 @@ export default function TopChains({ className = '' }) {
                 <div className="flex flex-col space-y-1.5 my-1">
                   {_.slice(_.orderBy(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0), entry => -1 * _.maxBy(entry[1], 'amount')?.amount), 0, tokensSeeMore.includes(props.row.original.symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_TOKENS_SIZE).map(([key, value]) => (
                     <Link key={key} href={`/${_.maxBy(value, 'amount')?.chain?.id}`}>
-                      <a className="flex items-center justify-end text-xs space-x-1.5">
+                      <a className="h-5 flex items-center justify-end text-xs space-x-1.5">
                         <span className={`font-mono uppercase ${_.sumBy(value, 'amount_value') > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
                           {numberFormat(_.sumBy(value, 'amount'), _.sumBy(value, 'amount') > 1000000 ? '0,0.00a' : _.sumBy(value, 'amount') > 1000 ? '0,0' : '0,0.00')}
                         </span>
@@ -158,11 +159,16 @@ export default function TopChains({ className = '' }) {
                       {currency_symbol}{numberFormat(props.row.original.amount_value, props.row.original.amount_value > 10000000 ? '0,0.00a' : props.row.original.amount_value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                   </div>
+                  <div className="flex flex-col items-end space-y-1 pt-1">
+                    <span className="font-mono text-gray-700 dark:text-gray-300 text-3xs font-semibold">{props.row.original.proportion > -1 ? `${numberFormat(props.row.original.proportion * 100, `0,0.000${Math.abs(props.row.original.proportion * 100) < 0.001 ? '000' : ''}`)}%` : 'n/a'}</span>
+                    <ProgressBar width={props.row.original.proportion > -1 ? props.row.original.proportion * 100 : 0} color="bg-yellow-500" className="h-1 ml-auto" />
+                  </div>
                 </div>
                 :
                 <div className="flex flex-col items-end space-y-2 my-1">
                   <div className="skeleton w-28 h-5" />
                   <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-20 h-5" />
                 </div>
             ),
             headerClassName: 'whitespace-nowrap justify-end text-right',
@@ -183,13 +189,17 @@ export default function TopChains({ className = '' }) {
                     </span>
                   </div>
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-2xs text-blue-600 dark:text-blue-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                    <span className={`font-mono uppercase text-2xs text-red-600 dark:text-red-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
                       {currency_symbol}{numberFormat(props.row.original.volume_value, props.row.original.volume_value > 10000000 ? '0,0.00a' : props.row.original.volume_value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                   </div>
-                  <div className="flex flex-col items-end space-y-1 pt-1">
-                    <span className="font-mono text-gray-700 dark:text-gray-300 text-3xs font-semibold">{props.row.original.proportion > -1 ? `${numberFormat(props.row.original.proportion * 100, `0,0.000${Math.abs(props.row.original.proportion * 100) < 0.001 ? '000' : ''}`)}%` : 'n/a'}</span>
-                    <ProgressBar width={props.row.original.proportion > -1 ? props.row.original.proportion * 100 : 0} color="bg-yellow-500" className="h-1 ml-auto" />
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`font-mono uppercase text-xs ${props.row.original.receivingFulfillTxCount > 100000 ? 'font-semibold' : 'text-blue-600 dark:text-blue-500'}`}>
+                      {numberFormat(props.row.original.receivingFulfillTxCount, props.row.original.receivingFulfillTxCount > 10000 ? '0,0.00a' : '0,0')}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      TXs
+                    </span>
                   </div>
                 </div>
                 :

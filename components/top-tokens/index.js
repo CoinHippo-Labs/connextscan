@@ -42,6 +42,7 @@ export default function TopTokens({ className = '' }) {
           amount_value: _.sumBy(value, 'amount_value'),
           volume: _.sumBy(value, 'volume'),
           volume_value: _.sumBy(value, 'volume_value'),
+          receivingFulfillTxCount: _.sumBy(value, 'receivingFulfillTxCount'),
           assets: _.groupBy(value, 'chain.chain_id'),
         }
       }), ['amount_value', 'amount', 'volume_value', 'volume'], ['desc', 'desc'])
@@ -102,7 +103,7 @@ export default function TopTokens({ className = '' }) {
                 <div className="flex flex-col space-y-1.5 my-1">
                   {_.slice(_.orderBy(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0), entry => -1 * _.maxBy(entry[1], 'amount')?.amount), 0, tokensSeeMore.includes(props.row.original.symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_CHAINS_SIZE).map(([key, value]) => (
                     <Link key={key} href={`/router/${_.maxBy(value, 'amount')?.router?.id}`}>
-                      <a className="flex items-center justify-end text-xs space-x-1.5">
+                      <a className="h-5 flex items-center justify-end text-xs space-x-1.5">
                         <span className={`font-mono uppercase ${_.maxBy(value, 'amount')?.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
                           {numberFormat(_.maxBy(value, 'amount')?.amount, _.maxBy(value, 'amount')?.amount > 1000000 ? '0,0.00a' : _.maxBy(value, 'amount')?.amount > 1000 ? '0,0' : '0,0.00')}
                         </span>
@@ -155,8 +156,16 @@ export default function TopTokens({ className = '' }) {
                     </span>
                   </div>
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-2xs text-blue-600 dark:text-blue-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                    <span className={`font-mono uppercase text-2xs text-red-600 dark:text-red-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
                       {currency_symbol}{numberFormat(props.row.original.volume_value, props.row.original.volume_value > 10000000 ? '0,0.00a' : props.row.original.volume_value > 1000 ? '0,0' : '0,0.00')}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`font-mono uppercase text-xs ${props.row.original.receivingFulfillTxCount > 10000 ? 'font-semibold' : 'text-blue-600 dark:text-blue-500'}`}>
+                      {numberFormat(props.row.original.receivingFulfillTxCount, props.row.original.receivingFulfillTxCount > 1000 ? '0,0.00a' : '0,0')}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      TXs
                     </span>
                   </div>
                 </div>
@@ -164,6 +173,7 @@ export default function TopTokens({ className = '' }) {
                 <div className="flex flex-col items-end space-y-2 my-1">
                   <div className="skeleton w-28 h-5" />
                   <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-20 h-5" />
                 </div>
             ),
             headerClassName: 'whitespace-nowrap justify-end text-right',

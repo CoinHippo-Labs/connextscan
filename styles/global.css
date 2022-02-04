@@ -165,3 +165,7 @@ body {
 .max-w-8xl {
   max-width: 88rem;
 }
+
+.max-w-6\.5xl {
+  max-width: 76rem;
+}

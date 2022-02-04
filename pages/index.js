@@ -22,9 +22,8 @@ import Widget from '../components/widget'
 import { daily } from '../lib/api/subgraph'
 import { dayMetrics } from '../lib/api/opensearch'
 import { isMatchRoute } from '../lib/routes'
-import { currency_symbol } from '../lib/object/currency'
 import { daily_time_ranges, daily_time_range, query_daily_time_range } from '../lib/object/timely'
-import { networks } from '../lib/menus'
+import { currency_symbol } from '../lib/object/currency'
 import { numberFormat } from '../lib/utils'
 
 import { STATS_DATA } from '../reducers/types'
@@ -37,8 +36,7 @@ export default function Index() {
   const { stats_data } = { ...stats }
 
   const router = useRouter()
-  const { pathname, query, asPath } = { ...router }
-  const { chain_id } = { ...query }
+  const { pathname, asPath } = { ...router }
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
   const [numLoadedChains, setNumLoadedChains] = useState(0)
@@ -232,7 +230,7 @@ export default function Index() {
 
   return (
     <>
-      <div className="max-w-7xl space-y-8 my-8 xl:mt-10 xl:mb-12 mx-auto">
+      <div className="max-w-6.5xl space-y-8 my-8 xl:mt-10 xl:mb-12 mx-auto">
         {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
           <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
             <Widget
@@ -315,7 +313,7 @@ export default function Index() {
             </Widget>
           </div>
         </div>*/}
-        <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 xl:gap-12">
+        <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 xl:gap-10">
           <div className="space-y-2">
             <div className="uppercase text-lg font-bold mx-3">Top Chains by Volume</div>
             <TopChains className="no-border" />
