@@ -4,6 +4,9 @@ export const THEME = 'theme'
 // chains
 export const CHAINS_DATA = 'chains_data'
 
+// assets
+export const ASSETS_DATA = 'assets_data'
+
 // tokens
 export const TOKENS_DATA = 'tokens_data'
 

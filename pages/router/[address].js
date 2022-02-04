@@ -139,7 +139,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -150,7 +150,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -161,7 +161,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
           </div>
@@ -182,7 +182,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -193,7 +193,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -204,7 +204,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -215,7 +215,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -226,7 +226,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -237,7 +237,7 @@ export default function RouterIndex() {
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
-                <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
               }
             </div>
           </div>

@@ -17,14 +17,14 @@ import Network from './network'
 import SubNavbar from './sub-navbar'
 import PageTitle from './page-title'
 
-import { chains as getChains } from '../../lib/api/crosschain_config'
+import { chains as getChains, assets } from '../../lib/api/crosschain_config'
 import { tokens as getTokens } from '../../lib/api/tokens'
 import { domains, getENS } from '../../lib/api/ens'
 import { coin } from '../../lib/api/coingecko'
 import { assetBalances } from '../../lib/api/subgraph'
 import { connext, chainExtraData } from '../../lib/object/chain'
 
-import { THEME, CHAINS_DATA, TOKENS_DATA, ENS_DATA, STATUS_DATA, CHAINS_STATUS_DATA, ROUTERS_STATUS_DATA, ROUTERS_STATUS_TRIGGER, ASSET_BALANCES_DATA, ROUTERS_ASSETS_DATA, SDK_DATA, RPCS_DATA } from '../../reducers/types'
+import { THEME, CHAINS_DATA, ASSETS_DATA, TOKENS_DATA, ENS_DATA, STATUS_DATA, CHAINS_STATUS_DATA, ROUTERS_STATUS_DATA, ROUTERS_STATUS_TRIGGER, ASSET_BALANCES_DATA, ROUTERS_ASSETS_DATA, SDK_DATA, RPCS_DATA } from '../../reducers/types'
 
 BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
@@ -52,6 +52,20 @@ export default function Navbar() {
 
       dispatch({
         type: CHAINS_DATA,
+        value: response || [],
+      })
+    }
+
+    getData()
+  }, [])
+
+  // assets
+  useEffect(() => {
+    const getData = async () => {
+      const response = await assets()
+
+      dispatch({
+        type: ASSETS_DATA,
         value: response || [],
       })
     }

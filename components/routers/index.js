@@ -314,7 +314,7 @@ export default function Routers() {
                 </div>
                 :
                 <div className="w-full h-24 shadow flex items-center justify-center">
-                  <Loader type="Triangle" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                  <Loader type="Triangle" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
                 </div>
               }
             </div>

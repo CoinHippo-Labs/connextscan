@@ -52,7 +52,7 @@ export default function ChainGas({ chainId, className = '' }) {
             {numberFormat(balance, '0,0.000')}
           </span>
           :
-          <Loader type="BallTriangle" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+          <Loader type="BallTriangle" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
         }
         <span className="text-gray-400 dark:text-gray-600 font-medium">{chain?.provider_params?.[0]?.nativeCurrency?.symbol}</span>
         {chain?.explorer?.url && (

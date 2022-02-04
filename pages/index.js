@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
@@ -16,7 +15,8 @@ import TimeRange from '../components/time-range'
 // import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
 // import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
 // import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
-// import TopLiquidity from '../components/crosschain/top-liquidity'
+import TopChains from '../components/top-chains'
+import TopTokens from '../components/top-tokens'
 import Widget from '../components/widget'
 
 import { daily } from '../lib/api/subgraph'
@@ -27,21 +27,18 @@ import { daily_time_ranges, daily_time_range, query_daily_time_range } from '../
 import { networks } from '../lib/menus'
 import { numberFormat } from '../lib/utils'
 
-import { TIMELY_DATA, TIMELY_SYNC_DATA } from '../reducers/types'
+import { STATS_DATA } from '../reducers/types'
 
 BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT), EXPONENTIAL_AT: [-7, Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_EXPONENTIAL_AT)] })
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { contracts, timely, timely_sync } = useSelector(state => ({ contracts: state.contracts, timely: state.timely, timely_sync: state.timely_sync }), shallowEqual)
-  const { contracts_data } = { ...contracts }
-  const { timely_data } = { ...timely }
-  const { timely_sync_data } = { ...timely_sync }
+  const { stats } = useSelector(state => ({ stats: state.stats }), shallowEqual)
+  const { stats_data } = { ...stats }
 
   const router = useRouter()
   const { pathname, query, asPath } = { ...router }
-  const { chain_id, debug } = { ...query }
-  // const network = networks[networks.findIndex(network => network.id === chain_id)] || (pathname.startsWith('/[chain_id]') ? null : networks[0])
+  const { chain_id } = { ...query }
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
   const [numLoadedChains, setNumLoadedChains] = useState(0)
@@ -235,97 +232,100 @@ export default function Index() {
 
   return (
     <>
-      {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
-          >
-            <div className="mx-3">
-              <TotalLiquidity />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
-            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-          >
-            <div className="mx-3">
-              <TotalVolume />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Txs</div>}
-            right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-          >
-            <div className="mx-3">
-              <TotalTransaction />
-            </div>
-          </Widget>
-        </div>
-        <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div>
-              <LiquidityByChain />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume</div>}
-            right={theVolume ?
-              <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theVolume.volume === 'number' ? numberFormat(theVolume.volume, '0,0') : ' -'}</div>
-                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+      <div className="max-w-7xl space-y-8 my-8 xl:mt-6 xl:mb-8 mx-auto">
+        {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
+          <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
+            >
+              <div className="mx-3">
+                <TotalLiquidity />
               </div>
-              :
-              timely_data && timelyData && <div style={{ height: '54px' }} />
-            }
-            contentClassName="items-start"
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div>
-              <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
-            </div>
-          </Widget>
-        </div>
-        <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
-            right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div>
-              <TransactionByChain />
-            </div>
-          </Widget>
-          <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
-            right={theTransaction ?
-              <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.receiving_tx_count === 'number' ? numberFormat(theTransaction.receiving_tx_count, '0,0') : '-'}</div>
-                <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+            </Widget>
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
+              right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+            >
+              <div className="mx-3">
+                <TotalVolume />
               </div>
-              :
-              timely_data && timelyData && <div style={{ height: '54px' }} />
-            }
-            contentClassName="items-start"
-            className="lg:col-span-2 px-0 sm:px-4"
-          >
-            <div>
-              <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
-            </div>
-          </Widget>
+            </Widget>
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Txs</div>}
+              right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+            >
+              <div className="mx-3">
+                <TotalTransaction />
+              </div>
+            </Widget>
+          </div>
+          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
+              className="lg:col-span-2 px-0 sm:px-4"
+            >
+              <div>
+                <LiquidityByChain />
+              </div>
+            </Widget>
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume</div>}
+              right={theVolume ?
+                <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
+                  <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theVolume.volume === 'number' ? numberFormat(theVolume.volume, '0,0') : ' -'}</div>
+                  <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+                </div>
+                :
+                timely_data && timelyData && <div style={{ height: '54px' }} />
+              }
+              contentClassName="items-start"
+              className="lg:col-span-2 px-0 sm:px-4"
+            >
+              <div>
+                <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
+              </div>
+            </Widget>
+          </div>
+          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
+              right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
+              className="lg:col-span-2 px-0 sm:px-4"
+            >
+              <div>
+                <TransactionByChain />
+              </div>
+            </Widget>
+            <Widget
+              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
+              right={theTransaction ?
+                <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
+                  <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.receiving_tx_count === 'number' ? numberFormat(theTransaction.receiving_tx_count, '0,0') : '-'}</div>
+                  <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
+                </div>
+                :
+                timely_data && timelyData && <div style={{ height: '54px' }} />
+              }
+              contentClassName="items-start"
+              className="lg:col-span-2 px-0 sm:px-4"
+            >
+              <div>
+                <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
+              </div>
+            </Widget>
+          </div>
+        </div>*/}
+        <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 xl:gap-12">
+          <div className="space-y-2">
+            <div className="uppercase text-lg font-bold mx-3">Top Chains by Volume</div>
+            <TopChains className="no-border" />
+          </div>
+          <div className="space-y-2">
+            <div className="uppercase text-lg font-bold mx-3">Top Tokens by Liquidity</div>
+            <TopTokens className="no-border" />
+          </div>
         </div>
-        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
-          <Link href="/routers">
-            <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Top Liquidity</a>
-          </Link>
-          <div className="h-3" />
-          <Widget className="min-h-full contents p-0">
-            <TopLiquidity n={10} />
-          </Widget>
-        </div>
-      </div>*/}
+      </div>
       <div className="dark:bg-black dark:bg-blue-500 dark:bg-yellow-500 dark:bg-green-400 dark:bg-green-600 dark:bg-red-700 dark:bg-gray-700" />
     </>
   )

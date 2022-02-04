@@ -2,6 +2,7 @@ import { combineReducers } from 'redux'
 
 import preferences from './preferences'
 import chains from './chains'
+import assets from './assets'
 import tokens from './tokens'
 import ens from './ens'
 import status from './status'
@@ -18,6 +19,7 @@ import wallet from './wallet'
 export default combineReducers({
   preferences,
   chains,
+  assets,
   tokens,
   ens,
   status,

@@ -54,7 +54,7 @@ export default function PageTitle() {
           {routers_status_data ?
             <MdRefresh size={16} />
             :
-            <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+            <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
           }
           <span>{routers_status_data ? 'Refresh' : 'Loading'}</span>
         </button>

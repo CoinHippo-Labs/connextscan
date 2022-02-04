@@ -486,7 +486,7 @@ export default function Transaction() {
                 key={actionButtons.length}
                 buttonTitle={<>
                   {transfering === 'cancel' && (
-                    <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="16" height="16" className="mb-0.5" />
+                    <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" className="mb-0.5" />
                   )}
                   <span>Cancel</span>
                 </>}
@@ -618,7 +618,7 @@ export default function Transaction() {
                   <ModalConfirm
                     buttonTitle={<>
                       {transfering === 'fulfill' && (
-                        <Loader type="Oval" color="white" width="16" height="16" className="mb-0.5" />
+                        <Loader type="Oval" color={theme === 'dark' ? 'white' : 'white'} width="16" height="16" className="mb-0.5" />
                       )}
                       <span>Claim</span>
                     </>}
@@ -944,7 +944,7 @@ export default function Transaction() {
               content={<span className="flex flex-wrap items-center">
                 <span className="mr-1.5">{transferResponse.message}</span>
                 {transferResponse.status === 'pending' && (
-                  <Loader type="ThreeDots" color={theme === 'dark' ? '#FFFFFF' : '#FFFFFF'} width="16" height="16" className="mt-1 mr-1.5" />
+                  <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : 'white'} width="16" height="16" className="mt-1 mr-1.5" />
                 )}
                 {(canCancelSendingTx && transfering === 'cancel' ? generalTx?.sendingChain : generalTx?.receivingChain)?.explorer?.url && transferResponse.tx_hash && (
                   <a
@@ -1197,7 +1197,7 @@ export default function Transaction() {
                           :
                           ['Prepared'].includes(sendingTx.status) ?
                             transferResponse && !transferResponse.error && transfering === 'cancel' && canCancelSendingTx ?
-                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
@@ -1206,7 +1206,7 @@ export default function Transaction() {
                         sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ?
                           <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                           :
-                          <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                          <Loader type="TailSpin" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                       }
                       <div className={`uppercase ${sendingTx?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sendingTx?.status || (sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                     </div>
@@ -1324,7 +1324,7 @@ export default function Transaction() {
                           :
                           ['Prepared'].includes(receivingTx.status) ?
                             transferResponse && !transferResponse.error && !(transfering === 'cancel' && canCancelSendingTx) ?
-                              <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
+                              <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
@@ -1336,7 +1336,7 @@ export default function Transaction() {
                           receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ?
                             <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                             :
-                            <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                            <Loader type="TailSpin" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                       }
                       <div className={`uppercase ${receivingTx?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receivingTx?.status ? receivingTx.status : sendingTx?.status === 'Cancelled' ? 'Skipped' : receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                     </div>
@@ -1547,7 +1547,7 @@ export default function Transaction() {
                             :
                             ['Prepared'].includes(t.status) ?
                               transferResponse && !transferResponse.error && transfering === 'cancel' && canCancelSendingTx ?
-                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                                 :
                                 <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                               :
@@ -1556,7 +1556,7 @@ export default function Transaction() {
                           t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ?
                             <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                             :
-                            <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                            <Loader type="TailSpin" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                         }
                         <div className={`uppercase ${t?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{t?.status || (t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                       </div>
@@ -1568,7 +1568,7 @@ export default function Transaction() {
                             :
                             ['Prepared'].includes(t.status) ?
                               transferResponse && !transferResponse.error && !(transfering === 'cancel' && canCancelSendingTx) ?
-                                <Loader type="Oval" color={theme === 'dark' ? 'white' : 'gray'} width="14" height="14" />
+                                <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                                 :
                                 <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                               :
@@ -1580,7 +1580,7 @@ export default function Transaction() {
                             t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ?
                               <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                               :
-                              <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                              <Loader type="TailSpin" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                         }
                         <div className={`uppercase ${t?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{t?.status ? t.status : sendingTx?.status === 'Cancelled' ? 'Skipped' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                       </div>

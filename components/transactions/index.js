@@ -348,13 +348,13 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                         <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                         :
                         props.value === 'Fulfilling' ?
-                          <Loader type="Puff" color={theme === 'dark' ? '#FFFFFF' : '#22C55E'} width="14" height="14" />
+                          <Loader type="Puff" color={theme === 'dark' ? 'white' : '#22C55E'} width="14" height="14" />
                           :
                           props.value === 'Prepared' ?
                             <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
                             props.value === 'Preparing' ?
-                              <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                              <Loader type="TailSpin" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                       }

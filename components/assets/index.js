@@ -334,7 +334,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                   </div>
                   :
                   <div className="w-full h-24 shadow flex items-center justify-center">
-                    <Loader type="Triangle" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
+                    <Loader type="Triangle" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
                   </div>
                 }
               </div>
@@ -353,7 +353,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
           :
           !routers_status_data ?
             <div className="w-full flex items-center justify-center">
-              <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
+              <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
             </div>
             :
             routersComponent.length < 1 ?
@@ -377,7 +377,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
         :
         !maxTransfers ?
           <div className="w-full flex items-center justify-center">
-            <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
+            <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
           </div>
           :
           maxTransfers.length < 1 ?
@@ -506,7 +506,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                             </Popover>
                           )}
                           {!routers_status_data && (
-                            <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="20" height="20" />
+                            <Loader type="ThreeDots" color={theme === 'dark' ? 'white' : '#3B82F6'} width="20" height="20" />
                           )}
                         </div>
                       </div>

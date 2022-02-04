@@ -67,7 +67,7 @@ export default function DropdownNetwork() {
               className="w-6 h-6 rounded-full"
             />
             :
-            <Loader type="Puff" color={theme === 'dark' ? '#F9FAFB' : '#D1D5DB'} width="24" height="24" />
+            <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
         }
       </button>
       <div
