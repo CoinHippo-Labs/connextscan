@@ -447,8 +447,8 @@ export default function Transaction() {
     }
   }
 
-  const canCancelSendingTx = sendingTx?.status === 'Prepared' && moment().valueOf() >= sendingTx.expiry && !(transferResponse && !transferResponse.error)
-  const canDoAction = !canCancelSendingTx && receivingTx?.status === 'Prepared' && !(transferResponse && !transferResponse.error)
+  const canCancelSendingTx = sendingTx?.status === 'Prepared' && moment().valueOf() >= sendingTx.expiry && !(transferResponse && !['failed'].includes(transferResponse.status))
+  const canDoAction = !canCancelSendingTx && receivingTx?.status === 'Prepared' && !(transferResponse && !['failed'].includes(transferResponse.status))
   const canFulfill = canDoAction && moment().valueOf() < receivingTx.expiry
   const actionButtons = []
   let mustSwitchNetwork = false
@@ -1196,7 +1196,7 @@ export default function Transaction() {
                           <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                           :
                           ['Prepared'].includes(sendingTx.status) ?
-                            transferResponse && !transferResponse.error && transfering === 'cancel' && canCancelSendingTx ?
+                            transferResponse && !['success', 'failed'].includes(transferResponse.status) && transfering === 'cancel' && canCancelSendingTx ?
                               <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
@@ -1323,7 +1323,7 @@ export default function Transaction() {
                           <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                           :
                           ['Prepared'].includes(receivingTx.status) ?
-                            transferResponse && !transferResponse.error && !(transfering === 'cancel' && canCancelSendingTx) ?
+                            transferResponse && !['success', 'failed'].includes(transferResponse.status) && !(transfering === 'cancel' && canCancelSendingTx) ?
                               <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
@@ -1546,7 +1546,7 @@ export default function Transaction() {
                             <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                             :
                             ['Prepared'].includes(t.status) ?
-                              transferResponse && !transferResponse.error && transfering === 'cancel' && canCancelSendingTx ?
+                              transferResponse && !['success', 'failed'].includes(transferResponse.status) && transfering === 'cancel' && canCancelSendingTx ?
                                 <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                                 :
                                 <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
@@ -1567,7 +1567,7 @@ export default function Transaction() {
                             <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                             :
                             ['Prepared'].includes(t.status) ?
-                              transferResponse && !transferResponse.error && !(transfering === 'cancel' && canCancelSendingTx) ?
+                              transferResponse && !['success', 'failed'].includes(transferResponse.status) && !(transfering === 'cancel' && canCancelSendingTx) ?
                                 <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                                 :
                                 <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
