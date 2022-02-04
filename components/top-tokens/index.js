@@ -4,7 +4,6 @@ import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
-import { TiArrowRight } from 'react-icons/ti'
 import { IoCaretUpOutline, IoCaretDownOutline } from 'react-icons/io5'
 
 import Datatable from '../datatable'
@@ -16,13 +15,12 @@ import { numberFormat } from '../../lib/utils'
 
 const COLLAPSE_CHAINS_SIZE = 3
 
-export default function TopLiquidity({ className = '' }) {
-  const { chains, assets, routers_assets } = useSelector(state => ({ chains: state.chains, assets: state.assets, routers_assets: state.routers_assets }), shallowEqual)
-  const { chains_data } = { ...chains }
+export default function TopTokens({ className = '' }) {
+  const { assets, routers_assets } = useSelector(state => ({ assets: state.assets, routers_assets: state.routers_assets }), shallowEqual)
   const { assets_data } = { ...assets }
   const { routers_assets_data } = { ...routers_assets }
 
-  const [assetBalances, setAssetBalances] = useState(null)
+  const [tokensLiquidity, setTokensLiquidity] = useState(null)
   const [tokensSeeMore, setTokensSeeMore] = useState([])
 
   useEffect(() => {
@@ -44,9 +42,9 @@ export default function TopLiquidity({ className = '' }) {
           amount_value: _.sumBy(value, 'amount_value'),
           volume: _.sumBy(value, 'volume'),
           volume_value: _.sumBy(value, 'volume_value'),
-          assets: _.groupBy(value, 'chain.id'),
+          assets: _.groupBy(value, 'chain.chain_id'),
         }
-      }), ['amount_value'], ['desc'])
+      }), ['amount_value', 'amount', 'volume_value', 'volume'], ['desc', 'desc'])
 
       data = data.map(a => {
         return {
@@ -55,10 +53,10 @@ export default function TopLiquidity({ className = '' }) {
         }
       })
 
-      setAssetBalances({ data })
+      setTokensLiquidity({ data })
     }
   }, [assets_data, routers_assets_data])
-console.log(assetBalances)
+
   return (
     <>
       <Datatable
@@ -142,40 +140,6 @@ console.log(assetBalances)
             headerClassName: 'whitespace-nowrap justify-end text-right',
           },
           {
-            Header: 'Liquidity',
-            accessor: 'amount',
-            sortType: (rowA, rowB) => rowA.original.amount_value > rowB.original.amount_value ? 1 : rowA.original.amount_value < rowB.original.amount_value ? -1 : rowA.original.amount > rowB.original.amount ? 1 : -1,
-            Cell: props => (
-              !props.row.original.skeleton ?
-                <div className="flex flex-col items-end space-y-1.5 my-1">
-                  <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-xs ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
-                      {numberFormat(props.row.original.amount, props.row.original.amount > 10000000 ? '0,0.00a' : props.row.original.amount > 1000 ? '0,0' : '0,0.00')}
-                    </span>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {props.row.original.general_asset?.symbol || props.row.original.asset?.symbol}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-2xs text-green-600 dark:text-green-500 ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
-                      {currency_symbol}{numberFormat(props.row.original.amount_value, props.row.original.amount_value > 10000000 ? '0,0.00a' : props.row.original.amount_value > 1000 ? '0,0' : '0,0.00')}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-end space-y-1 pt-1">
-                    <span className="font-mono text-gray-700 dark:text-gray-300 text-3xs font-semibold">{props.row.original.proportion > -1 ? `${numberFormat(props.row.original.proportion * 100, `0,0.000${Math.abs(props.row.original.proportion * 100) < 0.001 ? '000' : ''}`)}%` : 'n/a'}</span>
-                    <ProgressBar width={props.row.original.proportion > -1 ? props.row.original.proportion * 100 : 0} color="bg-yellow-500" className="h-1" />
-                  </div>
-                </div>
-                :
-                <div className="flex flex-col items-end space-y-2 my-1">
-                  <div className="skeleton w-28 h-5" />
-                  <div className="skeleton w-28 h-5" />
-                  <div className="skeleton w-20 h-5" />
-                </div>
-            ),
-            headerClassName: 'whitespace-nowrap justify-end text-right',
-          },
-          {
             Header: 'Volume',
             accessor: 'volume',
             sortType: (rowA, rowB) => rowA.original.volume_value > rowB.original.volume_value ? 1 : rowA.original.volume_value < rowB.original.volume_value ? -1 : rowA.original.volume > rowB.original.volume ? 1 : -1,
@@ -184,7 +148,7 @@ console.log(assetBalances)
                 <div className="flex flex-col items-end space-y-1.5 my-1">
                   <div className="flex items-center space-x-1.5">
                     <span className={`font-mono uppercase text-xs ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
-                      {numberFormat(props.row.original.volume, props.row.original.volume > 10000000 ? '0,0.00a' : props.row.original.volume > 1000 ? '0,0' : '0,0.00')}
+                      {numberFormat(props.value, props.value > 10000000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300">
                       {props.row.original.general_asset?.symbol || props.row.original.asset?.symbol}
@@ -204,17 +168,51 @@ console.log(assetBalances)
             ),
             headerClassName: 'whitespace-nowrap justify-end text-right',
           },
+          {
+            Header: 'Liquidity',
+            accessor: 'amount',
+            sortType: (rowA, rowB) => rowA.original.amount_value > rowB.original.amount_value ? 1 : rowA.original.amount_value < rowB.original.amount_value ? -1 : rowA.original.amount > rowB.original.amount ? 1 : -1,
+            Cell: props => (
+              !props.row.original.skeleton ?
+                <div className="flex flex-col items-end space-y-1.5 my-1">
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`font-mono uppercase text-xs ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                      {numberFormat(props.value, props.value > 10000000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                    </span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {props.row.original.general_asset?.symbol || props.row.original.asset?.symbol}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-1.5">
+                    <span className={`font-mono uppercase text-2xs text-green-600 dark:text-green-500 ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                      {currency_symbol}{numberFormat(props.row.original.amount_value, props.row.original.amount_value > 10000000 ? '0,0.00a' : props.row.original.amount_value > 1000 ? '0,0' : '0,0.00')}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-end space-y-1 pt-1">
+                    <span className="font-mono text-gray-700 dark:text-gray-300 text-3xs font-semibold">{props.row.original.proportion > -1 ? `${numberFormat(props.row.original.proportion * 100, `0,0.000${Math.abs(props.row.original.proportion * 100) < 0.001 ? '000' : ''}`)}%` : 'n/a'}</span>
+                    <ProgressBar width={props.row.original.proportion > -1 ? props.row.original.proportion * 100 : 0} color="bg-yellow-500" className="h-1 ml-auto" />
+                  </div>
+                </div>
+                :
+                <div className="flex flex-col items-end space-y-2 my-1">
+                  <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-28 h-5" />
+                  <div className="skeleton w-20 h-5" />
+                </div>
+            ),
+            headerClassName: 'whitespace-nowrap justify-end text-right',
+          },
         ]}
-        data={assetBalances ?
-          assetBalances.data?.map((ab, i) => { return { ...ab, i } }) || []
+        data={tokensLiquidity ?
+          tokensLiquidity.data?.map((ab, i) => { return { ...ab, i } }) || []
           :
           [...Array(10).keys()].map(i => { return { i, skeleton: true } })
         }
-        noPagination={!assetBalances || assetBalances.data?.length <= 10 ? true : false}
+        noPagination={!tokensLiquidity || tokensLiquidity.data?.length <= 10 ? true : false}
         defaultPageSize={10}
         className={`min-h-full ${className}`}
       />
-      {assetBalances && !(assetBalances.data?.length > 0) && (
+      {tokensLiquidity && !(tokensLiquidity.data?.length > 0) && (
         <div className="bg-white dark:bg-gray-900 rounded-xl text-gray-300 dark:text-gray-500 text-base font-medium italic text-center my-4 mx-2 py-2">
           No Liquidity Provided
         </div>

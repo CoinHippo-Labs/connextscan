@@ -232,7 +232,7 @@ export default function Index() {
 
   return (
     <>
-      <div className="max-w-7xl space-y-8 my-8 xl:mt-6 xl:mb-8 mx-auto">
+      <div className="max-w-7xl space-y-8 my-8 xl:mt-10 xl:mb-12 mx-auto">
         {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
           <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
             <Widget
