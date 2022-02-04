@@ -1206,7 +1206,7 @@ export default function Transaction() {
                         sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ?
                           <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                           :
-                          <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                          <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                       }
                       <div className={`uppercase ${sendingTx?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{sendingTx?.status || (sendingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === sendingTx.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                     </div>
@@ -1336,7 +1336,7 @@ export default function Transaction() {
                           receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ?
                             <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                             :
-                            <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                            <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                       }
                       <div className={`uppercase ${receivingTx?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{receivingTx?.status ? receivingTx.status : sendingTx?.status === 'Cancelled' ? 'Skipped' : receivingTx?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === receivingTx.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                     </div>
@@ -1556,7 +1556,7 @@ export default function Transaction() {
                           t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ?
                             <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                             :
-                            <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                            <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                         }
                         <div className={`uppercase ${t?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{t?.status || (t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'Unknown' : 'Preparing')}</div>
                       </div>
@@ -1580,7 +1580,7 @@ export default function Transaction() {
                             t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ?
                               <FaQuestion size={14} className="text-gray-300 dark:text-white" />
                               :
-                              <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                              <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                         }
                         <div className={`uppercase ${t?.status ? 'text-black dark:text-white' : 'text-gray-400 dark:text-white'} text-xs font-semibold`}>{t?.status ? t.status : sendingTx?.status === 'Cancelled' ? 'Skipped' : t?.chainId && chains_data?.findIndex(c => !c?.disabled && c?.chain_id === t.chainId) < 0 ? 'Unknown' : 'Pending'}</div>
                       </div>

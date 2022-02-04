@@ -353,7 +353,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
           :
           !routers_status_data ?
             <div className="w-full flex items-center justify-center">
-              <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
+              <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
             </div>
             :
             routersComponent.length < 1 ?
@@ -377,7 +377,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
         :
         !maxTransfers ?
           <div className="w-full flex items-center justify-center">
-            <Loader type="Oval" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
+            <Loader type="ThreeDots" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="24" height="24" />
           </div>
           :
           maxTransfers.length < 1 ?
@@ -491,7 +491,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                                         />
                                       </div>
                                       <div className="text-3xs space-x-1">
-                                        <span className="font-mono">{numberFormat(value.amount, '0,0')}</span>
+                                        <span className="font-mono uppercase">{numberFormat(value.amount, value.amount > 10000000 ? '0,0.00a' : '0,0')}</span>
                                         <span className="text-gray-400 dark:text-gray-600">{value.asset?.symbol}</span>
                                       </div>
                                     </div>

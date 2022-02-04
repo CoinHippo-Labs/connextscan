@@ -354,7 +354,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                             <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
                             props.value === 'Preparing' ?
-                              <Loader type="Oval" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
+                              <Loader type="TailSpin" color={theme === 'dark' ? '#FFFFFF' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                       }

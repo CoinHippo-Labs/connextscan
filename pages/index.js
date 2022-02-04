@@ -17,8 +17,6 @@ import TimeRange from '../components/time-range'
 // import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
 // import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
 // import TopLiquidity from '../components/crosschain/top-liquidity'
-// import Transactions from '../components/transactions'
-import SectionTitle from '../components/section-title'
 import Widget from '../components/widget'
 
 import { daily } from '../lib/api/subgraph'
@@ -237,39 +235,7 @@ export default function Index() {
 
   return (
     <>
-      {/*<SectionTitle
-        title="Overview"
-        subtitle={network?.title}
-        right={contracts_data && timely_data ?
-          null
-          :
-          <div className="flex items-center text-sm sm:text-base space-x-2 my-1 sm:my-0 py-1.5">
-            <Loader type="ThreeDots" color="gray" width="24" height="24" />
-            {numLoadedChains === networks.filter(_network => _network.id && !_network.disabled).length ?
-              <span className="text-gray-400 dark:text-gray-400 font-light">Loading Contracts</span>
-              :
-              <>
-                <span className="text-gray-400 dark:text-gray-400 text-sm space-x-1">
-                  <span>({numberFormat(numLoadedChains, '0,0')}</span>
-                  <span>/</span>
-                  <span>{networks.filter(_network => _network.id && !_network.disabled).length})</span>
-                </span>
-                <span className="text-gray-400 dark:text-gray-400 font-light">Fetching</span>
-                <div className="flex items-center space-x-1.5">
-                  <img
-                    src={networks.filter(_network => _network.id && !_network.disabled)[numLoadedChains]?.icon}
-                    alt=""
-                    className="w-5 h-5 rounded-full"
-                  />
-                  <span className="font-medium">{networks.filter(_network => _network.id && !_network.disabled)[numLoadedChains]?.short_name}</span>
-                </div>
-              </>
-            }
-          </div>
-        }
-        className="flex-col sm:flex-row items-start sm:items-center"
-      />
-      <div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
+      {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
           <Widget
             title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
@@ -359,23 +325,8 @@ export default function Index() {
             <TopLiquidity n={10} />
           </Widget>
         </div>
-        <div className="bg-white dark:bg-gray-900 rounded-lg mt-8 py-6 px-4">
-          <Link href="/transactions">
-            <a className="uppercase text-gray-900 dark:text-white text-lg font-semibold mx-3">Latest Transactions</a>
-          </Link>
-          <div className="h-3" />
-          <Widget className="min-h-full contents p-0">
-            <Transactions n={10} event={true} />
-          </Widget>
-        </div>
       </div>*/}
-      <div className="dark:bg-black" />
-      <div className="dark:bg-blue-500" />
-      <div className="dark:bg-yellow-500" />
-      <div className="dark:bg-green-400" />
-      <div className="dark:bg-green-600" />
-      <div className="dark:bg-red-700" />
-      <div className="dark:bg-gray-700" />
+      <div className="dark:bg-black dark:bg-blue-500 dark:bg-yellow-500 dark:bg-green-400 dark:bg-green-600 dark:bg-red-700 dark:bg-gray-700" />
     </>
   )
 }

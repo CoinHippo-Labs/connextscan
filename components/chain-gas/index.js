@@ -30,7 +30,7 @@ export default function ChainGas({ chainId, className = '' }) {
       const decimals = chains_data?.find(c => c?.chain_id === chainId)?.provider_params?.[0]?.nativeCurrency?.decimals
       let _balance = await rpcs_data[chainId].getBalance(address)
       try {
-        _balance = BigNumber(_balance).shiftedBy(-(decimals || 18)).toNumber()
+        _balance = BigNumber(_balance.toString()).shiftedBy(-(decimals || 18)).toNumber()
       } catch (error) {}
 
       setBalance(_balance)
@@ -49,7 +49,7 @@ export default function ChainGas({ chainId, className = '' }) {
       <div className="flex items-center space-x-1">
         {typeof balance === 'number' ?
           <span className={`font-mono ${balance < Number(process.env.NEXT_PUBLIC_LOW_GAS_THRESHOLD) ? 'text-red-500' : ''} font-semibold`}>
-            {numberFormat(balance, '0,0.000000')}
+            {numberFormat(balance, '0,0.000')}
           </span>
           :
           <Loader type="BallTriangle" color={theme === 'dark' ? '#F9FAFB' : '#3B82F6'} width="16" height="16" />
