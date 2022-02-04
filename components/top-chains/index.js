@@ -25,7 +25,7 @@ export default function TopChains({ className = '' }) {
 
   useEffect(() => {
     if (assets_data && routers_assets_data) {
-      let data = _.orderBy(Object.values(routers_assets_data).flatMap(ra => ra?.asset_balances || []), ['volume_value', 'volume'], ['desc', 'desc'])
+      let data = _.orderBy(routers_assets_data.flatMap(ra => ra?.asset_balances || []), ['volume_value', 'receivingFulfillTxCount'], ['desc', 'desc'])
 
       data = _.orderBy(Object.entries(_.groupBy(data.map(ab => {
         const asset = assets_data?.find(a => a?.contracts?.findIndex(c => c?.chain_id === ab?.asset?.chain_id && c?.contract_address === ab.asset.contract_address) > -1)
@@ -38,14 +38,12 @@ export default function TopChains({ className = '' }) {
       }), 'chain.chain_id')).map(([key, value]) => {
         return {
           ..._.maxBy(value, ['volume_value']),
-          amount: _.sumBy(value, 'amount'),
           amount_value: _.sumBy(value, 'amount_value'),
-          volume: _.sumBy(value, 'volume'),
           volume_value: _.sumBy(value, 'volume_value'),
           receivingFulfillTxCount: _.sumBy(value, 'receivingFulfillTxCount'),
           assets: _.groupBy(value, 'symbol'),
         }
-      }), ['volume_value', 'volume', 'amount_value', 'amount'], ['desc', 'desc', 'desc', 'desc'])
+      }), ['volume_value', 'receivingFulfillTxCount'], ['desc', 'desc'])
 
       data = data.map(c => {
         return {
@@ -142,31 +140,22 @@ export default function TopChains({ className = '' }) {
           {
             Header: 'Liquidity',
             accessor: 'amount',
-            sortType: (rowA, rowB) => rowA.original.amount_value > rowB.original.amount_value ? 1 : rowA.original.amount_value < rowB.original.amount_value ? -1 : rowA.original.amount > rowB.original.amount ? 1 : -1,
+            sortType: (rowA, rowB) => rowA.original.amount_value > rowB.original.amount_value ? 1 : rowA.original.amount_value < rowB.original.amount_value ? -1 : -1,
             Cell: props => (
               !props.row.original.skeleton ?
                 <div className="flex flex-col items-end space-y-1.5 my-1">
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-xs ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
-                      {numberFormat(props.value, props.value > 10000000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
-                    </span>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {props.row.original.general_asset?.symbol || props.row.original.asset?.symbol}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-2xs text-green-600 dark:text-green-500 ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                    <span className={`font-mono uppercase text-xs text-green-600 dark:text-green-500 ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
                       {currency_symbol}{numberFormat(props.row.original.amount_value, props.row.original.amount_value > 10000000 ? '0,0.00a' : props.row.original.amount_value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                   </div>
                   <div className="flex flex-col items-end space-y-1 pt-1">
-                    <span className="font-mono text-gray-700 dark:text-gray-300 text-3xs font-semibold">{props.row.original.proportion > -1 ? `${numberFormat(props.row.original.proportion * 100, `0,0.000${Math.abs(props.row.original.proportion * 100) < 0.001 ? '000' : ''}`)}%` : 'n/a'}</span>
+                    <span className="font-mono text-gray-700 dark:text-gray-300 text-2xs font-semibold">{props.row.original.proportion > -1 ? `${numberFormat(props.row.original.proportion * 100, `0,0.000${Math.abs(props.row.original.proportion * 100) < 0.001 ? '000' : ''}`)}%` : 'n/a'}</span>
                     <ProgressBar width={props.row.original.proportion > -1 ? props.row.original.proportion * 100 : 0} color="bg-yellow-500" className="h-1 ml-auto" />
                   </div>
                 </div>
                 :
                 <div className="flex flex-col items-end space-y-2 my-1">
-                  <div className="skeleton w-28 h-5" />
                   <div className="skeleton w-28 h-5" />
                   <div className="skeleton w-20 h-5" />
                 </div>
@@ -181,15 +170,7 @@ export default function TopChains({ className = '' }) {
               !props.row.original.skeleton ?
                 <div className="flex flex-col items-end space-y-1.5 my-1">
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-xs ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
-                      {numberFormat(props.value, props.value > 10000000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
-                    </span>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {props.row.original.general_asset?.symbol || props.row.original.asset?.symbol}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-2xs text-red-600 dark:text-red-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                    <span className={`font-mono uppercase text-xs text-red-600 dark:text-red-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
                       {currency_symbol}{numberFormat(props.row.original.volume_value, props.row.original.volume_value > 10000000 ? '0,0.00a' : props.row.original.volume_value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                   </div>
@@ -204,7 +185,6 @@ export default function TopChains({ className = '' }) {
                 </div>
                 :
                 <div className="flex flex-col items-end space-y-2 my-1">
-                  <div className="skeleton w-28 h-5" />
                   <div className="skeleton w-28 h-5" />
                   <div className="skeleton w-20 h-5" />
                 </div>

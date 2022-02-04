@@ -587,7 +587,7 @@ export default function Transaction() {
                     <Img
                       src="/logos/logo.png"
                       alt=""
-                      className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                      className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6"
                     />
                     {transaction ?
                       <Img
@@ -715,7 +715,7 @@ export default function Transaction() {
                         <Img
                           src="/logos/logo.png"
                           alt=""
-                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6"
                         />
                         {transaction ?
                           <Img
@@ -1265,7 +1265,7 @@ export default function Transaction() {
                   <Img
                     src="/logos/logo.png"
                     alt=""
-                    className="w-6 h-6 rounded-full mx-auto"
+                    className="w-6 h-6 mx-auto"
                   />
                   {transaction ?
                     <Img

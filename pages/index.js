@@ -8,13 +8,13 @@ import Loader from 'react-loader-spinner'
 import BigNumber from 'bignumber.js'
 
 import TimeRange from '../components/time-range'
-// import TotalLiquidity from '../components/crosschain/summary/total-liquidity'
 // import TotalVolume from '../components/crosschain/summary/total-volume'
 // import TotalTransaction from '../components/crosschain/summary/total-transaction'
 // import TimelyVolume from '../components/crosschain/charts/timely-volume'
 // import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
-// import LiquidityByChain from '../components/crosschain/charts/liquidity-by-chain'
 // import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
+import TVL from '../components/tvl'
+import TVLByChain from '../components/tvl/tvl-by-chain'
 import TopChains from '../components/top-chains'
 import TopTokens from '../components/top-tokens'
 import Widget from '../components/widget'
@@ -32,19 +32,20 @@ BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { stats } = useSelector(state => ({ stats: state.stats }), shallowEqual)
+  const { chains, stats } = useSelector(state => ({ chains: state.chains, stats: state.stats }), shallowEqual)
+  const { chains_data } = { ...chains }
   const { stats_data } = { ...stats }
 
   const router = useRouter()
   const { pathname, asPath } = { ...router }
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
-  const [numLoadedChains, setNumLoadedChains] = useState(0)
-  const [dayMetricsData, setDayMetricsData] = useState(null)
   const [timeRange, setTimeRange] = useState(_.last(daily_time_ranges?.filter(time_range => !time_range.disabled)) || { day: daily_time_range })
   const [timelyData, setTimelyData] = useState(null)
   const [theVolume, setTheVolume] = useState(null)
   const [theTransaction, setTheTransaction] = useState(null)
+
+  const [tvlChainSelect, setTvlChainSelect] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -88,7 +89,7 @@ export default function Index() {
             },
           })
 
-          setDayMetricsData(resDayMetrics?.data || {})
+          // setDayMetricsData(resDayMetrics?.data || {})
         }
       }
     }
@@ -230,16 +231,9 @@ export default function Index() {
 
   return (
     <>
-      <div className="max-w-6.5xl space-y-8 my-8 xl:mt-10 xl:mb-12 mx-auto">
+      <div className="max-w-6.5xl space-y-4 sm:space-y-8 my-6 xl:mb-12 mx-auto">
         {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
           <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Available Liquidity</div>}
-            >
-              <div className="mx-3">
-                <TotalLiquidity />
-              </div>
-            </Widget>
             <Widget
               title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
               right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
@@ -258,14 +252,6 @@ export default function Index() {
             </Widget>
           </div>
           <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Available Liquidity by Chain</div>}
-              className="lg:col-span-2 px-0 sm:px-4"
-            >
-              <div>
-                <LiquidityByChain />
-              </div>
-            </Widget>
             <Widget
               title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume</div>}
               right={theVolume ?
@@ -313,7 +299,30 @@ export default function Index() {
             </Widget>
           </div>
         </div>*/}
-        <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6 xl:gap-10">
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-8">
+          <Widget
+            title={<span className="uppercase text-black dark:text-white text-lg font-bold">TVL</span>}
+            right={<span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
+              {moment().utc().format('MMM D, YYYY h:mm:ss A [(UTC)]')}
+            </span>}
+            className="col-span-1 border-0 shadow-md rounded-2xl py-4 px-5"
+          >
+            <TVL chainId={tvlChainSelect} />
+          </Widget>
+          <Widget
+            title={<span className="uppercase text-black dark:text-white text-lg font-bold">TVL by Chain</span>}
+            right={chains_data && (
+              <span className="flex items-center text-gray-500 dark:text-gray-500 space-x-1.5">
+                <span className="font-mono">{chains_data.filter(c => !c?.disabled).length}</span>
+                <span>Chains</span>
+              </span>
+            )}
+            className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+          >
+            <TVLByChain selectChainId={chain_id => setTvlChainSelect(chain_id)} />
+          </Widget>
+        </div>
+        <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8 xl:gap-10">
           <div className="space-y-2">
             <div className="uppercase text-lg font-bold mx-3">Top Chains by Volume</div>
             <TopChains className="no-border" />

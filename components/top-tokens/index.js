@@ -15,7 +15,7 @@ import { numberFormat } from '../../lib/utils'
 
 const COLLAPSE_CHAINS_SIZE = 3
 
-export default function TopTokens({ className = '' }) {
+export default function TopTokens({ selectChainId, className = '' }) {
   const { assets, routers_assets } = useSelector(state => ({ assets: state.assets, routers_assets: state.routers_assets }), shallowEqual)
   const { assets_data } = { ...assets }
   const { routers_assets_data } = { ...routers_assets }
@@ -25,7 +25,7 @@ export default function TopTokens({ className = '' }) {
 
   useEffect(() => {
     if (assets_data && routers_assets_data) {
-      let data = _.orderBy(Object.values(routers_assets_data).flatMap(ra => ra?.asset_balances || []), ['amount_value', 'amount'], ['desc', 'desc'])
+      let data = _.orderBy(routers_assets_data.flatMap(ra => ra?.asset_balances || []), ['amount_value', 'amount'], ['desc', 'desc'])
 
       data = _.orderBy(Object.entries(_.groupBy(data.map(ab => {
         const asset = assets_data?.find(a => a?.contracts?.findIndex(c => c?.chain_id === ab?.asset?.chain_id && c?.contract_address === ab.asset.contract_address) > -1)
@@ -45,7 +45,7 @@ export default function TopTokens({ className = '' }) {
           receivingFulfillTxCount: _.sumBy(value, 'receivingFulfillTxCount'),
           assets: _.groupBy(value, 'chain.chain_id'),
         }
-      }), ['amount_value', 'amount', 'volume_value', 'volume'], ['desc', 'desc'])
+      }), ['amount_value', 'amount', 'volume_value', 'volume', 'receivingFulfillTxCount'], ['desc', 'desc', 'desc', 'desc', 'desc'])
 
       data = data.map(a => {
         return {
