@@ -255,11 +255,12 @@ export default function Transaction() {
 
                 for (let i = 0; i < evmAddresses.length; i++) {
                   const evmAddress = evmAddresses[i]?.toLowerCase()
+                  const resolvedAddresses = ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress)
 
-                  if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
+                  if (resolvedAddresses.length > 1) {
                     ensResponses[evmAddress] = await getENS(evmAddress)
                   }
-                  else {
+                  else if (resolvedAddresses.length < 1) {
                     ensData.push({ resolvedAddress: { id: evmAddress } })
                   }
                 }
@@ -986,7 +987,7 @@ export default function Transaction() {
                             <Popover
                               placement="top"
                               title={<span className="normal-case text-3xs">Add token</span>}
-                              content={<div className="w-28 text-3xs">Add <span className="font-semibold">{generalTx.sendingAsset.symbol}</span> to MetaMask</div>}
+                              content={<div className="w-32 text-3xs">Add <span className="font-semibold">{generalTx.sendingAsset.symbol}</span> to MetaMask</div>}
                               titleClassName="py-0.5"
                               contentClassName="py-1.5"
                             >
@@ -1048,7 +1049,7 @@ export default function Transaction() {
                             <Popover
                               placement="top"
                               title={<span className="normal-case text-3xs">Add token</span>}
-                              content={<div className="w-28 text-3xs">Add <span className="font-semibold">{generalTx.receivingAsset.symbol}</span> to MetaMask</div>}
+                              content={<div className="w-32 text-3xs">Add <span className="font-semibold">{generalTx.receivingAsset.symbol}</span> to MetaMask</div>}
                               titleClassName="py-0.5"
                               contentClassName="py-1.5"
                             >

@@ -10,6 +10,7 @@ import Datatable from '../datatable'
 import Copy from '../copy'
 import { ProgressBar } from '../progress-bars'
 
+import { chainTitle } from '../../lib/object/chain'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat } from '../../lib/utils'
 
@@ -76,17 +77,21 @@ export default function TopChains({ className = '' }) {
           {
             Header: 'Chain',
             accessor: 'chain.title',
-            sortType: (rowA, rowB) => rowA.original.chain?.title > rowB.original.chain?.title ? 1 : -1,
+            sortType: (rowA, rowB) => chainTitle(rowA.original.chain) > chainTitle(rowB.original.chain) ? 1 : -1,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className="flex items-center space-x-1.5 my-1">
-                  <Img
-                    src={props.row.original.chain?.image}
-                    alt=""
-                    className="w-5 h-5 rounded-full"
-                  />
-                  <span className={`${props.row.original.i < 3 ? 'font-semibold' : 'font-medium'}`}>{props.value || props.row.original.chain?.short_name}</span>
-                </div>
+                <Link href={`/${props.row.original.chain?.id}`}>
+                  <a className="flex items-center space-x-1.5 my-1">
+                    <Img
+                      src={props.row.original.chain?.image}
+                      alt=""
+                      className="w-5 h-5 rounded-full"
+                    />
+                    <span className={`${props.row.original.i < 3 ? 'font-semibold' : 'font-medium'}`}>
+                      {chainTitle(props.row.original.chain)}
+                    </span>
+                  </a>
+                </Link>
                 :
                 <div className="skeleton w-32 h-5 my-1" />
             ),
@@ -98,7 +103,7 @@ export default function TopChains({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 <div className="flex flex-col space-y-1.5 my-1">
-                  {_.slice(_.orderBy(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0), entry => -1 * _.maxBy(entry[1], 'amount')?.amount), 0, tokensSeeMore.includes(props.row.original.symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_TOKENS_SIZE).map(([key, value]) => (
+                  {_.slice(_.orderBy(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0), entry => -1 * _.maxBy(entry[1], 'amount_value')?.amount_value), 0, tokensSeeMore.includes(props.row.original.symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_TOKENS_SIZE).map(([key, value]) => (
                     <Link key={key} href={`/${_.maxBy(value, 'amount')?.chain?.id}`}>
                       <a className="h-5 flex items-center justify-end text-xs space-x-1.5">
                         <span className={`font-mono uppercase ${_.sumBy(value, 'amount_value') > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>

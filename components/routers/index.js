@@ -225,15 +225,15 @@ export default function Routers() {
                         <Img
                           src={ab.asset.image}
                           alt=""
-                          className="w-4 h-4 mr-1"
+                          className="w-4 h-4 rounded-full mr-1"
                         />
                       )}
                       <div className="flex flex-col">
-                        <span className="text-2xs font-semibold">{ab.asset.name}</span>
+                        <span className="leading-4 text-2xs font-semibold">{ab.asset.name}</span>
                         {ab.assetId && (
-                          <span className="min-w-max flex items-center space-x-1">
+                          <span className="min-w-max flex items-center space-x-0.5">
                             <Copy
-                              size={10}
+                              size={14}
                               text={ab.assetId}
                               copyTitle={<span className="text-gray-400 dark:text-gray-600 text-3xs font-medium">
                                 {ellipseAddress(ab.assetId, 4)}
@@ -250,7 +250,7 @@ export default function Routers() {
                                   <Img
                                     src={ab.chain.explorer.icon}
                                     alt=""
-                                    className="w-3 h-3 rounded-full opacity-60 hover:opacity-100"
+                                    className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
                                   />
                                   :
                                   <TiArrowRight size={16} className="transform -rotate-45" />
@@ -281,7 +281,7 @@ export default function Routers() {
                             <span className={`uppercase ${ab?.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} mr-1.5`}>
                               {numberFormat(ab.amount, ab.amount > 10000 ? '0,0.00a' : ab.amount > 10 ? '0,0' : '0,0.000')}
                             </span>
-                            <span className="text-gray-400 dark:text-gray-600 font-medium">{ab?.asset?.symbol}</span>
+                            <span className="text-gray-400 dark:text-gray-600 text-3xs font-medium">{ab?.asset?.symbol}</span>
                           </>
                           :
                           <span className="text-gray-400 dark:text-gray-600">n/a</span>
@@ -301,7 +301,7 @@ export default function Routers() {
                       <Popover
                         placement="left"
                         title={<span className="normal-case text-3xs">Add token</span>}
-                        content={<div className="w-28 text-3xs">Add <span className="font-semibold">{ab.asset.symbol}</span> to MetaMask</div>}
+                        content={<div className="w-32 text-3xs">Add <span className="font-semibold">{ab.asset.symbol}</span> to MetaMask</div>}
                         titleClassName="py-0.5"
                         contentClassName="py-1.5"
                       >

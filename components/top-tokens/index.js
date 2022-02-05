@@ -81,14 +81,18 @@ export default function TopTokens({ selectChainId, className = '' }) {
             sortType: (rowA, rowB) => rowA.original.symbol > rowB.original.symbol ? 1 : -1,
             Cell: props => (
               !props.row.original.skeleton ?
-                <div className="flex items-center space-x-1.5 my-1">
+                <div className="w-28 flex items-start my-1">
                   <Img
                     src={[props.row.original.general_asset?.image, props.row.original.asset?.image]}
                     alt=""
-                    className="w-5 h-5 rounded-full"
+                    className="w-5 h-5 rounded-full mr-1.5"
                   />
-                  <span className={`${props.row.original.i < 3 ? 'font-semibold' : 'font-medium'}`}>{props.row.original.asset?.name || props.value}</span>
-                  <span className="text-gray-400 dark:text-gray-600">{props.value}</span>
+                  <div className="flex flex-wrap items-center">
+                    <span className={`${props.row.original.i < 3 ? 'font-semibold' : 'font-medium'} mr-1.5`}>
+                      {props.row.original.asset?.name || props.value}
+                    </span>
+                    <span className="text-gray-400 dark:text-gray-600">{props.value}</span>
+                  </div>
                 </div>
                 :
                 <div className="skeleton w-32 h-5 my-1" />

@@ -46,7 +46,7 @@ export default function ChainGas({ chainId, className = '' }) {
         alt=""
         className="w-4 h-4 rounded-full"
       />
-      <div className="flex items-center space-x-1">
+      <div className="h-5 flex items-center space-x-1">
         {typeof balance === 'number' ?
           <span className={`font-mono ${balance < Number(process.env.NEXT_PUBLIC_LOW_GAS_THRESHOLD) ? 'text-red-500' : ''} font-semibold`}>
             {numberFormat(balance, '0,0.000')}
@@ -60,13 +60,13 @@ export default function ChainGas({ chainId, className = '' }) {
             href={`${chain.explorer.url}${chain.explorer.address_path?.replace('{address}', address)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 dark:text-white"
+            className="min-w-max text-blue-600 dark:text-white"
           >
             {chain.explorer.icon ?
               <Img
                 src={chain.explorer.icon}
                 alt=""
-                className="w-3 h-3 rounded-full opacity-60 hover:opacity-100 mb-0.5"
+                className="w-3 h-3 rounded-full opacity-60 hover:opacity-100"
               />
               :
               <TiArrowRight size={14} className="transform -rotate-45" />

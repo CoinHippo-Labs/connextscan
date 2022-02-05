@@ -390,11 +390,15 @@ export default function Index() {
         <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8 xl:gap-10">
           <div className="space-y-2">
             <div className="uppercase text-lg font-semibold mx-3">Top Chains by Volume</div>
-            <TopChains className="no-border" />
+            <div>
+              <TopChains className="no-border" />
+            </div>
           </div>
           <div className="space-y-2">
             <div className="uppercase text-lg font-semibold mx-3">Top Tokens by Liquidity</div>
-            <TopTokens className="no-border" />
+            <div>
+              <TopTokens className="no-border" />
+            </div>
           </div>
         </div>
       </div>

@@ -162,6 +162,8 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
             }
           }),
           ...(_.maxBy(value, ['order', 'preparedTimestamp'])),
+          sending_amount: value?.find(t => t?.chainId === t.sendingChainId)?.sending_amount,
+          receiving_amount: value?.find(t => t?.chainId === t.receivingChainId)?.receiving_amount,
         }
       }), ['preparedTimestamp'], ['desc']).map(t => {
         return {
@@ -192,11 +194,12 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
 
             for (let i = 0; i < evmAddresses.length; i++) {
               const evmAddress = evmAddresses[i]?.toLowerCase()
+              const resolvedAddresses = ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress)
 
-              if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
+              if (resolvedAddresses.length > 1) {
                 ensResponses[evmAddress] = await getENS(evmAddress)
               }
-              else {
+              else if (resolvedAddresses.length < 1) {
                 ensData.push({ resolvedAddress: { id: evmAddress } })
               }
             }
@@ -551,7 +554,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                               <Popover
                                 placement="top"
                                 title={<span className="normal-case text-3xs">Add token</span>}
-                                content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span> to MetaMask</div>}
+                                content={<div className="w-32 text-3xs">Add <span className="font-semibold">{props.row.original.sendingAsset.symbol}</span> to MetaMask</div>}
                                 titleClassName="py-0.5"
                                 contentClassName="py-1.5"
                               >
@@ -622,7 +625,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                               <Popover
                                 placement="top"
                                 title={<span className="normal-case text-3xs">Add token</span>}
-                                content={<div className="w-28 text-3xs">Add <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span> to MetaMask</div>}
+                                content={<div className="w-32 text-3xs">Add <span className="font-semibold">{props.row.original.receivingAsset.symbol}</span> to MetaMask</div>}
                                 titleClassName="py-0.5"
                                 contentClassName="py-1.5"
                               >

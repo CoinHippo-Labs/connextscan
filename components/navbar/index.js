@@ -250,11 +250,12 @@ export default function Navbar() {
 
             for (let i = 0; i < evmAddresses.length; i++) {
               const evmAddress = evmAddresses[i]?.toLowerCase()
+              const resolvedAddresses = ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress)
 
-              if (ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress).length > 1) {
+              if (resolvedAddresses.length > 1) {
                 ensResponses[evmAddress] = await getENS(evmAddress)
               }
-              else {
+              else if (resolvedAddresses.length < 1) {
                 ensData.push({ resolvedAddress: { id: evmAddress } })
               }
             }

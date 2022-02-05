@@ -198,7 +198,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Liquidity</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value'), '0,0')}</span>
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -209,7 +209,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Locked</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'locked_value'), '0,0')}</span>
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'locked_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -220,7 +220,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Supplied</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'supplied_value'), '0,0')}</span>
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'supplied_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -231,7 +231,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Locked In</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -252,7 +252,7 @@ export default function RouterIndex() {
               <ChainGas
                 key={i}
                 chainId={c.chain_id}
-                className="flex items-center text-sm space-x-1.5"
+                className="flex items-center text-xs space-x-1.5"
               />
             ))}
           </div>
