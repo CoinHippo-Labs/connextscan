@@ -564,7 +564,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                           )}
                         </div>
                       )}
-                      <div className="font-mono text-2xs">
+                      <div className="font-mono leading-4 text-2xs">
                         {typeof sendingAmount === 'number' ?
                           <>
                             <span className="font-semibold mr-1">
