@@ -10,7 +10,7 @@ export default function data(
     case STATS_DATA:
       return {
         ...state,
-        [`${STATS_DATA}`]: { ...state[`${STATS_DATA}`], ...action.value },
+        [`${STATS_DATA}`]: action.value ? { ...state[`${STATS_DATA}`], ...action.value } : null,
       }
     default:
       return state

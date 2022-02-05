@@ -106,9 +106,7 @@ export default function RouterIndex() {
             method: 'wallet_addEthereumChain',
             params: chains_data?.find(c => c.chain_id === chain_id)?.provider_params,
           })
-        } catch (error) {
-          console.log(error)
-        }
+        } catch (error) {}
       }
     }
 

@@ -7,14 +7,13 @@ import moment from 'moment'
 import Loader from 'react-loader-spinner'
 import BigNumber from 'bignumber.js'
 
-import TimeRange from '../components/time-range'
-// import TotalVolume from '../components/crosschain/summary/total-volume'
-// import TotalTransaction from '../components/crosschain/summary/total-transaction'
-// import TimelyVolume from '../components/crosschain/charts/timely-volume'
-// import TimelyTransaction from '../components/crosschain/charts/timely-transaction'
-// import TransactionByChain from '../components/crosschain/charts/transaction-by-chain'
 import TVL from '../components/tvl'
 import TVLByChain from '../components/tvl/tvl-by-chain'
+import TimeframeSelect from '../components/timeframe-select'
+import Volume from '../components/stats/volume'
+import VolumeByTime from '../components/stats/volume/volume-by-time'
+import Transaction from '../components/stats/transaction'
+import TransactionByTime from '../components/stats/transaction/transaction-by-time'
 import TopChains from '../components/top-chains'
 import TopTokens from '../components/top-tokens'
 import Widget from '../components/widget'
@@ -22,7 +21,7 @@ import Widget from '../components/widget'
 import { daily } from '../lib/api/subgraph'
 import { dayMetrics } from '../lib/api/opensearch'
 import { isMatchRoute } from '../lib/routes'
-import { daily_time_ranges, daily_time_range, query_daily_time_range } from '../lib/object/timely'
+import { timeframes, day_s, week_s } from '../lib/object/timeframe'
 import { currency_symbol } from '../lib/object/currency'
 import { numberFormat } from '../lib/utils'
 
@@ -32,31 +31,31 @@ BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_
 
 export default function Index() {
   const dispatch = useDispatch()
-  const { chains, stats } = useSelector(state => ({ chains: state.chains, stats: state.stats }), shallowEqual)
+  const { chains, tokens, stats } = useSelector(state => ({ chains: state.chains, tokens: state.tokens, stats: state.stats }), shallowEqual)
   const { chains_data } = { ...chains }
+  const { tokens_data } = { ...tokens }
   const { stats_data } = { ...stats }
 
   const router = useRouter()
   const { pathname, asPath } = { ...router }
   const _asPath = asPath.includes('?') ? asPath.substring(0, asPath.indexOf('?')) : asPath
 
-  const [timeRange, setTimeRange] = useState(_.last(daily_time_ranges?.filter(time_range => !time_range.disabled)) || { day: daily_time_range })
-  const [timelyData, setTimelyData] = useState(null)
-  const [theVolume, setTheVolume] = useState(null)
-  const [theTransaction, setTheTransaction] = useState(null)
-
   const [tvlChainSelect, setTvlChainSelect] = useState(null)
+  const [timeframeSelect, setTimeframeSelect] = useState(_.last(timeframes.filter(t => !t.disabled)))
+  const [timeSelect, setTimeSelect] = useState(null)
+  const [dayMetricsData, setDayMetricsData] = useState(null)
+  const [timesData, setTimesData] = useState(null)
 
   useEffect(() => {
     const controller = new AbortController()
 
     const getData = async () => {
-      if (!controller.signal.aborted) {
-        if (['/'].includes(pathname)) {
-          const resDayMetrics = await dayMetrics({
+      if (timeframeSelect) {
+        if (!controller.signal.aborted) {
+          const response = await dayMetrics({
             aggs: {
               chains: {
-                terms: { field: 'chain_id.keyword', size: 1000 },
+                terms: { field: 'chain_id', size: 1000 },
                 aggs: {
                   day_metrics: {
                     terms: { field: 'dayStartTimestamp', size: 10000 },
@@ -89,7 +88,7 @@ export default function Index() {
             },
           })
 
-          // setDayMetricsData(resDayMetrics?.data || {})
+          setDayMetricsData(response?.data || {})
         }
       }
     }
@@ -99,125 +98,142 @@ export default function Index() {
     return () => {
       controller?.abort()
     }
-  }, [])
+  }, [timeframeSelect])
 
-  // useEffect(() => {
-  //   const controller = new AbortController()
+  useEffect(() => {
+    const controller = new AbortController()
 
-  //   const getDataSync = async (dayMetricsData, today, _networks) => {
-  //     if (today && _networks) {
-  //       let _timelyData
+    const getDaily = async (chain, data, today) => {
+      if (chain && today && tokens_data?.findIndex(t => t?.chain_id === chain.chain_id) > -1) {
+        const response = await daily({ chain_id: chain.chain_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract((data?.[`${chain.chain_id}`] || []).length > 0 ? 1 : 30, 'days').unix()} }` })
 
-  //       for (let i = 0; i < _networks.length; i++) {
-  //         const network = _networks[i]
+        const _data = Object.entries(_.groupBy(response?.data || [], 'dayStartTimestamp')).map(([key, value]) => {
+          value =  value.map(v => {
+            const token = tokens_data.find(t => t?.chain_id === chain.chain_id && t?.contract_address === v?.assetId?.toLowerCase())
+            const decimals = token?.contract_decimals
+            const price = token?.price
 
-  //         const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+            const volume = BigNumber(!isNaN(v?.volume) ? v.volume : 0).shiftedBy(-decimals).toNumber()
+            const volumeIn = BigNumber(!isNaN(v?.volumeIn) ? v.volumeIn : 0).shiftedBy(-decimals).toNumber()
+            const relayerFee = BigNumber(!isNaN(v?.relayerFee) ? v.relayerFee : 0).shiftedBy(-decimals).toNumber()
 
-  //         _timelyData = {
-  //           ..._timelyData,
-  //           [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
-  //         }
-  //       }
+            return {
+              ...v,
+              volume,
+              volumeIn,
+              relayerFee,
+              volume_value: price * volume,
+              volumeIn_value: price * volumeIn,
+              relayerFee_value: price * relayerFee, 
+            }
+          })
 
-  //       dispatch({
-  //         type: TIMELY_SYNC_DATA,
-  //         value: _timelyData || {},
-  //       })
-  //     }
-  //   }
+          return {
+            id: `${chain.chain_id}_${key}`,
+            chain_id: chain.chain_id,
+            dayStartTimestamp: Number(key),
+            sendingTxCount: _.sumBy(value, 'sendingTxCount'),
+            receivingTxCount: _.sumBy(value, 'receivingTxCount'),
+            cancelTxCount: _.sumBy(value, 'cancelTxCount'),
+            volume_value: _.sumBy(value, 'volume_value'),
+            volumeIn_value: _.sumBy(value, 'volumeIn_value'),
+            relayerFee_value:  _.sumBy(value, 'relayerFee_value'),
+          }
+        })
 
-  //   const getData = async isInterval => {
-  //     if (dayMetricsData) {
-  //       let _timelyData
+        dispatch({
+          type: STATS_DATA,
+          value: {
+            [`${chain.chain_id}`]: _.concat(_data, data?.[`${chain.chain_id}`]?.filter(d => !(_data.findIndex(_d => _d?.dayStartTimestamp === d?.dayStartTimestamp) > -1)) || []),
+          },
+        })
+      }
+    }
 
-  //       const today = moment().utc().startOf('day')
+    const getData = async () => {
+      if (chains_data && tokens_data && dayMetricsData) {
+        const today = moment().utc().startOf('day')
+        chains_data.forEach(c => getDaily(c, dayMetricsData, today))
+      }
+    }
 
-  //       const _networks = networks.filter(_network => _network.id && !_network.disabled)
+    getData()
 
-  //       if (isInterval) {
-  //         for (let i = 0; i < _networks.length; i++) {
-  //           if (!controller.signal.aborted) {
-  //             const network = _networks[i]
+    const interval = setInterval(() => getData(), 5 * 60 * 1000)
+    return () => {
+      controller?.abort()
+      clearInterval(interval)
+    }
+  }, [chains_data, tokens_data, dayMetricsData])
 
-  //             const response = await daily({ chain_id: network.network_id, where: `{ dayStartTimestamp_gte: ${moment(today).subtract(dayMetricsData && Object.keys(dayMetricsData).length > 0 ? query_daily_time_range : daily_time_range, 'days').unix()} }` })
+  useEffect(() => {
+    if (stats_data) {
+      const today = moment().utc().startOf('day')
 
-  //             _timelyData = {
-  //               ..._timelyData,
-  //               [`${network.id}`]: _.concat(response?.data || [], dayMetricsData[`${network.network_id}`]?.filter(day => !(response?.data?.findIndex(timely => timely?.dayStartTimestamp === day?.dayStartTimestamp) > -1)) || []),
-  //             }
+      let data = _.orderBy(Object.entries(_.groupBy(Object.values(stats_data).flatMap(t => t), 'dayStartTimestamp')).map(([key, value]) => {
+        return {
+          time: Number(key),
+          assets: _.groupBy(value, 'chain_id'),
+          volume_value: _.sumBy(value, 'volume_value'),
+          volumeIn_value: _.sumBy(value, 'volumeIn_value'),
+          receivingTxCount: _.sumBy(value, 'receivingTxCount'),
+        }
+      }).map(t => {
+        return {
+          ...t,
+          volume_value_by_chain: Object.fromEntries(Object.entries(t.assets).map(([key, value]) => [key, _.sumBy(value, 'volume_value')])),
+          receivingTxCount_by_chain: Object.fromEntries(Object.entries(t.assets).map(([key, value]) => [key, _.sumBy(value, 'receivingTxCount')])),
+        }
+      }), ['time'], ['asc'])
 
-  //             // setNumLoadedChains(i + 1)
-  //           }
-  //         }
+      const _data = _.cloneDeep(data)
 
-  //         setTimelyData(_timelyData || {})
-  //       }
-  //       else if (!timely_data) {
-  //         const chunkSize = _.head([...Array(_networks.length).keys()].map(i => i + 1).filter(i => Math.ceil(_networks.length / i) <= Number(process.env.NEXT_PUBLIC_MAX_CHUNK))) || _networks.length
-  //         _.chunk([...Array(_networks.length).keys()], chunkSize).forEach(chunk => getDataSync(dayMetricsData, today, _networks.filter((_n, i) => chunk.includes(i))))
-  //       }
-  //     }
-  //   }
+      if (_data) {
+        data = []
 
-  //   getData()
+        const since = _.minBy(_data, 'time')?.time
+        const diffSince = moment(today).diff(moment(since * 1000), 'days')
+        const startTime = moment(today).subtract(timeframeSelect?.day || diffSince, 'days').startOf(timeframeSelect?.day ? 'day' : 'week').unix()
 
-  //   const interval = setInterval(() => getData(true), 5 * 60 * 1000)
-  //   return () => {
-  //     controller?.abort()
-  //     clearInterval(interval)
-  //   }
-  // }, [dayMetricsData, timely_data])
+        for (let time = startTime; time <= today.unix(); time += (timeframeSelect?.day ? day_s : week_s)) {
+          const times_data = _data.filter(t => moment(t.time * 1000).utc().startOf(timeframeSelect?.day ? 'day' : 'week').unix() === time)
 
-  // useEffect(() => {
-  //   if (timely_sync_data) {
-  //     setNumLoadedChains(Object.keys(timely_sync_data).length)
+          data.push({
+            time,
+            assets: times_data.flatMap(d => d?.assets || []),
+            volume_value: _.sumBy(times_data, 'volume_value'),
+            volumeIn_value: _.sumBy(times_data, 'volumeIn_value'),
+            receivingTxCount: _.sumBy(times_data, 'receivingTxCount'),
+            volume_value_by_chain: Object.fromEntries(Object.entries(_.groupBy(
+              times_data.flatMap(d => Object.entries(d?.volume_value_by_chain || {}).map(([key, value]) => {
+                return {
+                  key,
+                  value,
+                }
+              })
+            ), 'key')).map(([key, value]) => [key, _.sumBy(value, 'value')])),
+            receivingTxCount_by_chain: Object.fromEntries(Object.entries(_.groupBy(
+              times_data.flatMap(d => Object.entries(d?.receivingTxCount_by_chain || {}).map(([key, value]) => {
+                return {
+                  key,
+                  value,
+                }
+              })
+            ), 'key')).map(([key, value]) => [key, _.sumBy(value, 'value')])),
+          })
+        }
 
-  //     if (Object.keys(timely_sync_data).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
-  //       setTimelyData(timely_sync_data)
-  //     }
-  //   }
-  // }, [timely_sync_data])
+        data = data.map((t, i) => {
+          return {
+            ...t,
+            time_string: i % 2 === 0 && moment(t.time * 1000).utc().format(timeframeSelect?.day ? 'DD' : 'D MMM'),
+          }
+        })
 
-  // useEffect(() => {
-  //   const controller = new AbortController()
-
-  //   if (contracts_data && timelyData && Object.keys(timelyData).length >= networks.filter(_network => _network.id && !_network.disabled).length) {
-  //     const _timelyData = Object.fromEntries(Object.entries(timelyData).map(([key, value]) => {
-  //       return [
-  //         key,
-  //         value.map(timely => {
-  //           return {
-  //             ...timely,
-  //             data: timely?.data || contracts_data.find(contract => contract.id?.replace(`${key}-`, '') === timely?.assetId)?.data,
-  //             chain_data: networks.find(network => network.id === key),
-  //           }
-  //         }).map(timely => {
-  //           const price = timely.data?.prices?.[0]?.price
-
-  //           return {
-  //             ...timely,
-  //             volume_value: typeof timely?.volume_value === 'number' ? timely.volume_value : timely?.volume && typeof price === 'number' && (BigNumber(timely.volume).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
-  //             volumeIn_value: typeof timely?.volumeIn_value === 'number' ? timely.volumeIn_value : timely?.volumeIn && typeof price === 'number' && (BigNumber(timely.volumeIn).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
-  //             relayerFee_value: typeof timely?.relayerFee_value === 'number' ? timely.relayerFee_value : timely?.relayerFee && typeof price === 'number' && (BigNumber(timely.relayerFee).shiftedBy(-timely.data?.contract_decimals).toNumber() * price),
-  //           }
-  //         }).filter(timely => timely?.data)
-  //       ]
-  //     }))
-
-  //     if (!controller.signal.aborted) {
-  //       if (Object.values(_timelyData).flatMap(timely => timely).findIndex(timely => !(timely?.data)) < 0) {
-  //         dispatch({
-  //           type: TIMELY_DATA,
-  //           value: _timelyData || {},
-  //         })
-  //       }
-  //     }
-  //   }
-
-  //   return () => {
-  //     controller?.abort()
-  //   }
-  // }, [contracts_data, timelyData])
+        setTimesData(data)
+      }
+    }
+  }, [timeframeSelect, stats_data])
 
   if (typeof window !== 'undefined' && pathname !== _asPath) {
     router.push(isMatchRoute(_asPath) ? asPath : '/')
@@ -229,79 +245,14 @@ export default function Index() {
     )
   }
 
+  const timeData = timesData?.find(t => t?.time === timeSelect) || _.last(timesData)
+
   return (
     <>
-      <div className="max-w-6.5xl space-y-4 sm:space-y-8 my-6 xl:mb-12 mx-auto">
-        {/*<div className="max-w-8xl mt-4 mb-6 mx-auto pb-2">
-          <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 mt-8">
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Volume</div>}
-              right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-            >
-              <div className="mx-3">
-                <TotalVolume />
-              </div>
-            </Widget>
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-base sm:text-sm lg:text-base font-normal mt-1 mx-3">Total Txs</div>}
-              right={<div className="mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-            >
-              <div className="mx-3">
-                <TotalTransaction />
-              </div>
-            </Widget>
-          </div>
-          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Volume</div>}
-              right={theVolume ?
-                <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                  <div className="font-mono text-base sm:text-xl font-semibold">{currency_symbol}{typeof theVolume.volume === 'number' ? numberFormat(theVolume.volume, '0,0') : ' -'}</div>
-                  <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theVolume.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
-                </div>
-                :
-                timely_data && timelyData && <div style={{ height: '54px' }} />
-              }
-              contentClassName="items-start"
-              className="lg:col-span-2 px-0 sm:px-4"
-            >
-              <div>
-                <TimelyVolume timeRange={timeRange} theVolume={theVolume} setTheVolume={_theVolome => setTheVolume(_theVolome)} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} />
-              </div>
-            </Widget>
-          </div>
-          <div className="grid grid-flow-row grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions by Chain</div>}
-              right={<div className="mr-6 sm:mr-3"><TimeRange timeRange={timeRange} onClick={_timeRange => setTimeRange(_timeRange)} /></div>}
-              className="lg:col-span-2 px-0 sm:px-4"
-            >
-              <div>
-                <TransactionByChain />
-              </div>
-            </Widget>
-            <Widget
-              title={<div className="uppercase text-gray-400 dark:text-gray-100 text-sm sm:text-base lg:text-lg font-normal mt-1 mx-7 sm:mx-3">Transactions</div>}
-              right={theTransaction ?
-                <div className="min-w-max text-right space-y-0.5 mr-6 sm:mr-3">
-                  <div className="text-base sm:text-xl font-semibold">{typeof theTransaction.receiving_tx_count === 'number' ? numberFormat(theTransaction.receiving_tx_count, '0,0') : '-'}</div>
-                  <div className="text-gray-400 dark:text-gray-500 text-xs sm:text-base font-medium">{moment(theTransaction.time * 1000).utc().format('MMM, D YYYY [(UTC)]')}</div>
-                </div>
-                :
-                timely_data && timelyData && <div style={{ height: '54px' }} />
-              }
-              contentClassName="items-start"
-              className="lg:col-span-2 px-0 sm:px-4"
-            >
-              <div>
-                <TimelyTransaction theTransaction={theTransaction} setTheTransaction={_theTransaction => setTheTransaction(_theTransaction)} setTheVolume={_theVolome => setTheVolume(_theVolome)} />
-              </div>
-            </Widget>
-          </div>
-        </div>*/}
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-8">
+      <div className="max-w-6.5xl space-y-4 sm:space-y-8 xl:space-y-12 my-6 xl:mb-12 mx-auto">
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
           <Widget
-            title={<span className="uppercase text-black dark:text-white text-lg font-bold">TVL</span>}
+            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">TVL</span>}
             right={<span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
               {moment().utc().format('MMM D, YYYY h:mm:ss A [(UTC)]')}
             </span>}
@@ -310,9 +261,9 @@ export default function Index() {
             <TVL chainId={tvlChainSelect} />
           </Widget>
           <Widget
-            title={<span className="uppercase text-black dark:text-white text-lg font-bold">TVL by Chain</span>}
+            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">TVL by Chain</span>}
             right={chains_data && (
-              <span className="flex items-center text-gray-500 dark:text-gray-500 space-x-1.5">
+              <span className="flex items-center text-gray-500 dark:text-gray-500 text-base space-x-1.5">
                 <span className="font-mono">{chains_data.filter(c => !c?.disabled).length}</span>
                 <span>Chains</span>
               </span>
@@ -322,13 +273,127 @@ export default function Index() {
             <TVLByChain selectChainId={chain_id => setTvlChainSelect(chain_id)} />
           </Widget>
         </div>
+        <div className="space-y-3">
+          <div className="flex items-center justify-end">
+            <TimeframeSelect
+              timeframe={timeframeSelect}
+              onClick={t => setTimeframeSelect(t)}
+            />
+          </div>
+          <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
+            <Widget
+              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Volume</span>}
+              right={timesData && (
+                <span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
+                  {timeSelect && timeData ?
+                    <>
+                      {moment(timeData.time * 1000).utc().format(timeframeSelect?.day ? 'MMM D, YYYY' : 'D MMM')}
+                      {!timeframeSelect?.day && (
+                        <>
+                          <> - </>
+                          {moment(timeData.time * 1000).utc().endOf('week').format('D MMM YYYY')}
+                        </>
+                      )}
+                    </>
+                    :
+                    <>since {moment(_.head(timesData).time * 1000).utc().format('MMM D, YYYY [(UTC)]')}</>
+                  }
+                </span>
+              )}
+              className="col-span-1 border-0 shadow-md rounded-2xl py-4 px-5"
+            >
+              <Volume
+                data={timesData}
+                timeSelect={timeSelect}
+              />
+            </Widget>
+            <Widget
+              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Volume by {timeframeSelect && !timeframeSelect.day ? 'Week' : 'Day'}</span>}
+              right={timeData && (
+                <div className="flex flex-col items-end">
+                  <span className="font-mono text-lg font-semibold">
+                    {currency_symbol}{numberFormat(timeData.volume_value, timeData.volume_value > 1000 ? '0,0' : '0,0.00')}
+                  </span>
+                  <span className="whitespace-nowrap text-sm text-gray-500 dark:text-gray-500">
+                    {moment(timeData.time * 1000).utc().format(timeframeSelect?.day ? 'MMM D, YYYY' : 'D MMM')}
+                    {!timeframeSelect?.day && (
+                      <>
+                        <> - </>
+                        {moment(timeData.time * 1000).utc().endOf('week').format('D MMM YYYY')}
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
+              contentClassName="items-start"
+              className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+            >
+              <VolumeByTime
+                data={timesData}
+                selectTime={time => setTimeSelect(time)}
+              />
+            </Widget>
+            <Widget
+              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Transactions</span>}
+              right={timesData && (
+                <span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
+                  {timeSelect && timeData ?
+                    <>
+                      {moment(timeData.time * 1000).utc().format(timeframeSelect?.day ? 'MMM D, YYYY' : 'D MMM')}
+                      {!timeframeSelect?.day && (
+                        <>
+                          <> - </>
+                          {moment(timeData.time * 1000).utc().endOf('week').format('D MMM YYYY')}
+                        </>
+                      )}
+                    </>
+                    :
+                    <>since {moment(_.head(timesData).time * 1000).utc().format('MMM D, YYYY [(UTC)]')}</>
+                  }
+                </span>
+              )}
+              className="col-span-1 border-0 shadow-md rounded-2xl py-4 px-5"
+            >
+              <Transaction
+                data={timesData}
+                timeSelect={timeSelect}
+              />
+            </Widget>
+            <Widget
+              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Transactions by {timeframeSelect && !timeframeSelect.day ? 'Week' : 'Day'}</span>}
+              right={timeData && (
+                <div className="flex flex-col items-end">
+                  <span className="font-mono text-lg font-semibold">
+                    {numberFormat(timeData.receivingTxCount, '0,0')}
+                  </span>
+                  <span className="whitespace-nowrap text-sm text-gray-500 dark:text-gray-500">
+                    {moment(timeData.time * 1000).utc().format(timeframeSelect?.day ? 'MMM D, YYYY' : 'D MMM')}
+                    {!timeframeSelect?.day && (
+                      <>
+                        <> - </>
+                        {moment(timeData.time * 1000).utc().endOf('week').format('D MMM YYYY')}
+                      </>
+                    )}
+                  </span>
+                </div>
+              )}
+              contentClassName="items-start"
+              className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+            >
+              <TransactionByTime
+                data={timesData}
+                selectTime={time => setTimeSelect(time)}
+              />
+            </Widget>
+          </div>
+        </div>
         <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8 xl:gap-10">
           <div className="space-y-2">
-            <div className="uppercase text-lg font-bold mx-3">Top Chains by Volume</div>
+            <div className="uppercase text-lg font-semibold mx-3">Top Chains by Volume</div>
             <TopChains className="no-border" />
           </div>
           <div className="space-y-2">
-            <div className="uppercase text-lg font-bold mx-3">Top Tokens by Liquidity</div>
+            <div className="uppercase text-lg font-semibold mx-3">Top Tokens by Liquidity</div>
             <TopTokens className="no-border" />
           </div>
         </div>

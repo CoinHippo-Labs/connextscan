@@ -1,4 +1,3 @@
-import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
@@ -16,8 +15,6 @@ export default function TVL({ chainId }) {
   const { chains_data } = { ...chains }
   const { assets_data } = { ...assets }
   const { routers_assets_data } = { ...routers_assets }
-
-  const router = useRouter()
 
   const [data, setData] = useState(null)
 
@@ -82,8 +79,8 @@ export default function TVL({ chainId }) {
             </div>
           </div>
           <div className="flex items-center justify-between space-x-2">
-            <div className="space-y-0.5">
-              <span className="whitespace-nowrap uppercase text-gray-800 dark:text-gray-200 text-xs font-bold">{chainId ? 'Chain' : 'Top 3 Chains'}</span>
+            <div className="space-y-1">
+              <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">{chainId ? 'Chain' : 'Top 3 Chains'}</span>
               <div className="flex items-center space-x-1">
                 {_.slice(_.orderBy(data, ['amount_value', 'amount'], ['desc', 'desc']), 0, 3).map((d, i) => (
                   <div key={i} className="h-6 flex items-center">
@@ -93,15 +90,15 @@ export default function TVL({ chainId }) {
                       className="w-5 h-5 rounded-full"
                     />
                     {chainId && (
-                      <span className="text-xs font-medium ml-1.5">{chainTitle(d?.chain)}</span>
+                      <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
                     )}
                   </div>
                 ))}
               </div>
             </div>
-            <div className="text-right space-y-0.5">
-              <span className="whitespace-nowrap uppercase text-gray-800 dark:text-gray-200 text-xs font-bold">Top 3 Tokens</span>
-              <div className="flex items-center justify-end space-x-1.5">
+            <div className="text-right space-y-1">
+              <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Top 3 Tokens</span>
+              <div className="flex items-center justify-end space-x-1.5 -mr-0.5">
                 {_.slice(_.orderBy(Object.entries(_.groupBy(data.flatMap(d => d?.routers?.flatMap(r => r?.asset_balances || []) || []), 'symbol')).map(([key, value]) => {
                   return {
                     ..._.maxBy(value, ['amount_value']),

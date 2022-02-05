@@ -157,9 +157,7 @@ export default function Wallet({ chainIdToConnect, main, hidden, disabled = fals
               method: 'wallet_addEthereumChain',
               params: chains_data?.find(c => c.chain_id === chainIdToConnect)?.provider_params,
             })
-          } catch (error) {
-            console.log(error)
-          }
+          } catch (error) {}
         }
       }
     }

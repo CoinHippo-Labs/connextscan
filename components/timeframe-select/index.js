@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 
-import TimeRanges from './time-ranges'
+import Timeframes from './timeframes'
 
-export default function DropdownTimeRange({ timeRange, onClick }) {
+export default function DropdownTimeframe({ timeframe, onClick }) {
   const [hidden, setHidden] = useState(true)
 
   const buttonRef = useRef(null)
@@ -33,19 +33,19 @@ export default function DropdownTimeRange({ timeRange, onClick }) {
         onClick={handleDropdownClick}
         className="flex items-center justify-center"
       >
-        <div className="min-w-max bg-gray-100 dark:bg-gray-800 rounded-lg font-semibold py-0.5 px-2">
-          {timeRange.title}
+        <div className="min-w-max bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-xl font-semibold py-1.5 px-3">
+          {timeframe.title}
         </div>
       </button>
       <div
-        ref={dropdownRef} 
-        className={`dropdown ${hidden ? '' : 'open'} absolute top-0 right-0 mt-6`}
+        ref={dropdownRef}
+        className={`dropdown ${hidden ? '' : 'open'} absolute top-0 right-0 mt-8`}
       >
         <div className="dropdown-content w-20 bottom-start">
-          <TimeRanges
-            handleDropdownClick={_timeRange => {
+          <Timeframes
+            handleDropdownClick={t => {
               if (onClick) {
-                onClick(_timeRange)
+                onClick(t)
               }
               handleDropdownClick()
             }}
