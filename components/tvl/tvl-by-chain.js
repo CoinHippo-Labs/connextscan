@@ -77,7 +77,7 @@ export default function TVLByChain({ selectChainId }) {
       _data = _data.map(d => {
         return {
           ...d,
-          amount_value_string: `${currency_symbol}${numberFormat(d?.amount_value, d?.amount_value >= 1000000 ? '0,0.00a' : '0,0')}`.toUpperCase(),
+          amount_value_string: `${currency_symbol}${numberFormat(d?.amount_value, d?.amount_value >= 100000 ? '0,0.00a' : '0,0')}`.toUpperCase(),
         }
       })
 
@@ -115,6 +115,7 @@ export default function TVLByChain({ selectChainId }) {
               }
             }}
             margin={{ top: 20, right: 0, left: 0, bottom: -8 }}
+            className="small-x"
           >
             <defs>
               {data.map((entry, i) => (

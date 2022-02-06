@@ -142,6 +142,10 @@ body {
   @apply hidden sm:block;
 }
 
+.small-x .recharts-cartesian-axis-tick-value {
+  font-size: .65rem !important;
+}
+
 .text-3xs {
   font-size: .5rem;
 }

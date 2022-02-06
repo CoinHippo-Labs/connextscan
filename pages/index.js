@@ -252,7 +252,7 @@ export default function Index() {
       <div className="max-w-6.5xl space-y-4 sm:space-y-8 xl:space-y-12 my-6 xl:mb-12 mx-auto">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
           <Widget
-            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">TVL</span>}
+            title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">TVL</span>}
             right={<span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
               {moment().utc().format('MMM D, YYYY h:mm:ss A [(UTC)]')}
             </span>}
@@ -261,7 +261,7 @@ export default function Index() {
             <TVL chainId={tvlChainSelect} />
           </Widget>
           <Widget
-            title={<span className="uppercase text-black dark:text-white text-lg font-semibold">TVL by Chain</span>}
+            title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">TVL by Chain</span>}
             right={chains_data && (
               <span className="flex items-center text-gray-500 dark:text-gray-500 text-base space-x-1.5">
                 <span className="font-mono">{chains_data.filter(c => !c?.disabled).length}</span>
@@ -282,7 +282,7 @@ export default function Index() {
           </div>
           <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
             <Widget
-              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Volume</span>}
+              title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">Volume</span>}
               right={timesData && (
                 <span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
                   {timeSelect && timeData ?
@@ -308,7 +308,7 @@ export default function Index() {
               />
             </Widget>
             <Widget
-              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Volume by {timeframeSelect && !timeframeSelect.day ? 'Week' : 'Day'}</span>}
+              title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">Volume by {timeframeSelect && !timeframeSelect.day ? 'Week' : 'Day'}</span>}
               right={timeData && (
                 <div className="flex flex-col items-end">
                   <span className="font-mono text-lg font-semibold">
@@ -334,7 +334,7 @@ export default function Index() {
               />
             </Widget>
             <Widget
-              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Transactions</span>}
+              title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">Transactions</span>}
               right={timesData && (
                 <span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
                   {timeSelect && timeData ?
@@ -360,7 +360,7 @@ export default function Index() {
               />
             </Widget>
             <Widget
-              title={<span className="uppercase text-black dark:text-white text-lg font-semibold">Transactions by {timeframeSelect && !timeframeSelect.day ? 'Week' : 'Day'}</span>}
+              title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">Transactions by {timeframeSelect && !timeframeSelect.day ? 'Week' : 'Day'}</span>}
               right={timeData && (
                 <div className="flex flex-col items-end">
                   <span className="font-mono text-lg font-semibold">
@@ -389,13 +389,13 @@ export default function Index() {
         </div>
         <div className="grid grid-flow-row grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-8 xl:gap-10">
           <div className="space-y-2">
-            <div className="uppercase text-lg font-semibold mx-3">Top Chains by Volume</div>
+            <div className="uppercase text-base sm:text-lg font-semibold mx-3">Top Chains by Volume</div>
             <div>
               <TopChains className="no-border" />
             </div>
           </div>
           <div className="space-y-2">
-            <div className="uppercase text-lg font-semibold mx-3">Top Tokens by Liquidity</div>
+            <div className="uppercase text-base sm:text-lg font-semibold mx-3">Top Tokens by Liquidity</div>
             <div>
               <TopTokens className="no-border" />
             </div>

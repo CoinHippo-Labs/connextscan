@@ -56,7 +56,7 @@ export default function Volume({ data, timeSelect }) {
               </span>
             </div>
           </div>
-          <div className="flex items-center justify-between space-x-2 mt-0.5">
+          <div className="flex items-center justify-between space-x-2 sm:mt-0.5">
             <div className="w-full space-y-1">
               <div className="flex items-center justify-between space-x-2">
                 <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Top 3 Destination</span>
