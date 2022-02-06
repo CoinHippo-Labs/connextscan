@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
@@ -83,16 +84,18 @@ export default function TVL({ chainId }) {
               <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">{chainId ? 'Chain' : 'Top 3 Chains'}</span>
               <div className="flex items-center space-x-1">
                 {_.slice(_.orderBy(data, ['amount_value', 'amount'], ['desc', 'desc']), 0, 3).map((d, i) => (
-                  <div key={i} className="h-6 flex items-center">
-                    <Img
-                      src={d?.chain?.image}
-                      alt=""
-                      className="w-5 h-5 rounded-full"
-                    />
-                    {chainId && (
-                      <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
-                    )}
-                  </div>
+                  <Link key={i} href={`/${d?.chain?.id}`}>
+                    <a className="h-6 flex items-center">
+                      <Img
+                        src={d?.chain?.image}
+                        alt=""
+                        className="w-5 h-5 rounded-full"
+                      />
+                      {chainId && (
+                        <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                      )}
+                    </a>
+                  </Link>
                 ))}
               </div>
             </div>

@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
@@ -102,14 +103,16 @@ export default function Volume({ data, timeSelect }) {
                   :
                   _.slice(_.orderBy(volumeData.volume_value_by_chain, ['volume_value'], ['desc']), 0, 3).map((d, i) => (
                     <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
-                      <div className="flex items-center">
-                        <Img
-                          src={d?.chain?.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full"
-                        />
-                        <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
-                      </div>
+                      <Link href={`/${d?.chain?.id}`}>
+                        <a className="flex items-center">
+                          <Img
+                            src={d?.chain?.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full"
+                          />
+                          <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                        </a>
+                      </Link>
                       <span className="font-mono text-xs font-normal">
                         {currency_symbol}{numberFormat(d?.volume_value, d?.volume_value > 1000 ? '0,0' : '0,0.00')}
                       </span>

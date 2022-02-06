@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
@@ -64,7 +65,7 @@ export default function Transaction({ data, timeSelect }) {
           <div className="flex items-center justify-between space-x-2 sm:mt-0.5">
             <div className="w-full space-y-1">
               <div className="flex items-center justify-between space-x-2">
-                <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Transaction Type</span>
+                <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">{blockchain_id ? 'Transaction Type' : 'Top 3 Destination'}</span>
                 <span className="uppercase text-black dark:text-white text-xs font-bold">Transactions</span>
               </div>
               <div className="flex flex-col items-start space-y-1">
@@ -90,14 +91,16 @@ export default function Transaction({ data, timeSelect }) {
                   :
                   _.slice(_.orderBy(transactionData.receivingTxCount_by_chain, ['receivingTxCount'], ['desc']), 0, 3).map((d, i) => (
                     <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
-                      <div className="flex items-center">
-                        <Img
-                          src={d?.chain?.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full"
-                        />
-                        <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
-                      </div>
+                      <Link href={`/${d?.chain?.id}`}>
+                        <a className="flex items-center">
+                          <Img
+                            src={d?.chain?.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full"
+                          />
+                          <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                        </a>
+                      </Link>
                       <span className="font-mono text-xs font-normal">
                         {numberFormat(d?.receivingTxCount, '0,0')}
                       </span>
