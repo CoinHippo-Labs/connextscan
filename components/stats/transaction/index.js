@@ -1,9 +1,11 @@
+import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import { Img } from 'react-image'
 import Loader from 'react-loader-spinner'
+import { BsArrowLeftCircleFill, BsArrowRightCircleFill, BsXCircleFill } from 'react-icons/bs'
 
 import { chainTitle } from '../../../lib/object/chain'
 import { numberFormat } from '../../../lib/utils'
@@ -12,6 +14,10 @@ export default function Transaction({ data, timeSelect }) {
   const { preferences, chains } = useSelector(state => ({ preferences: state.preferences, chains: state.chains }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
+
+  const router = useRouter()
+  const { query } = { ...router }
+  const { blockchain_id } = { ...query }
 
   const [transactionData, setTransactionData] = useState(null)
 
@@ -48,7 +54,7 @@ export default function Transaction({ data, timeSelect }) {
           <div className="h-3/5 sm:h-2/3 flex items-center justify-center">
             <div className="flex flex-col items-center space-y-2">
               <span className="font-mono text-2xl sm:text-xl xl:text-4xl font-bold">
-                {numberFormat(_.sumBy(transactionData.data, 'receivingTxCount'), '0,0')}
+                {numberFormat(_.sumBy(transactionData.data, blockchain_id ? 'totalTxCount' : 'receivingTxCount'), '0,0')}
               </span>
               <span className="flex flex-wrap items-center justify-center text-sm">
                 <span className="text-gray-400 dark:text-gray-600">Total Transactions</span>
@@ -58,25 +64,46 @@ export default function Transaction({ data, timeSelect }) {
           <div className="flex items-center justify-between space-x-2 sm:mt-0.5">
             <div className="w-full space-y-1">
               <div className="flex items-center justify-between space-x-2">
-                <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Top 3 Destination</span>
+                <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Transaction Type</span>
                 <span className="uppercase text-black dark:text-white text-xs font-bold">Transactions</span>
               </div>
               <div className="flex flex-col items-start space-y-1">
-                {_.slice(_.orderBy(transactionData.receivingTxCount_by_chain, ['receivingTxCount'], ['desc']), 0, 3).map((d, i) => (
-                  <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
-                    <div className="flex items-center">
-                      <Img
-                        src={d?.chain?.image}
-                        alt=""
-                        className="w-5 h-5 rounded-full"
-                      />
-                      <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                {blockchain_id ?
+                  ['receivingTxCount', 'sendingTxCount', 'cancelTxCount'].map((f, i) => (
+                    <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
+                      <div className="flex items-center">
+                        {f === 'receivingTxCount' ?
+                          <BsArrowLeftCircleFill size={16} />
+                          :
+                          f === 'sendingTxCount' ?
+                            <BsArrowRightCircleFill size={16} />
+                            :
+                            <BsXCircleFill size={16} />
+                        }
+                        <span className="capitalize text-xs font-normal ml-2">{f?.replace('TxCount', '')}</span>
+                      </div>
+                      <span className="font-mono text-xs font-normal">
+                        {numberFormat(_.sumBy(transactionData.data, f), '0,0')}
+                      </span>
                     </div>
-                    <span className="font-mono text-xs font-normal">
-                      {numberFormat(d?.receivingTxCount, '0,0')}
-                    </span>
-                  </div>
-                ))}
+                  ))
+                  :
+                  _.slice(_.orderBy(transactionData.receivingTxCount_by_chain, ['receivingTxCount'], ['desc']), 0, 3).map((d, i) => (
+                    <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
+                      <div className="flex items-center">
+                        <Img
+                          src={d?.chain?.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                      </div>
+                      <span className="font-mono text-xs font-normal">
+                        {numberFormat(d?.receivingTxCount, '0,0')}
+                      </span>
+                    </div>
+                  ))
+                }
               </div>
             </div>
           </div>

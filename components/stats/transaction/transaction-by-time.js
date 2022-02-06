@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import {
@@ -14,6 +15,10 @@ import Loader from 'react-loader-spinner'
 export default function TransactionByTime({ data, selectTime }) {
   const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
   const { theme } = { ...preferences }
+
+  const router = useRouter()
+  const { query } = { ...router }
+  const { blockchain_id } = { ...query }
 
   const loaded = !!data
 
@@ -54,7 +59,7 @@ export default function TransactionByTime({ data, selectTime }) {
               </linearGradient>
             </defs>
             <XAxis dataKey="time_string" axisLine={false} tickLine={false} />
-            <Bar dataKey="receivingTxCount" minPointSize={5}>
+            <Bar dataKey={blockchain_id ? 'totalTxCount' : 'receivingTxCount'} minPointSize={5}>
               {data.map((entry, i) => (<Cell key={i} fillOpacity={1} fill="url(#gradient-tx)" />))}
             </Bar>
           </BarChart>

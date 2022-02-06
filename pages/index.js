@@ -4,8 +4,8 @@ import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
 import moment from 'moment'
-import Loader from 'react-loader-spinner'
 import BigNumber from 'bignumber.js'
+import Loader from 'react-loader-spinner'
 
 import TVL from '../components/tvl'
 import TVLByChain from '../components/tvl/tvl-by-chain'
@@ -177,6 +177,8 @@ export default function Index() {
           volume_value: _.sumBy(value, 'volume_value'),
           volumeIn_value: _.sumBy(value, 'volumeIn_value'),
           receivingTxCount: _.sumBy(value, 'receivingTxCount'),
+          sendingTxCount: _.sumBy(value, 'sendingTxCount'),
+          cancelTxCount: _.sumBy(value, 'cancelTxCount'),
         }
       }).map(t => {
         return {
@@ -204,6 +206,8 @@ export default function Index() {
             volume_value: _.sumBy(times_data, 'volume_value'),
             volumeIn_value: _.sumBy(times_data, 'volumeIn_value'),
             receivingTxCount: _.sumBy(times_data, 'receivingTxCount'),
+            sendingTxCount: _.sumBy(times_data, 'sendingTxCount'),
+            cancelTxCount: _.sumBy(times_data, 'cancelTxCount'),
             volume_value_by_chain: Object.fromEntries(Object.entries(_.groupBy(
               times_data.flatMap(d => Object.entries(d?.volume_value_by_chain || {}).map(([key, value]) => {
                 return {

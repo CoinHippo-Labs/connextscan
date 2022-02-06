@@ -1,3 +1,4 @@
+import { useRouter } from 'next/router'
 import { useState, useEffect } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
@@ -10,14 +11,19 @@ import { currency_symbol } from '../../../lib/object/currency'
 import { numberFormat } from '../../../lib/utils'
 
 export default function Volume({ data, timeSelect }) {
-  const { preferences, chains } = useSelector(state => ({ preferences: state.preferences, chains: state.chains }), shallowEqual)
+  const { preferences, chains, tokens } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
+  const { tokens_data } = { ...tokens }
+
+  const router = useRouter()
+  const { query } = { ...router }
+  const { blockchain_id } = { ...query }
 
   const [volumeData, setVolumeData] = useState(null)
 
   useEffect(() => {
-    if (chains_data && data) {
+    if (chains_data && tokens_data && data) {
       const _data = data.filter(d => !timeSelect || d?.time === timeSelect)
 
       setVolumeData({
@@ -36,9 +42,23 @@ export default function Volume({ data, timeSelect }) {
             volume_value: _.sumBy(value, 'value'),
           }
         }),
+        volume_value_by_token: Object.entries(_.groupBy(
+          _data.flatMap(d => Object.entries(d?.volume_value_by_token || {}).map(([key, value]) => {
+            return {
+              key,
+              value,
+            }
+          })
+        ), 'key')).map(([key, value]) => {
+          return {
+            token_id: key,
+            token: tokens_data.find(t => t?.id === key),
+            volume_value: _.sumBy(value, 'value'),
+          }
+        }),
       })
     }
-  }, [chains_data, data, timeSelect])
+  }, [chains_data, tokens_data, data, timeSelect])
 
   const loaded = !!volumeData
 
@@ -59,25 +79,43 @@ export default function Volume({ data, timeSelect }) {
           <div className="flex items-center justify-between space-x-2 sm:mt-0.5">
             <div className="w-full space-y-1">
               <div className="flex items-center justify-between space-x-2">
-                <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Top 3 Destination</span>
+                <span className="whitespace-nowrap uppercase text-black dark:text-white text-xs font-bold">Top 3 {blockchain_id ? 'Tokens' : 'Destination'}</span>
                 <span className="uppercase text-black dark:text-white text-xs font-bold">Volume</span>
               </div>
               <div className="flex flex-col items-start space-y-1">
-                {_.slice(_.orderBy(volumeData.volume_value_by_chain, ['volume_value'], ['desc']), 0, 3).map((d, i) => (
-                  <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
-                    <div className="flex items-center">
-                      <Img
-                        src={d?.chain?.image}
-                        alt=""
-                        className="w-5 h-5 rounded-full"
-                      />
-                      <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                {blockchain_id ?
+                  _.slice(_.orderBy(volumeData.volume_value_by_token, ['volume_value'], ['desc']), 0, 3).map((d, i) => (
+                    <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
+                      <div className="flex items-center">
+                        <Img
+                          src={d?.token?.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="text-xs font-normal ml-2">{d?.token?.symbol}</span>
+                      </div>
+                      <span className="font-mono text-xs font-normal">
+                        {currency_symbol}{numberFormat(d?.volume_value, d?.volume_value > 1000 ? '0,0' : '0,0.00')}
+                      </span>
                     </div>
-                    <span className="font-mono text-xs font-normal">
-                      {currency_symbol}{numberFormat(d?.volume_value, d?.volume_value > 1000 ? '0,0' : '0,0.00')}
-                    </span>
-                  </div>
-                ))}
+                  ))
+                  :
+                  _.slice(_.orderBy(volumeData.volume_value_by_chain, ['volume_value'], ['desc']), 0, 3).map((d, i) => (
+                    <div key={i} className="w-full h-6 flex items-center justify-between space-x-2">
+                      <div className="flex items-center">
+                        <Img
+                          src={d?.chain?.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="text-xs font-normal ml-2">{chainTitle(d?.chain)}</span>
+                      </div>
+                      <span className="font-mono text-xs font-normal">
+                        {currency_symbol}{numberFormat(d?.volume_value, d?.volume_value > 1000 ? '0,0' : '0,0.00')}
+                      </span>
+                    </div>
+                  ))
+                }
               </div>
             </div>
           </div>
