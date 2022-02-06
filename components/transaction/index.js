@@ -924,7 +924,7 @@ export default function Transaction() {
     </button>
   )
 
-  const outOfGas = !receivingTx && routerBalance < Number(process.env.NEXT_PUBLIC_LOW_GAS_THRESHOLD)
+  const outOfGas = !receivingTx && typeof routerBalance === 'number' && routerBalance < Number(process.env.NEXT_PUBLIC_LOW_GAS_THRESHOLD)
 
   return (
     !transaction || transaction.data ?
