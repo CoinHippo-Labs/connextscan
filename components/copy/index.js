@@ -34,7 +34,7 @@ const Copy = ({ text, copyTitle, size = 16, onCopy, className = '' }) => {
         {copyTitle && (
           <span className="cursor-pointer text-gray-400 dark:text-gray-600 font-medium">{copyTitle}</span>
         )}
-        <MdContentCopy size={size} className={`cursor-pointer ${className.includes('text-') ? '' : 'text-gray-300 hover:text-gray-400 dark:text-gray-700 dark:hover:text-gray-600'} ${className}`} />
+        <MdContentCopy size={size} className={`cursor-pointer ${className.includes('text-') ? '' : 'text-gray-300 hover:text-gray-400 dark:text-gray-600 dark:hover:text-gray-500'} ${className}`} />
       </div>
     </CopyToClipboard>
 }
