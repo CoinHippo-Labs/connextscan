@@ -147,6 +147,7 @@ export default function Transaction() {
 
                       if (_data.sendingChainId && _data.sendingAssetId && !(tokenContracts?.findIndex(t => t?.chain_id === _data.sendingChainId && t.contract_address === _data.sendingAssetId?.toLowerCase()) > -1)) {
                         const responseTokens = await getTokens({ chain_id: _data.sendingChainId, address: _data.sendingAssetId })
+
                         tokenContracts = _.uniqBy(_.concat(tokenContracts || [], responseTokens?.data?.map(t => { return { ...t, id: `${_data.sendingChainId}_${t.contract_address}` } }) || []), 'id')
                       }
                       if (_data.receivingChainId && _data.receivingAssetId && !(tokenContracts?.findIndex(t => t?.chain_id === _data.receivingChainId && t.contract_address === _data.receivingAssetId?.toLowerCase()) > -1)) {
@@ -277,6 +278,10 @@ export default function Transaction() {
     }
 
     if (transaction?.tx !== tx) {
+      if (['search'].includes(source)) {
+        setTransaction(null)
+      }
+
       getData()
     }
 
@@ -285,7 +290,7 @@ export default function Transaction() {
       controller?.abort()
       clearInterval(interval)
     }
-  }, [tx, sdk_data, transaction])
+  }, [tx, source, sdk_data])
 
   useEffect(() => {
     if (generalTx && !decodedBid && convertToJson(decodeAuctionBid(generalTx.encodedBid))) {
@@ -969,15 +974,15 @@ export default function Transaction() {
                   {generalTx?.sendingAssetId ?
                     <div className="flex flex-col">
                       {generalTx.sendingAsset && (
-                        <div className="flex items-center space-x-2">
+                        <div className="h-6 flex items-center space-x-2">
                           <a
                             href={`${generalTx.sendingChain?.explorer?.url}${generalTx.sendingChain?.explorer?.[`contract${generalTx.sendingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', generalTx.sendingAssetId)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center space-x-1"
+                            className="flex items-center space-x-1.5"
                           >
                             <Img
-                              src={generalTx.sendingAsset.iamge}
+                              src={generalTx.sendingAsset.image}
                               alt=""
                               className="w-6 h-6 rounded-full"
                             />
@@ -1031,15 +1036,15 @@ export default function Transaction() {
                   {generalTx?.receivingAssetId ?
                     <div className="flex flex-col items-end">
                       {generalTx.receivingAsset && (
-                        <div className="flex items-center space-x-2">
+                        <div className="h-6 flex items-center space-x-2">
                           <a
                             href={`${generalTx.receivingChain?.explorer?.url}${generalTx.receivingChain?.explorer?.[`contract${generalTx.receivingAssetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', generalTx.receivingAssetId)}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center space-x-1"
+                            className="flex items-center space-x-1.5"
                           >
                             <Img
-                              src={generalTx.receivingAsset.iamge}
+                              src={generalTx.receivingAsset.image}
                               alt=""
                               className="w-6 h-6 rounded-full"
                             />

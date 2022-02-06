@@ -113,9 +113,9 @@ export default function Index() {
             const decimals = token?.contract_decimals
             const price = token?.price
 
-            const volume = BigNumber(!isNaN(v?.volume) ? v.volume : 0).shiftedBy(-decimals).toNumber()
-            const volumeIn = BigNumber(!isNaN(v?.volumeIn) ? v.volumeIn : 0).shiftedBy(-decimals).toNumber()
-            const relayerFee = BigNumber(!isNaN(v?.relayerFee) ? v.relayerFee : 0).shiftedBy(-decimals).toNumber()
+            const volume = decimals && BigNumber(!isNaN(v?.volume) ? v.volume : 0).shiftedBy(-decimals).toNumber()
+            const volumeIn = decimals && BigNumber(!isNaN(v?.volumeIn) ? v.volumeIn : 0).shiftedBy(-decimals).toNumber()
+            const relayerFee = decimals && BigNumber(!isNaN(v?.relayerFee) ? v.relayerFee : 0).shiftedBy(-decimals).toNumber()
 
             return {
               ...v,
