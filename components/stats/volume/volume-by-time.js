@@ -45,7 +45,7 @@ export default function VolumeByTime({ data, selectTime }) {
               }
             }}
             margin={{ top: 10, right: 10, left: 10, bottom: -8 }}
-            className="mobile-hidden-x small-x"
+            className={`mobile-hidden-x ${data.length > 10 ? 'small-x' : ''}`}
           >
             <defs>
               <linearGradient id="gradient-vol" x1="0" y1="0" x2="0" y2="1">

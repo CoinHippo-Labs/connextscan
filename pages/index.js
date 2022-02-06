@@ -226,7 +226,7 @@ export default function Index() {
         data = data.map((t, i) => {
           return {
             ...t,
-            time_string: i % 2 === 0 && moment(t.time * 1000).utc().format(timeframeSelect?.day ? 'DD' : 'D MMM'),
+            time_string: i % (data.length > 10 ? 2 : 1) === 0 && moment(t.time * 1000).utc().format(timeframeSelect?.day && data.length > 10 ? 'DD' : 'D MMM'),
           }
         })
 
