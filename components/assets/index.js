@@ -598,7 +598,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                                         />
                                       </div>
                                       <div className="text-3xs space-x-1">
-                                        <span className="font-mono uppercase">{numberFormat(value.amount, value.amount > 10000000 ? '0,0.00a' : '0,0')}</span>
+                                        <span className="font-mono uppercase">{numberFormat(value.amount, value.amount > 10000000 ? '0,0.00a' : value.amount > 1000 ? '0,0' : '0,0.00')}</span>
                                         <span className="text-gray-400 dark:text-gray-600">{value.asset?.symbol}</span>
                                       </div>
                                     </div>
