@@ -150,7 +150,7 @@ export default function TopChains({ className = '' }) {
               !props.row.original.skeleton ?
                 <div className="flex flex-col items-end space-y-1.5 my-1">
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-xs text-green-600 dark:text-green-500 ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                    <span className={`font-mono uppercase text-green-600 dark:text-green-500 text-xs ${props.row.original.amount_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
                       {currency_symbol}{numberFormat(props.row.original.amount_value, props.row.original.amount_value > 10000000 ? '0,0.00a' : props.row.original.amount_value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                   </div>
@@ -175,12 +175,12 @@ export default function TopChains({ className = '' }) {
               !props.row.original.skeleton ?
                 <div className="flex flex-col items-end space-y-1.5 my-1">
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-xs text-red-600 dark:text-red-500 ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                    <span className={`font-mono uppercase text-red-600 dark:text-red-500 text-xs ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
                       {currency_symbol}{numberFormat(props.row.original.volume_value, props.row.original.volume_value > 10000000 ? '0,0.00a' : props.row.original.volume_value > 1000 ? '0,0' : '0,0.00')}
                     </span>
                   </div>
                   <div className="flex items-center space-x-1.5">
-                    <span className={`font-mono uppercase text-xs ${props.row.original.receivingFulfillTxCount > 100000 ? 'font-semibold' : 'text-blue-600 dark:text-blue-500'}`}>
+                    <span className={`font-mono uppercase text-blue-600 dark:text-blue-500 text-xs ${props.row.original.receivingFulfillTxCount > 100000 ? 'font-semibold' : 'font-normal'}`}>
                       {numberFormat(props.row.original.receivingFulfillTxCount, props.row.original.receivingFulfillTxCount > 10000 ? '0,0.00a' : '0,0')}
                     </span>
                     <span className="text-gray-700 dark:text-gray-300">

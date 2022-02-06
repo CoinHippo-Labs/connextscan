@@ -235,7 +235,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
               <div
                 key={i}
                 onClick={() => setChainIdsFilter(_.concat(chainIdsFilter || [], ac.chain_id).filter(id => id !== ac.chain_id || !chainIdsFilter?.includes(id)))}
-                className={`${chainIdsFilter?.includes(ac.chain?.chain_id) ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'} cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5`}
+                className={`${chainIdsFilter?.includes(ac.chain?.chain_id) ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-900'} cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5`}
               >
                 <Img
                   src={ac.chain?.image}
@@ -250,7 +250,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
             {chainIdsFilter?.length > 0 && (
               <div
                 onClick={() => setChainIdsFilter(null)}
-                className="hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5"
+                className="hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5"
               >
                 <span className="font-medium">
                   Reset
