@@ -34,6 +34,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
   const { query } = { ...router }
   const { address, blockchain_id } = { ...query }
 
+  const [chainIdsFilter, setChainIdsFilter] = useState(null)
   const [web3, setWeb3] = useState(null)
   const [chainId, setChainId] = useState(null)
   const [addTokenData, setAddTokenData] = useState(null)
@@ -151,6 +152,14 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
     }
   }).filter(ra => ra?.asset_balances?.length > 0).map((ra, i) => {
     const routerStatus = blockchain_id && routers_status_data?.find(r => r?.routerAddress?.toLowerCase() === ra?.router_id?.toLowerCase())
+    const assetsByChains = _.orderBy(Object.entries(_.groupBy(ra?.asset_balances || [], 'chain.chain_id')).map(([key, value]) => {
+      return {
+        chain_id: Number(key),
+        chain: chains_data?.find(c => c?.chain_id === Number(key)),
+        asset_balances: value,
+        total: value?.length || 0,
+      }
+    }).filter(ac => ac?.total > 0), ['total'], ['desc'])
 
     return (
       <Widget
@@ -220,8 +229,38 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
         )}
         className={`border-0 ${address ? 'bg-transaparent py-0' : 'shadow-md'} rounded-2xl`}
       >
-        <div className={`grid grid-flow-row grid-cols-2 ${address ? 'sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7' : 'sm:grid-cols-3 mt-4 mb-2'} gap-0`}>
-          {_.orderBy(ra?.asset_balances?.flatMap(abs => abs) || [], ['amount_value', 'amount'], ['desc', 'desc']).map((ab, j) => {
+        {address && assetsByChains.length > 1 && (
+          <div className="flex flex-wrap items-center justify-center mb-3">
+            {assetsByChains.map((ac, i) => (
+              <div
+                key={i}
+                onClick={() => setChainIdsFilter(_.concat(chainIdsFilter || [], ac.chain_id).filter(id => id !== ac.chain_id || !chainIdsFilter?.includes(id)))}
+                className={`${chainIdsFilter?.includes(ac.chain?.chain_id) ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-900 dark:hover:bg-gray-800' : 'hover:bg-gray-100 dark:hover:bg-gray-800'} cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5`}
+              >
+                <Img
+                  src={ac.chain?.image}
+                  alt=""
+                  className="w-4 sm:w-5 h-4 sm:h-5 rounded-full"
+                />
+                <span className="font-mono font-semibold">
+                  {numberFormat(ac.total, '0,0')}
+                </span>
+              </div>
+            ))}
+            {chainIdsFilter?.length > 0 && (
+              <div
+                onClick={() => setChainIdsFilter(null)}
+                className="hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5"
+              >
+                <span className="font-medium">
+                  Reset
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+        <div className={`grid grid-flow-row grid-cols-1 ${address ? 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'sm:grid-cols-2 mt-4 mb-2'} gap-0`}>
+          {_.orderBy(ra?.asset_balances?.flatMap(abs => abs).filter(ab => !(chainIdsFilter?.length > 0) || chainIdsFilter.includes(ab.chain?.chain_id)) || [], ['amount_value', 'amount'], ['desc', 'desc']).map((ab, j) => {
             const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
               <button
                 onClick={() => addTokenToMetaMask(ab?.chain?.chain_id, { ...ab?.asset })}
@@ -230,7 +269,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                 <Img
                   src="/logos/wallets/metamask.png"
                   alt=""
-                  className="w-3 h-3"
+                  className="w-3.5 h-3.5"
                 />
               </button>
             )
@@ -238,25 +277,25 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
             return (
               <div key={j}>
                 {ab?.asset ?
-                  <div className="min-h-full border pt-2.5 pb-3 px-2" style={{ borderColor: ab?.chain?.color }}>
+                  <div className="min-h-full border py-5 px-4" style={{ borderColor: ab?.chain?.color }}>
                     <div className="space-y-0.5">
                       <div className="flex items-start">
                         {ab.asset.image && (
                           <Img
                             src={ab.asset.image}
                             alt=""
-                            className="w-4 h-4 rounded-full mr-1"
+                            className="w-5 h-5 rounded-full mr-2"
                           />
                         )}
                         <div className="flex flex-col">
-                          <span className="leading-4 text-2xs font-semibold">{ab.asset.name}</span>
+                          <span className="leading-4 text-xs font-semibold">{ab.asset.name}</span>
                           {ab.assetId && (
                             <span className="min-w-max flex items-center space-x-0.5">
                               <Copy
                                 size={14}
                                 text={ab.assetId}
-                                copyTitle={<span className="text-gray-400 dark:text-gray-600 text-3xs font-medium">
-                                  {ellipseAddress(ab.assetId, 4)}
+                                copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-medium">
+                                  {ellipseAddress(ab.assetId, 6)}
                                 </span>}
                               />
                               {ab?.chain?.explorer?.url && (
@@ -282,32 +321,32 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                         </div>
                         {ab?.chain?.image && (
                           <Link href={`/${ab.chain.id}`}>
-                            <a className="hidden sm:block min-w-max w-3 h-3 relative -top-1 -right-1 ml-auto">
+                            <a className="min-w-max w-4 h-4 relative -top-3.5 -right-2.5 ml-auto">
                               <Img
                                 src={ab.chain.image}
                                 alt=""
-                                className="w-3 h-3 rounded-full"
+                                className="w-4 h-4 rounded-full"
                               />
                             </a>
                           </Link>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center justify-center mt-1.5">
+                    <div className="flex items-center justify-center mt-3.5">
                       <div className="w-full text-center space-y-1">
                         <div className="font-mono text-xs">
                           {typeof ab?.amount === 'number' ?
                             <>
-                              <span className={`uppercase ${ab?.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} mr-1.5`}>
+                              <span className={`uppercase ${ab?.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-base mr-1.5`}>
                                 {numberFormat(ab.amount, ab.amount > 10000 ? '0,0.00a' : ab.amount > 10 ? '0,0' : '0,0.000')}
                               </span>
-                              <span className="text-gray-400 dark:text-gray-600 text-3xs font-medium">{ab?.asset?.symbol}</span>
+                              <span className="text-gray-400 dark:text-gray-600 text-xs font-medium">{ab?.asset?.symbol}</span>
                             </>
                             :
                             <span className="text-gray-400 dark:text-gray-600">n/a</span>
                           }
                         </div>
-                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg font-mono text-3xs mx-auto py-1 px-2">
+                        <div className={`max-w-min bg-gray-100 dark:bg-gray-${address ? 900 : 800} rounded-lg font-mono text-2xs mx-auto py-1.5 px-2.5`}>
                           {typeof ab?.amount_value === 'number' ?
                             <span className={`uppercase ${ab?.amount_value > 100000 ? 'text-gray-800 dark:text-gray-200 font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
                               {currency_symbol}{numberFormat(ab.amount_value, ab.amount_value > 100000 ? '0,0.00a' : ab.amount_value > 1000 ? '0,0' : '0,0.000')}
@@ -317,7 +356,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                           }
                         </div>
                       </div>
-                      <div className="min-w-max relative -bottom-2.5 -right-2 mb-0.5 ml-auto">
+                      <div className="min-w-max relative -bottom-3.5 -right-0 mb-0.5 ml-auto">
                         <Popover
                           placement="left"
                           title={<span className="normal-case text-3xs">Add token</span>}
@@ -329,9 +368,79 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                         </Popover>
                       </div>
                     </div>
+                    <div className="space-y-1.5 mt-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 dark:text-gray-500">Locked</span>
+                        <div className="text-right">
+                          <div className="font-mono text-xs">
+                            {typeof ab?.locked === 'number' ?
+                              <>
+                                <span className={`uppercase ${ab?.locked_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                  {numberFormat(ab.locked, ab.locked > 10000 ? '0,0.00a' : ab.locked > 1000 ? '0,0' : '0,0.000')}
+                                </span>
+                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
+                              </>
+                              :
+                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 dark:text-gray-500">Locked In</span>
+                        <div className="text-right">
+                          <div className="font-mono text-xs">
+                            {typeof ab?.lockedIn === 'number' ?
+                              <>
+                                <span className={`uppercase ${ab?.lockedIn_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                  {numberFormat(ab.lockedIn, ab.lockedIn > 10000 ? '0,0.00a' : ab.lockedIn > 1000 ? '0,0' : '0,0.000')}
+                                </span>
+                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
+                              </>
+                              :
+                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 dark:text-gray-500">Supplied</span>
+                        <div className="text-right">
+                          <div className="font-mono text-xs">
+                            {typeof ab?.supplied === 'number' ?
+                              <>
+                                <span className={`uppercase ${ab?.supplied_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                  {numberFormat(ab.supplied, ab.supplied > 100000 ? '0,0.00a' : ab.supplied > 1000 ? '0,0' : '0,0.000')}
+                                </span>
+                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
+                              </>
+                              :
+                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500 dark:text-gray-500">Removed</span>
+                        <div className="text-right">
+                          <div className="font-mono text-xs">
+                            {typeof ab?.removed === 'number' ?
+                              <>
+                                <span className={`uppercase ${ab?.removed_value > 10000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                  {numberFormat(ab.removed, ab.removed > 100000 ? '0,0.00a' : ab.removed > 1000 ? '0,0' : '0,0.000')}
+                                </span>
+                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
+                              </>
+                              :
+                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                            }
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   :
-                  <div className="w-full h-24 shadow flex items-center justify-center">
+                  <div className="w-full h-28 shadow flex items-center justify-center">
                     <Loader type="Triangle" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
                   </div>
                 }

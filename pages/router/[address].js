@@ -126,7 +126,7 @@ export default function RouterIndex() {
             <HiStatusOnline size={20} />
             <span className="uppercase text-base font-semibold">Status</span>
           </div>}
-          className="max-h-40 overflow-y-auto border-0 shadow-md rounded-2xl p-4"
+          className="overflow-y-auto border-0 shadow-md rounded-2xl p-4"
         >
           <div className="flex flex-col space-y-3.5 mt-2.5">
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
@@ -171,7 +171,7 @@ export default function RouterIndex() {
           </div>}
           className="col-span-1 lg:col-span-2 border-0 shadow-md rounded-2xl p-4"
         >
-          <div className="overflow-y-auto grid grid-flow-row grid-cols-1 lg:grid-cols-2 gap-y-3.5 gap-x-6 mt-2.5" style={{ maxHeight: '88px' }}>
+          <div className="overflow-y-auto grid grid-flow-row grid-cols-1 lg:grid-cols-2 gap-y-3.5 gap-x-6 mt-2.5" style={{ maxHeight: '122px' }}>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
               <span className="text-gray-400 dark:text-gray-600 font-medium">Volume</span>
               {routerAssets ?
@@ -206,10 +206,32 @@ export default function RouterIndex() {
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Total</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value') + _.sumBy(routerAssets.asset_balances, 'locked_value') + _.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
               <span className="text-gray-400 dark:text-gray-600 font-medium">Locked</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
                   <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'locked_value'), '0,0')}</span>
+                  :
+                  <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                :
+                <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
+              }
+            </div>
+            <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Locked In</span>
+              {routerAssets ?
+                routerAssets.asset_balances ?
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -228,10 +250,10 @@ export default function RouterIndex() {
               }
             </div>
             <div className="flex items-center justify-between text-base sm:text-sm space-x-2">
-              <span className="text-gray-400 dark:text-gray-600 font-medium">Locked In</span>
+              <span className="text-gray-400 dark:text-gray-600 font-medium">Removed</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
+                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'removed_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -247,7 +269,7 @@ export default function RouterIndex() {
           </div>}
           className="col-span-1 lg:col-span-2 border-0 shadow-md rounded-2xl p-4"
         >
-          <div className="overflow-y-auto grid grid-flow-row grid-cols-2 lg:grid-cols-3 gap-y-3.5 gap-x-6 mt-2.5" style={{ maxHeight: '88px' }}>
+          <div className="overflow-y-auto grid grid-flow-row grid-cols-2 lg:grid-cols-3 gap-y-3.5 gap-x-6 mt-2.5" style={{ maxHeight: '122px' }}>
             {chains_data?.filter(c => !c.disabled && (!routerStatus?.supportedChains || routerStatus.supportedChains.includes(c?.chain_id))).map((c, i) => (
               <ChainGas
                 key={i}
