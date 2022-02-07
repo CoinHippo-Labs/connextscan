@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useSelector, shallowEqual } from 'react-redux'
 
 import { Img } from 'react-image'
-import Loader from 'react-loader-spinner'
+import { Puff } from 'react-loader-spinner'
 
 import Networks from './networks'
 
@@ -67,7 +67,7 @@ export default function DropdownNetwork() {
               className="w-6 h-6 rounded-full"
             />
             :
-            <Loader type="Puff" color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
+            <Puff color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
         }
       </button>
       <div

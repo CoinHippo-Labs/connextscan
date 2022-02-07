@@ -253,7 +253,7 @@ export default function Index() {
 
   return (
     <>
-      <div className="max-w-6.5xl space-y-4 sm:space-y-8 xl:space-y-12 my-6 xl:mb-12 mx-auto">
+      <div className="max-w-6.5xl space-y-4 sm:space-y-8 xl:space-y-12 my-6 xl:mb-8 mx-auto">
         <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
           <Widget
             title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">TVL</span>}

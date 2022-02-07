@@ -4,7 +4,7 @@ import { useSelector, shallowEqual } from 'react-redux'
 
 import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
-import Loader from 'react-loader-spinner'
+import { BallTriangle } from 'react-loader-spinner'
 import { TiArrowRight } from 'react-icons/ti'
 
 import { numberFormat } from '../../lib/utils'
@@ -52,7 +52,7 @@ export default function ChainGas({ chainId, className = '' }) {
             {numberFormat(balance, '0,0.000')}
           </span>
           :
-          <Loader type="BallTriangle" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
+          <BallTriangle color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
         }
         <span className="text-gray-400 dark:text-gray-600 font-medium">{chain?.provider_params?.[0]?.nativeCurrency?.symbol}</span>
         {chain?.explorer?.url && (

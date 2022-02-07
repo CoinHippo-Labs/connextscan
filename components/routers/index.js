@@ -8,7 +8,7 @@ import moment from 'moment'
 import Web3 from 'web3'
 import { constants, utils } from 'ethers'
 import { Img } from 'react-image'
-import Loader from 'react-loader-spinner'
+import { Triangle } from 'react-loader-spinner'
 import StackGrid from 'react-stack-grid'
 import { MdOutlineRouter } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
@@ -312,7 +312,7 @@ export default function Routers() {
                 </div>
                 :
                 <div className="w-full h-24 shadow flex items-center justify-center">
-                  <Loader type="Triangle" color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
+                  <Triangle color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
                 </div>
               }
             </div>

@@ -9,7 +9,7 @@ import Web3 from 'web3'
 import { constants, utils } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
-import Loader from 'react-loader-spinner'
+import { Puff, TailSpin } from 'react-loader-spinner'
 import { TiArrowRight } from 'react-icons/ti'
 import { FaCheckCircle, FaRegCheckCircle, FaTimesCircle } from 'react-icons/fa'
 import { GoCode } from 'react-icons/go'
@@ -349,13 +349,13 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
                         <FaCheckCircle size={14} className="text-green-600 dark:text-white" />
                         :
                         props.value === 'Fulfilling' ?
-                          <Loader type="Puff" color={theme === 'dark' ? 'white' : '#22C55E'} width="14" height="14" />
+                          <Puff color={theme === 'dark' ? 'white' : '#22C55E'} width="14" height="14" />
                           :
                           props.value === 'Prepared' ?
                             <FaRegCheckCircle size={14} className="text-yellow-500 dark:text-white" />
                             :
                             props.value === 'Preparing' ?
-                              <Loader type="TailSpin" color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
+                              <TailSpin color={theme === 'dark' ? 'white' : '#3B82F6'} width="14" height="14" />
                               :
                               <FaTimesCircle size={14} className="text-red-700 dark:text-white" />
                       }

@@ -15,7 +15,7 @@ import {
   Cell,
   Tooltip,
 } from 'recharts'
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 
 import { chainTitle } from '../../lib/object/chain'
 import { currency_symbol } from '../../lib/object/currency'
@@ -135,7 +135,7 @@ export default function TVLByChain({ selectChainId }) {
         </ResponsiveContainer>
         :
         <div className="w-full h-48 flex items-center justify-center">
-          <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
+          <Oval color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
         </div>
       }
     </div>

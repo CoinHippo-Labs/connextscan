@@ -10,7 +10,7 @@ import {
   Bar,
   Cell,
 } from 'recharts'
-import Loader from 'react-loader-spinner'
+import { Oval } from 'react-loader-spinner'
 
 export default function TransactionByTime({ data, selectTime }) {
   const { preferences } = useSelector(state => ({ preferences: state.preferences }), shallowEqual)
@@ -66,7 +66,7 @@ export default function TransactionByTime({ data, selectTime }) {
         </ResponsiveContainer>
         :
         <div className="w-full h-56 flex items-center justify-center">
-          <Loader type="Oval" color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
+          <Oval color={theme === 'dark' ? 'white' : '#3B82F6'} width="24" height="24" />
         </div>
       }
     </div>

@@ -3,7 +3,6 @@ import { useEffect } from 'react'
 import { useSelector, useDispatch, shallowEqual } from 'react-redux'
 
 import _ from 'lodash'
-import moment from 'moment'
 import { NxtpSdk } from '@connext/nxtp-sdk'
 import { providers, Wallet } from 'ethers'
 import BigNumber from 'bignumber.js'
