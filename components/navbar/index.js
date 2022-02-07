@@ -29,7 +29,7 @@ BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_
 
 export default function Navbar() {
   const dispatch = useDispatch()
-  const { preferences, chains, tokens, routers_status, asset_balances, sdk, rpcs, wallet } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs, wallet: state.wallet }), shallowEqual)
+  const { preferences, chains, tokens, routers_status, asset_balances, sdk, rpcs } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
   const { tokens_data } = { ...tokens }
@@ -37,8 +37,6 @@ export default function Navbar() {
   const { asset_balances_data } = { ...asset_balances }
   const { sdk_data } = { ...sdk }
   const { rpcs_data } = { ...rpcs }
-  const { wallet_data } = { ...wallet }
-  const { signer } = { ...wallet_data }
 
   const router = useRouter()
   const { pathname, query } = { ...router }
