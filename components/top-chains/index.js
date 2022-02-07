@@ -103,7 +103,7 @@ export default function TopChains({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 <div className="flex flex-col space-y-1.5 my-1">
-                  {_.slice(_.orderBy(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0), entry => -1 * _.maxBy(entry[1], 'amount_value')?.amount_value), 0, tokensSeeMore.includes(props.row.original.symbol) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_TOKENS_SIZE).map(([key, value]) => (
+                  {_.slice(_.orderBy(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0), entry => -1 * _.maxBy(entry[1], 'amount_value')?.amount_value), 0, tokensSeeMore.includes(props.row.original.chain?.chain_id) ? Object.entries(props.value).filter(([key, value]) => value?.length > 0).length : COLLAPSE_TOKENS_SIZE).map(([key, value]) => (
                     <Link key={key} href={`/${_.maxBy(value, 'amount')?.chain?.id}`}>
                       <a className="h-5 flex items-center justify-end text-xs space-x-1.5">
                         <span className={`font-mono uppercase ${_.sumBy(value, 'amount_value') > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
@@ -120,16 +120,16 @@ export default function TopChains({ className = '' }) {
                       </a>
                     </Link>
                   ))}
-                  {(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0).length > COLLAPSE_TOKENS_SIZE || tokensSeeMore.includes(props.row.original.symbol)) && (
+                  {(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0).length > COLLAPSE_TOKENS_SIZE || tokensSeeMore.includes(props.row.original.chain?.chain_id)) && (
                     <div
-                      onClick={() => setTokensSeeMore(tokensSeeMore.includes(props.row.original.symbol) ? tokensSeeMore.filter(s => s !== props.row.original.symbol) : _.uniq(_.concat(tokensSeeMore, props.row.original.symbol)))}
+                      onClick={() => setTokensSeeMore(tokensSeeMore.includes(props.row.original.chain?.chain_id) ? tokensSeeMore.filter(s => s !== props.row.original.chain?.chain_id) : _.uniq(_.concat(tokensSeeMore, props.row.original.chain?.chain_id)))}
                       className="max-w-min cursor-pointer rounded flex items-center capitalize font-mono text-gray-400 dark:text-gray-600 text-2xs font-medium space-x-1 ml-auto mr-1"
                     >
-                      <span>See {tokensSeeMore.includes(props.row.original.symbol) ? 'Less' : 'More'}</span>
-                      {!(tokensSeeMore.includes(props.row.original.symbol)) && (
+                      <span>See {tokensSeeMore.includes(props.row.original.chain?.chain_id) ? 'Less' : 'More'}</span>
+                      {!(tokensSeeMore.includes(props.row.original.chain?.chain_id)) && (
                         <span>({numberFormat(Object.entries(props.value || {}).filter(([key, value]) => value?.length > 0).length - COLLAPSE_TOKENS_SIZE, '0,0')})</span>
                       )}
-                      {tokensSeeMore.includes(props.row.original.symbol) ? <IoCaretUpOutline /> : <IoCaretDownOutline />}
+                      {tokensSeeMore.includes(props.row.original.chain?.chain_id) ? <IoCaretUpOutline /> : <IoCaretDownOutline />}
                     </div>
                   )}
                 </div>
