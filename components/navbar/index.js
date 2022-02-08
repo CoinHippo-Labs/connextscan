@@ -29,10 +29,11 @@ BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_
 
 export default function Navbar() {
   const dispatch = useDispatch()
-  const { preferences, chains, tokens, routers_status, asset_balances, sdk, rpcs } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs }), shallowEqual)
+  const { preferences, chains, tokens, ens, routers_status, asset_balances, sdk, rpcs } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, ens: state.ens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
   const { tokens_data } = { ...tokens }
+  const { ens_data } = { ...ens }
   const { routers_status_trigger } = { ...routers_status }
   const { asset_balances_data } = { ...asset_balances }
   const { sdk_data } = { ...sdk }
@@ -230,7 +231,7 @@ export default function Navbar() {
           value: tokenContracts || [],
         })
 
-        const evmAddresses = _.uniq(data?.map(a => a?.router?.id).filter(id => id) || [])
+        const evmAddresses = _.uniq(data?.map(a => a?.router?.id).filter(id => id && !ens_data?.[id]) || [])
         if (evmAddresses.length > 0) {
           let ensData
 

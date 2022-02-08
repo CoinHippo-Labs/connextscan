@@ -176,7 +176,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         setTxs({ data })
       }
 
-      if (Object.keys(transactions_data).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)) {
+      if (address && Object.keys(transactions_data).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)) {
         const evmAddresses = _.slice(_.uniq(data.flatMap(t => [t?.sendingAddress?.toLowerCase(), t?.receivingAddress?.toLowerCase()]).filter(id => id && !ens_data?.[id])), 0, 50)
         if (evmAddresses.length > 0) {
           let ensData
