@@ -206,7 +206,7 @@ export default function Navbar() {
     }
   }, [sdk_data, routers_status_trigger])
 
-  // assets-balances & tokens & ens
+  // assets-balances & tokens
   useEffect(() => {
     const getAssetBalances = async chain => {
       if (chain && !chain.disabled) {
@@ -218,7 +218,7 @@ export default function Navbar() {
           value: { [`${chain.chain_id}`]: data },
         })
 
-        const contractAddresses = _.uniq(data?.map(a => a?.contract_address).filter(a => a) || [])
+        const contractAddresses = _.uniq(data?.map(a => a?.contract_address).filter(a => a && !(tokens_data?.findIndex(t => t?.chain_id === chain.chain_id && t?.contract_address === a) > -1)) || [])
         let tokenContracts
 
         if (contractAddresses.length > 0) {
@@ -230,40 +230,6 @@ export default function Navbar() {
           type: TOKENS_DATA,
           value: tokenContracts || [],
         })
-
-        const evmAddresses = _.uniq(data?.map(a => a?.router?.id).filter(id => id && !ens_data?.[id]) || [])
-        if (evmAddresses.length > 0) {
-          let ensData
-
-          const addressChunk = _.chunk(evmAddresses, 25)
-
-          for (let i = 0; i < addressChunk.length; i++) {
-            const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
-
-            ensData = _.concat(ensData || [], domainsResponse?.data || [])
-          }
-
-          if (ensData?.length > 0) {
-            const ensResponses = {}
-
-            for (let i = 0; i < evmAddresses.length; i++) {
-              const evmAddress = evmAddresses[i]?.toLowerCase()
-              const resolvedAddresses = ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress)
-
-              if (resolvedAddresses.length > 1) {
-                ensResponses[evmAddress] = await getENS(evmAddress)
-              }
-              else if (resolvedAddresses.length < 1) {
-                ensData.push({ resolvedAddress: { id: evmAddress } })
-              }
-            }
-
-            dispatch({
-              type: ENS_DATA,
-              value: Object.fromEntries(ensData.filter(domain => !ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()]?.reverseRecord || domain?.name === ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()].reverseRecord).map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
-            })
-          }
-        }
       }
     }
 
@@ -282,6 +248,45 @@ export default function Navbar() {
       clearInterval(interval)
     }
   }, [chains_data, pathname])
+
+  // ens
+  useEffect(async () => {
+    if (chains_data && asset_balances_data && chains_data.length <= Object.keys(asset_balances_data).length) {
+      const evmAddresses = _.uniq(Object.values(asset_balances_data).flatMap(ab => ab)?.map(a => a?.router?.id).filter(id => id && !ens_data?.[id]) || [])
+      if (evmAddresses.length > 0) {
+        let ensData
+
+        const addressChunk = _.chunk(evmAddresses, 25)
+
+        for (let i = 0; i < addressChunk.length; i++) {
+          const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
+
+          ensData = _.concat(ensData || [], domainsResponse?.data || [])
+        }
+
+        if (ensData?.length > 0) {
+          const ensResponses = {}
+
+          for (let i = 0; i < evmAddresses.length; i++) {
+            const evmAddress = evmAddresses[i]?.toLowerCase()
+            const resolvedAddresses = ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress)
+
+            if (resolvedAddresses.length > 1) {
+              ensResponses[evmAddress] = await getENS(evmAddress)
+            }
+            else if (resolvedAddresses.length < 1) {
+              ensData.push({ resolvedAddress: { id: evmAddress } })
+            }
+          }
+
+          dispatch({
+            type: ENS_DATA,
+            value: Object.fromEntries(ensData.filter(domain => !ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()]?.reverseRecord || domain?.name === ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()].reverseRecord).map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+          })
+        }
+      }
+    }
+  }, [chains_data, asset_balances_data])
 
   // routers-assets
   useEffect(() => {

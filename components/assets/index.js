@@ -15,6 +15,7 @@ import { TiArrowRight } from 'react-icons/ti'
 import { BsJournalCode } from 'react-icons/bs'
 import { GoCode } from 'react-icons/go'
 
+import Datatable from '../datatable'
 import Copy from '../copy'
 import Popover from '../popover'
 import Widget from '../widget'
@@ -229,32 +230,36 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
         )}
         className={`border-0 ${address ? 'bg-transaparent py-0' : 'shadow-md'} rounded-2xl`}
       >
-        {address && assetsByChains.length > 1 && (
-          <div className="flex flex-wrap items-center justify-center mb-3">
-            {assetsByChains.map((ac, i) => (
-              <div
-                key={i}
-                onClick={() => setChainIdsFilter(_.concat(chainIdsFilter || [], ac.chain_id).filter(id => id !== ac.chain_id || !chainIdsFilter?.includes(id)))}
-                className={`${chainIdsFilter?.includes(ac.chain?.chain_id) ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-900'} cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5`}
-              >
-                <Img
-                  src={ac.chain?.image}
-                  alt=""
-                  className="w-4 sm:w-5 h-4 sm:h-5 rounded-full"
-                />
-                <span className="font-mono font-semibold">
-                  {numberFormat(ac.total, '0,0')}
-                </span>
-              </div>
-            ))}
-            {chainIdsFilter?.length > 0 && (
-              <div
-                onClick={() => setChainIdsFilter(null)}
-                className="hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5"
-              >
-                <span className="font-medium">
-                  Reset
-                </span>
+        {address && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-2">
+            {assetsByChains.length > 1 && (
+              <div className="flex flex-wrap items-center justify-center mb-3">
+                {assetsByChains.map((ac, i) => (
+                  <div
+                    key={i}
+                    onClick={() => setChainIdsFilter(_.concat(chainIdsFilter || [], ac.chain_id).filter(id => id !== ac.chain_id || !chainIdsFilter?.includes(id)))}
+                    className={`${chainIdsFilter?.includes(ac.chain?.chain_id) ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-900'} cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5`}
+                  >
+                    <Img
+                      src={ac.chain?.image}
+                      alt=""
+                      className="w-4 sm:w-5 h-4 sm:h-5 rounded-full"
+                    />
+                    <span className="font-mono font-semibold">
+                      {numberFormat(ac.total, '0,0')}
+                    </span>
+                  </div>
+                ))}
+                {chainIdsFilter?.length > 0 && (
+                  <div
+                    onClick={() => setChainIdsFilter(null)}
+                    className="hover:bg-gray-100 dark:hover:bg-gray-900 cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5"
+                  >
+                    <span className="font-medium">
+                      Reset
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </div>
