@@ -172,11 +172,13 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         }
       })
 
-      if ((data.length > 0 || address || blockchain_id) && Object.keys(transactions_data).length > (blockchain_id ? 0 : 3)) {
+      const ready = Object.keys(transactions_data).filter(cid => !blockchain_id || chains_data?.find(c => c?.id === blockchain_id)?.chain_id === Number(cid)).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)
+
+      if ((data.length > 0 || address || blockchain_id) && ready) {
         setTxs({ data })
       }
 
-      if (address && Object.keys(transactions_data).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)) {
+      if (ready) {
         const evmAddresses = _.slice(_.uniq(data.flatMap(t => [t?.sendingAddress?.toLowerCase(), t?.receivingAddress?.toLowerCase()]).filter(id => id && !ens_data?.[id])), 0, 50)
         if (evmAddresses.length > 0) {
           let ensData

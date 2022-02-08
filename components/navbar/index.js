@@ -251,7 +251,7 @@ export default function Navbar() {
 
   // ens
   useEffect(async () => {
-    if (chains_data && asset_balances_data && chains_data.length <= Object.keys(asset_balances_data).length) {
+    if (chains_data && asset_balances_data && chains_data.filter(c => !c?.disabled).length <= Object.keys(asset_balances_data).length) {
       const evmAddresses = _.uniq(Object.values(asset_balances_data).flatMap(ab => ab)?.map(a => a?.router?.id).filter(id => id && !ens_data?.[id]) || [])
       if (evmAddresses.length > 0) {
         let ensData
