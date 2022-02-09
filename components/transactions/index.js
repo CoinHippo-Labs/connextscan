@@ -172,7 +172,8 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         }
       })
 
-      const ready = Object.keys(transactions_data).filter(cid => !blockchain_id || chains_data?.find(c => c?.id === blockchain_id)?.chain_id === Number(cid)).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length)
+      const ready = Object.keys(transactions_data).filter(cid => !blockchain_id || chains_data?.find(c => c?.id === blockchain_id)?.chain_id === Number(cid)).length >= (blockchain_id ? 1 : chains_data?.filter(c => !c?.disabled).length) &&
+        chains_data?.filter(c => !c?.disabled).length <= Object.keys(_.groupBy(tokens_data, 'chain_id')).length
 
       if ((data.length > 0 || address || blockchain_id) && ready) {
         setTxs({ data })
@@ -183,7 +184,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         if (evmAddresses.length > 0) {
           let ensData
 
-          const addressChunk = _.chunk(evmAddresses, 25)
+          const addressChunk = _.chunk(evmAddresses, 50)
 
           for (let i = 0; i < addressChunk.length; i++) {
             const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
@@ -214,7 +215,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         }
       }
     }
-  }, [tokens_data, ens_data, transactions_data])
+  }, [tokens_data, transactions_data])
 
   const addTokenToMetaMask = addTokenToMetaMaskFunction || (async (chain_id, contract) => {
     if (web3 && contract) {

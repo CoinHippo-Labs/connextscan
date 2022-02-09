@@ -233,17 +233,19 @@ export default function Navbar() {
       }
     }
 
-    const getData = async () => {
+    const getData = async is_interval => {
       if (chains_data) {
         if (['/', '/routers', '/leaderboard/routers', '/transactions', '/status', '/router/[address]', '/address/[address]', '/[blockchain_id]'].includes(pathname)) {
-          chains_data.forEach(c => getAssetBalances(c))
+          if (['/router/[address]', '/[blockchain_id]'].includes(pathname) || !asset_balances_data || !tokens_data || is_interval) {
+            chains_data.forEach(c => getAssetBalances(c))
+          }
         }
       }
     }
 
     getData()
 
-    const interval = setInterval(() => getData(), 3 * 60 * 1000)
+    const interval = setInterval(() => getData(true), 5 * 60 * 1000)
     return () => {
       clearInterval(interval)
     }
@@ -256,7 +258,7 @@ export default function Navbar() {
       if (evmAddresses.length > 0) {
         let ensData
 
-        const addressChunk = _.chunk(evmAddresses, 25)
+        const addressChunk = _.chunk(evmAddresses, 50)
 
         for (let i = 0; i < addressChunk.length; i++) {
           const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })

@@ -243,7 +243,7 @@ export default function Transaction() {
             if (evmAddresses.length > 0) {
               let ensData
 
-              const addressChunk = _.chunk(evmAddresses, 25)
+              const addressChunk = _.chunk(evmAddresses, 50)
 
               for (let i = 0; i < addressChunk.length; i++) {
                 const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
