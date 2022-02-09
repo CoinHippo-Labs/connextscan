@@ -48,10 +48,12 @@ export default function Navbar() {
     const getData = async () => {
       const response = await getChains()
 
-      dispatch({
-        type: CHAINS_DATA,
-        value: response || [],
-      })
+      if (response) {
+        dispatch({
+          type: CHAINS_DATA,
+          value: response,
+        })
+      }
     }
 
     getData()
@@ -62,10 +64,12 @@ export default function Navbar() {
     const getData = async () => {
       const response = await assets()
 
-      dispatch({
-        type: ASSETS_DATA,
-        value: response || [],
-      })
+      if (response) {
+        dispatch({
+          type: ASSETS_DATA,
+          value: response,
+        })
+      }
     }
 
     getData()
