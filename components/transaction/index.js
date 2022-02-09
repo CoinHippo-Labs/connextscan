@@ -1292,7 +1292,7 @@ export default function Transaction() {
                           </a>
                         </Link>
                       </div>
-                      <div className="flex justify-start sm:justify-center">
+                      <div className="flex justify-center">
                         <Copy
                           text={generalTx.router.id}
                           copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
