@@ -55,7 +55,7 @@ export default function SubNavbar() {
           href={process.env.NEXT_PUBLIC_BRIDGE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center text-indigo-600 dark:text-white font-semibold mr-4"
+          className="min-w-max flex items-center text-indigo-600 dark:text-white font-semibold mr-4"
         >
           <Img
             src="/logos/externals/xpollinate.png"
