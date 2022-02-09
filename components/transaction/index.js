@@ -52,7 +52,7 @@ export default function Transaction() {
   const { rpcs_data } = { ...rpcs }
   const { sdk_data } = { ...sdk }
   const { wallet_data } = { ...wallet }
-  const { provider, web3_provider, signer, chain_id, address } = { ...wallet_data }
+  const { provider, web3_provider, signer, chain_id, address, default_chain_id } = { ...wallet_data }
 
   const router = useRouter()
   const { query } = { ...router }
@@ -1125,7 +1125,7 @@ export default function Transaction() {
                   <HeadShake duration={1500} forever>
                     <Wallet
                       hidden={web3_provider && !mustSwitchNetwork ? true : false}
-                      chainIdToConnect={mustSwitchNetwork && (canCancelSendingTx ? sendingTx?.sendingChainId : receivingTx?.receivingChainId)}
+                      chainIdToConnect={mustSwitchNetwork && ((canCancelSendingTx ? sendingTx?.sendingChainId : receivingTx?.receivingChainId) || default_chain_id)}
                     />
                   </HeadShake>
                 )}
