@@ -120,7 +120,7 @@ export default function RouterIndex() {
 
   return (
     <div className="max-w-6xl space-y-8 my-2 xl:mt-4 xl:mb-6 mx-auto">
-      <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 mt-8 mx-3 sm:mx-0">
+      <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6 mt-8 mx-3 sm:mx-2">
         <Widget
           title={<div className="flex items-center text-black dark:text-white space-x-2.5">
             <HiStatusOnline size={20} />

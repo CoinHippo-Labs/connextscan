@@ -236,7 +236,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
         className={`border-0 ${address ? 'bg-transaparent py-0 px-0' : 'shadow-md'} rounded-2xl`}
       >
         {address && (
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-2">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-2 mx-2">
             <div className="flex items-center justify-center space-x-1.5 mb-3">
               {['table', 'card'].map((v, j) => (
                 <button
