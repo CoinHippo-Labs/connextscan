@@ -330,7 +330,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                   const addToMetaMaskButton = props.row.original?.assetId !== constants.AddressZero && (
                     <button
                       onClick={() => addTokenToMetaMask(props.row.original.chain?.chain_id, { ...props.row.original.asset })}
-                      className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
+                      className="w-auto min-w-max bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
                     >
                       <Img
                         src="/logos/wallets/metamask.png"
