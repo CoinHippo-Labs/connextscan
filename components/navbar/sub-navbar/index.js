@@ -83,13 +83,11 @@ export default function SubNavbar() {
         <>
           <div className="flex items-center space-x-1.5 mr-4">
             <div className="min-w-max flex items-center text-gray-500 dark:text-gray-500 space-x-1.5">
-              {token_data.image?.thumb && (
-                <img
-                  src={token_data.image.thumb}
-                  alt=""
-                  className="w-5 h-5"
-                />
-              )}
+              <Img
+                src={token_data.image?.thumb}
+                alt=""
+                className="w-5 h-5"
+              />
               <span className="uppercase text-black dark:text-white font-semibold">{token_data.symbol}</span>
               <span>Price</span>
               :

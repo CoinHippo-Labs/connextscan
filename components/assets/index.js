@@ -10,16 +10,18 @@ import { constants, utils } from 'ethers'
 import { Img } from 'react-image'
 import { Triangle, ThreeDots } from 'react-loader-spinner'
 import StackGrid from 'react-stack-grid'
-import { MdOutlineRouter } from 'react-icons/md'
+import { MdOutlineRouter, MdOutlineWindow } from 'react-icons/md'
 import { TiArrowRight } from 'react-icons/ti'
 import { BsJournalCode } from 'react-icons/bs'
 import { GoCode } from 'react-icons/go'
+import { BiTable } from 'react-icons/bi'
 
 import Datatable from '../datatable'
 import Copy from '../copy'
 import Popover from '../popover'
 import Widget from '../widget'
 
+import { chainTitle } from '../../lib/object/chain'
 import { currency_symbol } from '../../lib/object/currency'
 import { numberFormat, ellipseAddress } from '../../lib/utils'
 
@@ -35,6 +37,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
   const { query } = { ...router }
   const { address, blockchain_id } = { ...query }
 
+  const [view, setView] = useState('table')
   const [chainIdsFilter, setChainIdsFilter] = useState(null)
   const [web3, setWeb3] = useState(null)
   const [chainId, setChainId] = useState(null)
@@ -162,6 +165,8 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
       }
     }).filter(ac => ac?.total > 0), ['total'], ['desc'])
 
+    const data = _.orderBy(ra?.asset_balances?.flatMap(abs => abs).filter(ab => !(chainIdsFilter?.length > 0) || chainIdsFilter.includes(ab.chain?.chain_id)) || [], ['amount_value', 'amount'], ['desc', 'desc'])
+
     return (
       <Widget
         key={i}
@@ -232,11 +237,26 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
       >
         {address && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-2">
+            <div className="flex items-center justify-center space-x-1.5 mb-3">
+              {['table', 'card'].map((v, j) => (
+                <button
+                  key={j}
+                  onClick={() => setView(v)}
+                  className={`${v === view ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-900'} cursor-pointer rounded-lg py-1.5 px-2`}
+                >
+                  {v === 'table' ?
+                    <BiTable size={20} />
+                    :
+                    <MdOutlineWindow size={18} />
+                  }
+                </button>
+              ))}
+            </div>
             {assetsByChains.length > 1 && (
               <div className="flex flex-wrap items-center justify-center mb-3">
-                {assetsByChains.map((ac, i) => (
+                {assetsByChains.map((ac, j) => (
                   <div
-                    key={i}
+                    key={j}
                     onClick={() => setChainIdsFilter(_.concat(chainIdsFilter || [], ac.chain_id).filter(id => id !== ac.chain_id || !chainIdsFilter?.includes(id)))}
                     className={`${chainIdsFilter?.includes(ac.chain?.chain_id) ? 'bg-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-900' : 'hover:bg-gray-100 dark:hover:bg-gray-900'} cursor-pointer rounded-lg flex items-center space-x-1.5 mb-0.5 mr-1 sm:mr-0 ml-0 sm:ml-1 py-1 px-1.5`}
                   >
@@ -264,195 +284,459 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
             )}
           </div>
         )}
-        <div className={`grid grid-flow-row grid-cols-1 ${address ? 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'sm:grid-cols-2 mt-4 mb-2'} gap-0`}>
-          {_.orderBy(ra?.asset_balances?.flatMap(abs => abs).filter(ab => !(chainIdsFilter?.length > 0) || chainIdsFilter.includes(ab.chain?.chain_id)) || [], ['amount_value', 'amount'], ['desc', 'desc']).map((ab, j) => {
-            const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
-              <button
-                onClick={() => addTokenToMetaMask(ab?.chain?.chain_id, { ...ab?.asset })}
-                className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
-              >
-                <Img
-                  src="/logos/wallets/metamask.png"
-                  alt=""
-                  className="w-3.5 h-3.5"
-                />
-              </button>
-            )
+        {view === 'table' ?
+          <Datatable
+            columns={[
+              {
+                Header: '#',
+                accessor: 'i',
+                sortType: (rowA, rowB) => rowA.original.i > rowB.original.i ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="font-mono my-1">
+                      {numberFormat(props.value + 1, '0,0')}
+                    </div>
+                    :
+                    <div className="skeleton w-6 h-5 my-1" />
+                ),
+              },
+              {
+                Header: 'Chain',
+                accessor: 'chain.title',
+                sortType: (rowA, rowB) => chainTitle(rowA.original.chain) > chainTitle(rowB.original.chain) ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <Link href={`/${props.row.original.chain?.id}`}>
+                      <a className="flex items-center space-x-1.5 my-1">
+                        <Img
+                          src={props.row.original.chain?.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                        <span className="font-medium">
+                          {chainTitle(props.row.original.chain)}
+                        </span>
+                      </a>
+                    </Link>
+                    :
+                    <div className="skeleton w-32 h-5 my-1" />
+                ),
+              },
+              {
+                Header: 'Token',
+                accessor: 'asset.name',
+                sortType: (rowA, rowB) => rowA.original.asset?.name > rowB.original.asset?.name ? 1 : -1,
+                Cell: props => {
+                  const addToMetaMaskButton = props.row.original?.assetId !== constants.AddressZero && (
+                    <button
+                      onClick={() => addTokenToMetaMask(props.row.original.chain?.chain_id, { ...props.row.original.asset })}
+                      className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
+                    >
+                      <Img
+                        src="/logos/wallets/metamask.png"
+                        alt=""
+                        className="w-3.5 h-3.5"
+                      />
+                    </button>
+                  )
 
-            return (
-              <div key={j}>
-                {ab?.asset ?
-                  <div className="min-h-full border py-5 px-4" style={{ borderColor: ab?.chain?.color }}>
-                    <div className="space-y-0.5">
-                      <div className="flex items-start">
-                        {ab.asset.image && (
+                  return !props.row.original.skeleton ?
+                    <div className="w-28 flex items-start my-1">
+                      <Img
+                        src={props.row.original.asset?.image}
+                        alt=""
+                        className="w-5 h-5 rounded-full mr-2"
+                      />
+                      <div className="flex flex-col">
+                        <div className="flex items-center space-x-2 -mt-0.5">
+                          <span className="leading-4 text-xs font-semibold">{props.row.original.asset?.name}</span>
+                          {addToMetaMaskButton}
+                        </div>
+                        {props.row.original.assetId && (
+                          <span className="min-w-max flex items-center space-x-0.5">
+                            <Copy
+                              size={14}
+                              text={props.row.original.assetId}
+                              copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-medium">
+                                {ellipseAddress(props.row.original.assetId, 6)}
+                              </span>}
+                            />
+                            {props.row.original.chain?.explorer?.url && (
+                              <a
+                                href={`${props.row.original.chain.explorer.url}${props.row.original.chain.explorer[`contract${props.row.original.assetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', props.row.original.assetId)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 dark:text-white"
+                              >
+                                {props.row.original.chain.explorer.icon ?
+                                  <Img
+                                    src={props.row.original.chain.explorer.icon}
+                                    alt=""
+                                    className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                                  />
+                                  :
+                                  <TiArrowRight size={16} className="transform -rotate-45" />
+                                }
+                              </a>
+                            )}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    :
+                    <div className="skeleton w-32 h-5 my-1" />
+                },
+              },
+              {
+                Header: 'Liquidity',
+                accessor: 'amount',
+                sortType: (rowA, rowB) => rowA.original.amount_value > rowB.original.amount_value ? 1 : rowA.original.amount_value < rowB.original.amount_value ? -1 : rowA.original.amount > rowB.original.amount ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="flex flex-col items-end space-y-1.5 my-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-xs ${props.row.original.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {numberFormat(props.value, props.value > 100000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {props.row.original.asset?.symbol}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-green-600 dark:text-green-500 text-2xs ${props.row.original.amount_value > 100000 ? 'font-semibold' : 'font-normal'}`}>
+                          {currency_symbol}{numberFormat(props.row.original.amount_value, props.row.original.amount_value > 100000 ? '0,0.00a' : props.row.original.amount_value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                      </div>
+                    </div>
+                    :
+                    <div className="flex flex-col items-end space-y-2 my-1">
+                      <div className="skeleton w-28 h-5" />
+                      <div className="skeleton w-28 h-5" />
+                    </div>
+                ),
+                headerClassName: 'whitespace-nowrap justify-end text-right',
+              },
+              {
+                Header: 'Locked',
+                accessor: 'locked',
+                sortType: (rowA, rowB) => rowA.original.locked_value > rowB.original.locked_value ? 1 : rowA.original.locked_value < rowB.original.locked_value ? -1 : rowA.original.locked > rowB.original.locked ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="flex flex-col items-end my-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-xs ${props.row.original.locked_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {numberFormat(props.value, props.value > 10000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {props.row.original.asset?.symbol}
+                        </span>
+                      </div>
+                    </div>
+                    :
+                    <div className="skeleton w-28 h-5 my-1" />
+                ),
+                headerClassName: 'whitespace-nowrap justify-end text-right',
+              },
+              {
+                Header: 'Locked In',
+                accessor: 'lockedIn',
+                sortType: (rowA, rowB) => rowA.original.lockedIn_value > rowB.original.lockedIn_value ? 1 : rowA.original.lockedIn_value < rowB.original.lockedIn_value ? -1 : rowA.original.lockedIn > rowB.original.lockedIn ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="flex flex-col items-end my-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-xs ${props.row.original.lockedIn_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {numberFormat(props.value, props.value > 100000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {props.row.original.asset?.symbol}
+                        </span>
+                      </div>
+                    </div>
+                    :
+                    <div className="skeleton w-28 h-5 my-1" />
+                ),
+                headerClassName: 'whitespace-nowrap justify-end text-right',
+              },
+              {
+                Header: 'Supplied',
+                accessor: 'supplied',
+                sortType: (rowA, rowB) => rowA.original.supplied_value > rowB.original.supplied_value ? 1 : rowA.original.supplied_value < rowB.original.supplied_value ? -1 : rowA.original.supplied > rowB.original.supplied ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="flex flex-col items-end my-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-xs ${props.row.original.supplied_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {numberFormat(props.value, props.value > 100000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {props.row.original.asset?.symbol}
+                        </span>
+                      </div>
+                    </div>
+                    :
+                    <div className="skeleton w-28 h-5 my-1" />
+                ),
+                headerClassName: 'whitespace-nowrap justify-end text-right',
+              },
+              {
+                Header: 'Removed',
+                accessor: 'removed',
+                sortType: (rowA, rowB) => rowA.original.removed_value > rowB.original.removed_value ? 1 : rowA.original.removed_value < rowB.original.removed_value ? -1 : rowA.original.removed > rowB.original.removed ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="flex flex-col items-end my-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-xs ${props.row.original.removed_value > 10000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {numberFormat(props.value, props.value > 100000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {props.row.original.asset?.symbol}
+                        </span>
+                      </div>
+                    </div>
+                    :
+                    <div className="skeleton w-28 h-5 my-1" />
+                ),
+                headerClassName: 'whitespace-nowrap justify-end text-right',
+              },
+              {
+                Header: 'Volume',
+                accessor: 'volume',
+                sortType: (rowA, rowB) => rowA.original.volume_value > rowB.original.volume_value ? 1 : rowA.original.volume_value < rowB.original.volume_value ? -1 : rowA.original.volume > rowB.original.volume ? 1 : -1,
+                Cell: props => (
+                  !props.row.original.skeleton ?
+                    <div className="flex flex-col items-end space-y-1.5 my-1">
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-xs ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300'}`}>
+                          {numberFormat(props.value, props.value > 10000000 ? '0,0.00a' : props.value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {props.row.original.general_asset?.symbol || props.row.original.asset?.symbol}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-red-600 dark:text-red-500 text-2xs ${props.row.original.volume_value > 1000000 ? 'font-semibold' : 'font-normal'}`}>
+                          {currency_symbol}{numberFormat(props.row.original.volume_value, props.row.original.volume_value > 10000000 ? '0,0.00a' : props.row.original.volume_value > 1000 ? '0,0' : '0,0.00')}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className={`font-mono uppercase text-blue-600 dark:text-blue-500 text-xs ${props.row.original.receivingFulfillTxCount > 10000 ? 'font-semibold' : 'font-normal'}`}>
+                          {numberFormat(props.row.original.receivingFulfillTxCount, props.row.original.receivingFulfillTxCount > 1000 ? '0,0.00a' : '0,0')}
+                        </span>
+                        <span className="text-gray-700 dark:text-gray-300">
+                          TXs
+                        </span>
+                      </div>
+                    </div>
+                    :
+                    <div className="flex flex-col items-end space-y-2 my-1">
+                      <div className="skeleton w-28 h-5" />
+                      <div className="skeleton w-28 h-5" />
+                      <div className="skeleton w-20 h-5" />
+                    </div>
+                ),
+                headerClassName: 'whitespace-nowrap justify-end text-right',
+              },
+            ]}
+            data={data ?
+              data.map((ab, j) => { return { ...ab, i: j } })
+              :
+              [...Array(10).keys()].map(j => { return { i: j, skeleton: true } })
+            }
+            noPagination={data?.length <= 10 ? true : false}
+            defaultPageSize={10}
+            className="min-h-full no-border"
+          />
+          :
+          <div className={`grid grid-flow-row grid-cols-1 ${address ? 'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5' : 'sm:grid-cols-2 mt-4 mb-2'} gap-0`}>
+            {data.map((ab, j) => {
+              const addToMetaMaskButton = ab?.assetId !== constants.AddressZero && (
+                <button
+                  onClick={() => addTokenToMetaMask(ab?.chain?.chain_id, { ...ab?.asset })}
+                  className="w-auto bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded flex items-center justify-center py-1 px-1.5"
+                >
+                  <Img
+                    src="/logos/wallets/metamask.png"
+                    alt=""
+                    className="w-3.5 h-3.5"
+                  />
+                </button>
+              )
+
+              return (
+                <div key={j}>
+                  {ab?.asset ?
+                    <div className="min-h-full border py-5 px-4" style={{ borderColor: ab.chain?.color }}>
+                      <div className="space-y-0.5">
+                        <div className="flex items-start">
                           <Img
                             src={ab.asset.image}
                             alt=""
                             className="w-5 h-5 rounded-full mr-2"
                           />
-                        )}
-                        <div className="flex flex-col">
-                          <span className="leading-4 text-xs font-semibold">{ab.asset.name}</span>
-                          {ab.assetId && (
-                            <span className="min-w-max flex items-center space-x-0.5">
-                              <Copy
-                                size={14}
-                                text={ab.assetId}
-                                copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-medium">
-                                  {ellipseAddress(ab.assetId, 6)}
-                                </span>}
-                              />
-                              {ab?.chain?.explorer?.url && (
-                                <a
-                                  href={`${ab.chain.explorer.url}${ab.chain.explorer[`contract${ab.assetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', ab.assetId)}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-600 dark:text-white"
-                                >
-                                  {ab.chain.explorer.icon ?
-                                    <Img
-                                      src={ab.chain.explorer.icon}
-                                      alt=""
-                                      className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
-                                    />
-                                    :
-                                    <TiArrowRight size={16} className="transform -rotate-45" />
-                                  }
-                                </a>
-                              )}
-                            </span>
+                          <div className="flex flex-col">
+                            <span className="leading-4 text-xs font-semibold">{ab.asset.name}</span>
+                            {ab.assetId && (
+                              <span className="min-w-max flex items-center space-x-0.5">
+                                <Copy
+                                  size={14}
+                                  text={ab.assetId}
+                                  copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-medium">
+                                    {ellipseAddress(ab.assetId, 6)}
+                                  </span>}
+                                />
+                                {ab.chain?.explorer?.url && (
+                                  <a
+                                    href={`${ab.chain.explorer.url}${ab.chain.explorer[`contract${ab.assetId === constants.AddressZero ? '_0' : ''}_path`]?.replace('{address}', ab.assetId)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 dark:text-white"
+                                  >
+                                    {ab.chain.explorer.icon ?
+                                      <Img
+                                        src={ab.chain.explorer.icon}
+                                        alt=""
+                                        className="w-3.5 h-3.5 rounded-full opacity-60 hover:opacity-100"
+                                      />
+                                      :
+                                      <TiArrowRight size={16} className="transform -rotate-45" />
+                                    }
+                                  </a>
+                                )}
+                              </span>
+                            )}
+                          </div>
+                          {ab.chain?.image && (
+                            <Link href={`/${ab.chain.id}`}>
+                              <a className="min-w-max w-4 h-4 relative -top-3.5 -right-2.5 ml-auto">
+                                <Img
+                                  src={ab.chain.image}
+                                  alt=""
+                                  className="w-4 h-4 rounded-full"
+                                />
+                              </a>
+                            </Link>
                           )}
                         </div>
-                        {ab?.chain?.image && (
-                          <Link href={`/${ab.chain.id}`}>
-                            <a className="min-w-max w-4 h-4 relative -top-3.5 -right-2.5 ml-auto">
-                              <Img
-                                src={ab.chain.image}
-                                alt=""
-                                className="w-4 h-4 rounded-full"
-                              />
-                            </a>
-                          </Link>
-                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center justify-center mt-3.5">
-                      <div className="w-full text-center space-y-1">
-                        <div className="font-mono text-xs">
-                          {typeof ab?.amount === 'number' ?
-                            <>
-                              <span className={`uppercase ${ab?.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-base mr-1.5`}>
-                                {numberFormat(ab.amount, ab.amount > 10000 ? '0,0.00a' : ab.amount > 10 ? '0,0' : '0,0.000')}
+                      <div className="flex items-center justify-center mt-3.5">
+                        <div className="w-full text-center space-y-1">
+                          <div className="font-mono text-xs">
+                            {typeof ab.amount === 'number' ?
+                              <>
+                                <span className={`uppercase ${ab.amount_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-base mr-1.5`}>
+                                  {numberFormat(ab.amount, ab.amount > 10000 ? '0,0.00a' : ab.amount > 10 ? '0,0' : '0,0.000')}
+                                </span>
+                                <span className="text-gray-400 dark:text-gray-600 text-xs font-medium">{ab.asset.symbol}</span>
+                              </>
+                              :
+                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                            }
+                          </div>
+                          <div className={`max-w-min bg-gray-100 dark:bg-gray-${address ? 900 : 800} rounded-lg font-mono text-2xs mx-auto py-1.5 px-2.5`}>
+                            {typeof ab.amount_value === 'number' ?
+                              <span className={`uppercase ${ab.amount_value > 100000 ? 'text-gray-800 dark:text-gray-200 font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
+                                {currency_symbol}{numberFormat(ab.amount_value, ab.amount_value > 100000 ? '0,0.00a' : ab.amount_value > 1000 ? '0,0' : '0,0.000')}
                               </span>
-                              <span className="text-gray-400 dark:text-gray-600 text-xs font-medium">{ab?.asset?.symbol}</span>
-                            </>
-                            :
-                            <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                          }
-                        </div>
-                        <div className={`max-w-min bg-gray-100 dark:bg-gray-${address ? 900 : 800} rounded-lg font-mono text-2xs mx-auto py-1.5 px-2.5`}>
-                          {typeof ab?.amount_value === 'number' ?
-                            <span className={`uppercase ${ab?.amount_value > 100000 ? 'text-gray-800 dark:text-gray-200 font-semibold' : 'text-gray-600 dark:text-gray-400'}`}>
-                              {currency_symbol}{numberFormat(ab.amount_value, ab.amount_value > 100000 ? '0,0.00a' : ab.amount_value > 1000 ? '0,0' : '0,0.000')}
-                            </span>
-                            :
-                            <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                          }
-                        </div>
-                      </div>
-                      <div className="min-w-max relative -bottom-3.5 -right-0 mb-0.5 ml-auto">
-                        <Popover
-                          placement="left"
-                          title={<span className="normal-case text-3xs">Add token</span>}
-                          content={<div className="w-32 text-3xs">Add <span className="font-semibold">{ab.asset.symbol}</span> to MetaMask</div>}
-                          titleClassName="py-0.5"
-                          contentClassName="py-1.5"
-                        >
-                          {addToMetaMaskButton}
-                        </Popover>
-                      </div>
-                    </div>
-                    <div className="space-y-1.5 mt-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500 dark:text-gray-500">Locked</span>
-                        <div className="text-right">
-                          <div className="font-mono text-xs">
-                            {typeof ab?.locked === 'number' ?
-                              <>
-                                <span className={`uppercase ${ab?.locked_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
-                                  {numberFormat(ab.locked, ab.locked > 10000 ? '0,0.00a' : ab.locked > 1000 ? '0,0' : '0,0.000')}
-                                </span>
-                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
-                              </>
                               :
                               <span className="text-gray-400 dark:text-gray-600">n/a</span>
                             }
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500 dark:text-gray-500">Locked In</span>
-                        <div className="text-right">
-                          <div className="font-mono text-xs">
-                            {typeof ab?.lockedIn === 'number' ?
-                              <>
-                                <span className={`uppercase ${ab?.lockedIn_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
-                                  {numberFormat(ab.lockedIn, ab.lockedIn > 10000 ? '0,0.00a' : ab.lockedIn > 1000 ? '0,0' : '0,0.000')}
-                                </span>
-                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
-                              </>
-                              :
-                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                            }
-                          </div>
+                        <div className="min-w-max relative -bottom-3.5 -right-0 mb-0.5 ml-auto">
+                          <Popover
+                            placement="left"
+                            title={<span className="normal-case text-3xs">Add token</span>}
+                            content={<div className="w-32 text-3xs">Add <span className="font-semibold">{ab.asset.symbol}</span> to MetaMask</div>}
+                            titleClassName="py-0.5"
+                            contentClassName="py-1.5"
+                          >
+                            {addToMetaMaskButton}
+                          </Popover>
                         </div>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500 dark:text-gray-500">Supplied</span>
-                        <div className="text-right">
-                          <div className="font-mono text-xs">
-                            {typeof ab?.supplied === 'number' ?
-                              <>
-                                <span className={`uppercase ${ab?.supplied_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
-                                  {numberFormat(ab.supplied, ab.supplied > 100000 ? '0,0.00a' : ab.supplied > 1000 ? '0,0' : '0,0.000')}
-                                </span>
-                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
-                              </>
-                              :
-                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                            }
+                      <div className="space-y-1.5 mt-4">
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500 dark:text-gray-500">Locked</span>
+                          <div className="text-right">
+                            <div className="font-mono text-xs">
+                              {typeof ab.locked === 'number' ?
+                                <>
+                                  <span className={`uppercase ${ab.locked_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                    {numberFormat(ab.locked, ab.locked > 10000 ? '0,0.00a' : ab.locked > 1000 ? '0,0' : '0,0.000')}
+                                  </span>
+                                  <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab.asset.symbol}</span>
+                                </>
+                                :
+                                <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                              }
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-gray-500 dark:text-gray-500">Removed</span>
-                        <div className="text-right">
-                          <div className="font-mono text-xs">
-                            {typeof ab?.removed === 'number' ?
-                              <>
-                                <span className={`uppercase ${ab?.removed_value > 10000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
-                                  {numberFormat(ab.removed, ab.removed > 100000 ? '0,0.00a' : ab.removed > 1000 ? '0,0' : '0,0.000')}
-                                </span>
-                                <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab?.asset?.symbol}</span>
-                              </>
-                              :
-                              <span className="text-gray-400 dark:text-gray-600">n/a</span>
-                            }
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500 dark:text-gray-500">Locked In</span>
+                          <div className="text-right">
+                            <div className="font-mono text-xs">
+                              {typeof ab.lockedIn === 'number' ?
+                                <>
+                                  <span className={`uppercase ${ab.lockedIn_value > 100 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                    {numberFormat(ab.lockedIn, ab.lockedIn > 10000 ? '0,0.00a' : ab.lockedIn > 1000 ? '0,0' : '0,0.000')}
+                                  </span>
+                                  <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab.asset.symbol}</span>
+                                </>
+                                :
+                                <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500 dark:text-gray-500">Supplied</span>
+                          <div className="text-right">
+                            <div className="font-mono text-xs">
+                              {typeof ab.supplied === 'number' ?
+                                <>
+                                  <span className={`uppercase ${ab.supplied_value > 100000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                    {numberFormat(ab.supplied, ab.supplied > 100000 ? '0,0.00a' : ab.supplied > 1000 ? '0,0' : '0,0.000')}
+                                  </span>
+                                  <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab.asset.symbol}</span>
+                                </>
+                                :
+                                <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                              }
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-gray-500 dark:text-gray-500">Removed</span>
+                          <div className="text-right">
+                            <div className="font-mono text-xs">
+                              {typeof ab.removed === 'number' ?
+                                <>
+                                  <span className={`uppercase ${ab.removed_value > 10000 ? 'font-semibold' : 'text-gray-700 dark:text-gray-300 font-medium'} text-sm mr-1.5`}>
+                                    {numberFormat(ab.removed, ab.removed > 100000 ? '0,0.00a' : ab.removed > 1000 ? '0,0' : '0,0.000')}
+                                  </span>
+                                  <span className="text-gray-400 dark:text-gray-600 text-2xs font-medium">{ab.asset.symbol}</span>
+                                </>
+                                :
+                                <span className="text-gray-400 dark:text-gray-600">n/a</span>
+                              }
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  :
-                  <div className="w-full h-28 shadow flex items-center justify-center">
-                    <Triangle color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
-                  </div>
-                }
-              </div>
-            )
-          })}
-        </div>
+                    :
+                    <div className="w-full h-28 shadow flex items-center justify-center">
+                      <Triangle color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" />
+                    </div>
+                  }
+                </div>
+              )
+            })}
+          </div>
+        }
       </Widget>
     )
   })

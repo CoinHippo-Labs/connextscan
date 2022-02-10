@@ -221,13 +221,11 @@ export default function Routers() {
                 <div className="min-h-full border pt-2.5 pb-3 px-2" style={{ borderColor: ab?.chain?.color }}>
                   <div className="space-y-0.5">
                     <div className="flex items-start">
-                      {ab.asset.image && (
-                        <Img
-                          src={ab.asset.image}
-                          alt=""
-                          className="w-4 h-4 rounded-full mr-1"
-                        />
-                      )}
+                      <Img
+                        src={ab.asset?.image}
+                        alt=""
+                        className="w-4 h-4 rounded-full mr-1"
+                      />
                       <div className="flex flex-col">
                         <span className="leading-4 text-2xs font-semibold">{ab.asset.name}</span>
                         {ab.assetId && (
