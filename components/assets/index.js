@@ -233,7 +233,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
             )}
           </div>
         )}
-        className={`border-0 ${address ? 'bg-transaparent py-0' : 'shadow-md'} rounded-2xl`}
+        className={`border-0 ${address ? 'bg-transaparent py-0 px-0' : 'shadow-md'} rounded-2xl`}
       >
         {address && (
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between sm:space-x-2">
