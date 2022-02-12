@@ -105,38 +105,40 @@ export default function LeaderboardRouters({ className = '' }) {
             Cell: props => (
               !props.row.original.skeleton ?
                 <div className="space-y-1.5 my-1">
-                  {ens_data?.[props.value?.toLowerCase()]?.name && (
-                    <div className="flex items-center">
-                      <Img
-                        src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[props.value?.toLowerCase()].name}`}
-                        alt=""
-                        className="w-6 h-6 rounded-full mr-2"
-                      />
-                      <Link href={`/router/${props.value?.toLowerCase()}`}>
-                        <a className="font-semibold">
-                          {ens_data[props.value?.toLowerCase()].name}
-                        </a>
-                      </Link>
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-1">
-                    {ens_data?.[props.value?.toLowerCase()]?.name ?
-                      <Copy
-                        text={props.value?.toLowerCase()}
-                        copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
-                          {ellipseAddress(props.value?.toLowerCase(), 12)}
-                        </span>}
-                      />
-                      :
-                      <>
+                  <div>
+                    {ens_data?.[props.value?.toLowerCase()]?.name && (
+                      <div className="flex items-center">
+                        <Img
+                          src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data[props.value?.toLowerCase()].name}`}
+                          alt=""
+                          className="w-6 h-6 rounded-full mr-2"
+                        />
                         <Link href={`/router/${props.value?.toLowerCase()}`}>
-                          <a className="uppercase text-xs my-0.5">
-                            {ellipseAddress(props.value?.toLowerCase(), 12)}
+                          <a className="font-semibold">
+                            {ens_data[props.value?.toLowerCase()].name}
                           </a>
                         </Link>
-                        <Copy text={props.value?.toLowerCase()} />
-                      </>
-                    }
+                      </div>
+                    )}
+                    <div className="flex items-center space-x-1">
+                      {ens_data?.[props.value?.toLowerCase()]?.name ?
+                        <Copy
+                          text={props.value?.toLowerCase()}
+                          copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
+                            {ellipseAddress(props.value?.toLowerCase(), 12)}
+                          </span>}
+                        />
+                        :
+                        <>
+                          <Link href={`/router/${props.value?.toLowerCase()}`}>
+                            <a className="uppercase text-xs my-0.5">
+                              {ellipseAddress(props.value?.toLowerCase(), 12)}
+                            </a>
+                          </Link>
+                          <Copy text={props.value?.toLowerCase()} />
+                        </>
+                      }
+                    </div>
                   </div>
                   {props.row.original.isRouterContract && (
                     <div className="max-w-min bg-blue-600 dark:bg-blue-500 rounded-lg capitalize flex items-center text-white text-xs space-x-1 mb-0.5 py-1 px-2">
