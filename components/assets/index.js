@@ -284,7 +284,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
             )}
           </div>
         )}
-        {!address && view === 'table' ?
+        {(assetBy !== 'routers' || address) && view === 'table' ?
           <Datatable
             columns={[
               {
