@@ -1474,9 +1474,9 @@ export default function Transaction() {
                   {transaction ?
                     t?.prepareTransactionHash ?
                       <div className="flex items-center">
-                        {t.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
+                        {t[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
                           <a
-                            href={`${t.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${t.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', t.prepareTransactionHash)}`}
+                            href={`${t[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${t[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', t.prepareTransactionHash)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="uppercase text-blue-600 dark:text-white text-xs lg:text-base font-medium mr-1.5"
@@ -1499,9 +1499,9 @@ export default function Transaction() {
                   {transaction ?
                     t?.fulfillTransactionHash || t?.cancelTransactionHash ?
                       <div className="flex items-center">
-                        {t.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
+                        {t[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
                           <a
-                            href={`${t.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${t.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', t?.fulfillTransactionHash || t?.cancelTransactionHash)}`}
+                            href={`${t[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${t[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.transaction_path?.replace('{tx}', t?.fulfillTransactionHash || t?.cancelTransactionHash)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="uppercase text-blue-600 dark:text-white text-xs lg:text-base font-medium mr-1.5"
@@ -1523,9 +1523,9 @@ export default function Transaction() {
                   <span className="md:w-20 xl:w-40 text-xs lg:text-base font-semibold">Block:</span>
                   {transaction ?
                     t?.preparedBlockNumber ?
-                      t.[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
+                      t[i === 0 ? 'sendingChain' : 'receivingChain']?.explorer?.url ?
                         <a
-                          href={`${t.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${t.[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.block_path?.replace('{block}', t.preparedBlockNumber)}`}
+                          href={`${t[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.url}${t[i === 0 ? 'sendingChain' : 'receivingChain'].explorer.block_path?.replace('{block}', t.preparedBlockNumber)}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs lg:text-base"
