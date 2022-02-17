@@ -1435,7 +1435,7 @@ export default function Transaction() {
                     {generalTx.receivingChain && (
                       <div className="flex items-center justify-center sm:justify-end space-x-2.5 mt-1.5">
                         <Img
-                          src={generalTx?.receivingChain?.image}
+                          src={generalTx.receivingChain.image}
                           alt=""
                           className="w-6 h-6 rounded-full"
                         />
