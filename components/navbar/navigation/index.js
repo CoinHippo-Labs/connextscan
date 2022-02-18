@@ -15,7 +15,7 @@ export default function Navigation() {
             {item.icon && (
               <span className="mb-0.5">{item.icon}</span>
             )}
-            <span>{item.title}</span>
+            <span className="whitespace-nowrap">{item.title}</span>
           </a>
         </Link>
       ))}
