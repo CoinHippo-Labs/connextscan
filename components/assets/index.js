@@ -69,11 +69,9 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
 
   useEffect(() => {
     const run = async () => setTimer(moment().unix())
-
     if (!timer) {
       run()
     }
-
     const interval = setInterval(() => run(), 0.5 * 1000)
     return () => clearInterval(interval)
   }, [timer])
