@@ -48,22 +48,18 @@ export default function Search() {
         const evmAddresses = [_inputSearch].filter(id => id)
         if (evmAddresses.length > 0) {
           let ensData
-
           const addressChunk = _.chunk(evmAddresses, 50)
 
           for (let i = 0; i < addressChunk.length; i++) {
             const domainsResponse = await domains({ where: `{ resolvedAddress_in: [${addressChunk[i].map(id => `"${id?.toLowerCase()}"`).join(',')}] }` })
-
             ensData = _.concat(ensData || [], domainsResponse?.data || [])
           }
 
           if (ensData?.length > 0) {
             const ensResponses = {}
-
             for (let i = 0; i < evmAddresses.length; i++) {
               const evmAddress = evmAddresses[i]?.toLowerCase()
-              const resolvedAddresses = ensData.filter(domain => domain?.resolvedAddress?.id?.toLowerCase() === evmAddress)
-
+              const resolvedAddresses = ensData.filter(d => d?.resolvedAddress?.id?.toLowerCase() === evmAddress)
               if (resolvedAddresses.length > 1) {
                 ensResponses[evmAddress] = await getENS(evmAddress)
               }
@@ -74,16 +70,14 @@ export default function Search() {
 
             dispatch({
               type: ENS_DATA,
-              value: Object.fromEntries(ensData.filter(domain => !ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()]?.reverseRecord || domain?.name === ensResponses?.[domain?.resolvedAddress?.id?.toLowerCase()].reverseRecord).map(domain => [domain?.resolvedAddress?.id?.toLowerCase(), { ...domain }])),
+              value: Object.fromEntries(ensData.filter(d => !ensResponses?.[d?.resolvedAddress?.id?.toLowerCase()]?.reverseRecord || d?.name === ensResponses?.[d?.resolvedAddress?.id?.toLowerCase()].reverseRecord).map(d => [d?.resolvedAddress?.id?.toLowerCase(), { ...d }])),
             })
           }
         }
       }
 
       router.push(`/${searchType}/${_inputSearch}${['tx'].includes(searchType) ? '?source=search' : ''}`)
-
       setInputSearch('')
-
       inputSearchRef?.current?.blur()
     }
   }
