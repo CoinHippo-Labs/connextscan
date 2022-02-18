@@ -1184,7 +1184,7 @@ export default function Transaction() {
                 :
                 <div className="flex flex-col space-y-2.5 my-1">
                   <div className="skeleton w-40 h-6" />
-                  <div className="skeleton w-24 h-7 mx-auto sm:ml-0" />
+                  <div className="skeleton w-24 h-6 mx-auto sm:ml-0" />
                 </div>
               }
               <div className="flex flex-col items-center justify-center mx-auto">
@@ -1444,7 +1444,7 @@ export default function Transaction() {
                 :
                 <div className="flex flex-col space-y-2.5 my-1">
                   <div className="skeleton w-40 h-6" />
-                  <div className="skeleton w-24 h-7 mx-auto sm:mr-0" />
+                  <div className="skeleton w-24 h-6 mx-auto sm:mr-0" />
                 </div>
               }
             </div>
