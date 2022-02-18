@@ -63,7 +63,7 @@ export default function TVL({ chainId }) {
         <>
           <div className="h-4/5 flex items-center justify-center">
             <div className="flex flex-col items-center space-y-2">
-              <span className="font-mono text-2xl sm:text-xl xl:text-4xl font-bold">
+              <span className="break-all font-mono text-2xl sm:text-xl xl:text-4xl font-bold text-right">
                 {currency_symbol}{numberFormat(_.sumBy(data, 'amount_value'), '0,0')}
               </span>
               <span className="flex flex-wrap items-center justify-center text-sm">

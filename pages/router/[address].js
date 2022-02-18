@@ -176,7 +176,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Volume</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'volume_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'volume_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -198,7 +198,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Liquidity</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -209,7 +209,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Total</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value') + _.sumBy(routerAssets.asset_balances, 'locked_value') + _.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'amount_value') + _.sumBy(routerAssets.asset_balances, 'locked_value') + _.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -220,7 +220,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Locked</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'locked_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'locked_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -231,7 +231,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Locked In</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'lockedIn_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -242,7 +242,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Supplied</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'supplied_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'supplied_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
@@ -253,7 +253,7 @@ export default function RouterIndex() {
               <span className="text-gray-400 dark:text-gray-600 font-medium">Removed</span>
               {routerAssets ?
                 routerAssets.asset_balances ?
-                  <span className="font-mono font-semibold">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'removed_value'), '0,0')}</span>
+                  <span className="break-all font-mono font-semibold text-right">{currency_symbol}{numberFormat(_.sumBy(routerAssets.asset_balances, 'removed_value'), '0,0')}</span>
                   :
                   <span className="text-gray-400 dark:text-gray-600">n/a</span>
                 :
