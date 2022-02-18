@@ -888,7 +888,7 @@ export default function Transaction() {
           icon={<FaClock className="w-4 h-4 stroke-current mr-2" />}
           closeDisabled={true}
         >
-          <span>Wait for Confirmation.</span>
+          <span>Wait for Confirmation</span>
         </Alert>
       </div>}
       confirmButtonTitle="Ok"
