@@ -1136,7 +1136,7 @@ export default function Transaction() {
                 generalTx?.sendingAddress ?
                   <div className="min-w-max">
                     <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                      {ens_data?.[generalTx.sendingAddress?.toLowerCase()]?.name && (
+                      {ens_data?.[generalTx.sendingAddress.toLowerCase()]?.name && (
                         <Img
                           src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[generalTx.sendingAddress.toLowerCase()].name}`}
                           alt=""
@@ -1144,8 +1144,8 @@ export default function Transaction() {
                         />
                       )}
                       <Link href={`/address/${generalTx.sendingAddress}`}>
-                        <a className={`text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-sm ${ens_data?.[generalTx.sendingAddress?.toLowerCase()]?.name ? 'font-semibold' : 'font-medium'}`}>
-                          {ellipseAddress(ens_data?.[generalTx.sendingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(generalTx.sendingAddress?.toLowerCase(), 6)}
+                        <a className={`text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-sm ${ens_data?.[generalTx.sendingAddress.toLowerCase()]?.name ? 'font-semibold' : 'font-medium'}`}>
+                          {ellipseAddress(ens_data?.[generalTx.sendingAddress.toLowerCase()]?.name, 10) || ellipseAddress(generalTx.sendingAddress.toLowerCase(), 6)}
                         </a>
                       </Link>
                       <Copy size={18} text={generalTx.sendingAddress} />
@@ -1396,7 +1396,7 @@ export default function Transaction() {
                 generalTx?.receivingAddress ?
                   <div className="min-w-max">
                     <div className="flex items-center sm:justify-end space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                      {ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name && (
+                      {ens_data?.[generalTx.receivingAddress.toLowerCase()]?.name && (
                         <Img
                           src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[generalTx.receivingAddress.toLowerCase()].name}`}
                           alt=""
@@ -1404,8 +1404,8 @@ export default function Transaction() {
                         />
                       )}
                       <Link href={`/address/${generalTx.receivingAddress}`}>
-                        <a className={`text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-sm ${ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name ? 'font-semibold' : 'font-medium'}`}>
-                          {ellipseAddress(ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name, 10) || ellipseAddress(generalTx.receivingAddress?.toLowerCase(), 6)}
+                        <a className={`text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-sm ${ens_data?.[generalTx.receivingAddress.toLowerCase()]?.name ? 'font-semibold' : 'font-medium'}`}>
+                          {ellipseAddress(ens_data?.[generalTx.receivingAddress.toLowerCase()]?.name, 10) || ellipseAddress(generalTx.receivingAddress.toLowerCase(), 6)}
                         </a>
                       </Link>
                       <Copy size={18} text={generalTx.receivingAddress} />
