@@ -33,7 +33,7 @@ export default function SubNavbar() {
           href={status_data.info_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center text-indigo-600 dark:text-white font-semibold mr-4"
+          className="flex items-center text-blue-600 dark:text-white font-semibold mr-4"
         >
           <span>Website</span>
           <TiArrowRight size={20} className="transform -rotate-45" />
@@ -44,7 +44,7 @@ export default function SubNavbar() {
           href={status_data.explorer.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center text-indigo-600 dark:text-white font-semibold mr-4"
+          className="flex items-center text-blue-600 dark:text-white font-semibold mr-4"
         >
           <span>{status_data.explorer.name || 'Explorer'}</span>
           <TiArrowRight size={20} className="transform -rotate-45" />
@@ -55,7 +55,7 @@ export default function SubNavbar() {
           href={process.env.NEXT_PUBLIC_BRIDGE_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="min-w-max flex items-center text-indigo-600 dark:text-white font-semibold mr-4"
+          className="min-w-max flex items-center text-blue-600 dark:text-white font-semibold mr-4"
         >
           <Img
             src="/logos/externals/xpollinate.png"
@@ -71,7 +71,7 @@ export default function SubNavbar() {
           href={process.env.NEXT_PUBLIC_DISCORD_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center text-indigo-600 dark:text-white font-semibold mr-4"
+          className="flex items-center text-blue-600 dark:text-white font-semibold mr-4"
         >
           <FaDiscord size={16} className="mr-1.5" />
           <span>Support</span>
@@ -142,7 +142,7 @@ export default function SubNavbar() {
         <>
           <span className="sm:ml-auto" />
           <Link href="/status">
-            <a className="flex items-center text-indigo-600 dark:text-white space-x-1.5 mx-4">
+            <a className="flex items-center text-blue-600 dark:text-white space-x-1.5 mx-4">
               <FiBox size={16} className="mb-0.5" />
               <span className="space-x-1">
                 <span className="font-mono font-semibold">{numberFormat(Object.keys(asset_balances_data).length, '0,0')}</span>
@@ -151,7 +151,7 @@ export default function SubNavbar() {
             </a>
           </Link>
           <Link href="/leaderboard/routers">
-            <a className="flex items-center text-indigo-600 dark:text-white space-x-1.5 mr-4">
+            <a className="flex items-center text-blue-600 dark:text-white space-x-1.5 mr-4">
               <MdOutlineRouter size={18} className="mb-0.5" />
               <span className="space-x-1">
                 <span className="font-mono font-semibold">{numberFormat(routers_assets_data?.filter(r => ['true'].includes(all) || _.sumBy(r?.asset_balances, 'amount_value') > 1).length, '0,0')}</span>
@@ -160,7 +160,7 @@ export default function SubNavbar() {
             </a>
           </Link>
           <Link href="/routers">
-            <a className="flex items-center text-indigo-600 dark:text-white space-x-1.5">
+            <a className="flex items-center text-blue-600 dark:text-white space-x-1.5">
               <RiFileCodeLine size={18} className="mb-0.5" />
               <span className="space-x-1">
                 <span className="font-mono font-semibold">{numberFormat(_.uniq(Object.entries(asset_balances_data).flatMap(([key, value]) => value?.map(v => `${key}_${v?.contract_address}`)).filter(a => a)).length, '0,0')}</span>
