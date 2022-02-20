@@ -12,7 +12,7 @@ import Web3 from 'web3'
 import { providers, constants, utils } from 'ethers'
 import BigNumber from 'bignumber.js'
 import { Img } from 'react-image'
-import { ThreeDots, Oval, TailSpin } from 'react-loader-spinner'
+import { Oval, TailSpin } from 'react-loader-spinner'
 import HeadShake from 'react-reveal/HeadShake'
 import Switch from 'react-switch'
 import { MdOutlineRouter, MdInfoOutline } from 'react-icons/md'
@@ -473,7 +473,7 @@ export default function Transaction() {
               <div key={actionButtons.length} className="w-32 sm:w-40 space-y-1">
                 <div className="w-full flex items-center justify-center text-blue-600 dark:text-blue-500 space-x-1">
                   <span className="font-semibold">Waiting to Sign</span>
-                  <ThreeDots color={theme === 'dark' ? '#3B82F6' : '#2563EB'} width="16" height="16" className="mt-1" />
+                  <TailSpin color={theme === 'dark' ? '#3B82F6' : '#2563EB'} width="16" height="16" />
                 </div>
               </div>
             )
@@ -875,7 +875,7 @@ export default function Transaction() {
         <div className="w-32 sm:w-40 space-y-1 mx-auto">
           <div className="w-full flex items-center justify-center text-blue-600 dark:text-blue-500 space-x-1">
             <span className="font-semibold">Waiting to Sign</span>
-            <ThreeDots color={theme === 'dark' ? '#3B82F6' : '#2563EB'} width="16" height="16" className="mt-1" />
+            <TailSpin color={theme === 'dark' ? '#3B82F6' : '#2563EB'} width="16" height="16" />
           </div>
         </div>
         <div className="flex text-sm sm:text-base text-left space-x-2 mt-2 mb-1">
@@ -944,7 +944,7 @@ export default function Transaction() {
               content={<span className="flex flex-wrap items-center">
                 <span className="mr-1.5">{transferResponse.message}</span>
                 {transferResponse.status === 'pending' && (
-                  <ThreeDots color={theme === 'dark' ? 'white' : 'white'} width="16" height="16" className="mt-1 mr-1.5" />
+                  <TailSpin color={theme === 'dark' ? 'white' : 'white'} width="16" height="16" className="mr-1.5" />
                 )}
                 {(canCancelSendingTx && transfering === 'cancel' ? generalTx?.sendingChain : generalTx?.receivingChain)?.explorer?.url && transferResponse.tx_hash && (
                   <a
