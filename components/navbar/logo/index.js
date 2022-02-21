@@ -11,7 +11,7 @@ export default function Logo() {
     <div className="logo ml-2.5 mr-1 sm:mx-3">
       <Link href="/">
          <a className="w-full flex items-center">
-          <div className="sm:mr-3">
+          <div className="min-w-max sm:mr-3">
             <Img
               src={`/logos/logo${theme === 'dark' ? '_white' : ''}.png`}
               alt=""
