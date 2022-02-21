@@ -762,7 +762,7 @@ export default function Transaction() {
           <span>Connect your Wallet with the address and the network of the {canCancelSendingTx ? 'sender' : 'receiver'} side.</span>
         </div>
         <button
-          className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 pointer-events-none rounded-3xl text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-3.5"
+          className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 pointer-events-none rounded-xl text-white font-semibold py-1.5 sm:py-2 px-3 sm:px-3.5"
           style={{ width: 'max-content' }}
         >
           <div className="flex items-center space-x-1.5">
