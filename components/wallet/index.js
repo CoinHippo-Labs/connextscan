@@ -21,7 +21,7 @@ const providerOptions = {
         42161: 'https://arb1.arbitrum.io/rpc',
         10: 'https://mainnet.optimism.io',
         43114: 'https://api.avax.network/ext/bc/C/rpc',
-        250: 'https://rpcapi.fantom.network',
+        250: 'https://rpc.ftm.tools',
         100: 'https://rpc.xdaichain.com',
         1284: 'https://rpc.api.moonbeam.network',
         1285: 'https://rpc.moonriver.moonbeam.network',
