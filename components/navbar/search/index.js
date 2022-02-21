@@ -36,16 +36,23 @@ export default function Search() {
     let _inputSearch = inputSearch, searchType = type(_inputSearch)
 
     if (searchType) {
-      if (searchType === 'address' && routerIds?.includes(_inputSearch?.toLowerCase())) {
+      if (routerIds?.includes(_inputSearch?.toLowerCase())) {
         searchType = 'router'
       }
       else if (Object.entries(ens_data || {}).findIndex(([key, value]) => value?.name?.toLowerCase() === _inputSearch?.toLowerCase()) > -1) {
         _inputSearch = Object.entries(ens_data).find(([key, value]) => value?.name?.toLowerCase() === _inputSearch?.toLowerCase())[0]
         searchType = routerIds?.includes(_inputSearch?.toLowerCase()) ? 'router' : 'address'
       }
+      else if (searchType === 'ens') {
+        const domain = await getAddressFromENS(_inputSearch)
+        if (domain?.resolvedAddress?.id) {
+          _inputSearch = domain.resolvedAddress.id
+        }
+        searchType = routerIds?.includes(_inputSearch?.toLowerCase()) ? 'router' : 'address'
+      }
 
       if (searchType === 'address') {
-        const evmAddresses = [_inputSearch].filter(id => id)
+        const evmAddresses = [_inputSearch].filter(id => id && !ens_data?.[_inputSearch?.toLowerCase()])
         if (evmAddresses.length > 0) {
           let ensData
           const addressChunk = _.chunk(evmAddresses, 50)
@@ -82,6 +89,24 @@ export default function Search() {
     }
   }
 
+  const getAddressFromENS = async ens => {
+    let domain
+    if (ens) {
+      domain = ens_data && Object.values(ens_data).find(d => d?.name?.toLowerCase() === ens?.toLowerCase())
+      if (!domain) {
+        const response = await domains({ where: `{ name_in: ["${ens.toLowerCase()}"] }` })
+        if (response?.data) {
+          dispatch({
+            type: ENS_DATA,
+            value: Object.fromEntries(response.data.map(d => [d?.resolvedAddress?.id?.toLowerCase(), { ...d }])),
+          })
+          domain = response.data?.find(d => d?.name?.toLowerCase() === ens?.toLowerCase())
+        }
+      }
+    }
+    return domain
+  }
+
   return (
     <div className="navbar-search mr-1.5 sm:mx-3">
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -91,7 +116,7 @@ export default function Search() {
             value={inputSearch}
             onChange={event => setInputSearch(event.target.value?.trim())}
             type="search"
-            placeholder="Search by TX ID / Router / Address"
+            placeholder="Search by TX ID / Router / Address / ENS"
             className="w-48 sm:w-72 xl:w-80 h-8 sm:h-10 appearance-none rounded-lg text-xs pl-2 sm:pl-8 pr-0 sm:pr-3 focus:outline-none"
          />
           <div className="hidden sm:block absolute top-0 left-0 mt-3 ml-2.5">
