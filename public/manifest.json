@@ -1,6 +1,6 @@
 {
-  "short_name": "ConnextScan",
-  "name": "ConnextScan | The Connext Explorer",
+  "short_name": "Connextscan",
+  "name": "Connextscan | The Connext Explorer",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#050707",
