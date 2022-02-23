@@ -1252,7 +1252,7 @@ export default function Transaction() {
                 }
               </div>
               <div className="mx-auto">
-                <div className="min-w-max grid grid-flow-row grid-cols-3 gap-2 sm:mt-1">
+                <div className={`min-w-max grid grid-flow-row grid-cols-3 gap-2 ${transaction ? '' : 'sm:mt-1'}`}>
                   {transaction ?
                     <Img
                       src={generalTx?.sendingChain?.image}
@@ -1277,42 +1277,49 @@ export default function Transaction() {
                     <div className="skeleton w-6 h-6 mx-auto" style={{ borderRadius: '100%' }} />
                   }
                 </div>
-                {generalTx?.router?.id && (
-                  ens_data?.[generalTx.router.id.toLowerCase()]?.name ?
-                    <>
-                      <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-600 text-xs font-medium space-x-1 mt-1.5">
-                        <MdOutlineRouter size={16} className="mb-0.5" />
-                        <Link href={`/router/${generalTx.router.id}`}>
-                          <a className="text-blue-600 dark:text-white font-semibold">
-                            {ens_data[generalTx.router.id.toLowerCase()].name}
-                          </a>
-                        </Link>
-                      </div>
-                      <div className="flex justify-center">
-                        <Copy
-                          text={generalTx.router.id}
-                          copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
-                            {ellipseAddress(generalTx.router.id, 6)}
-                          </span>}
-                        />
-                      </div>
-                    </>
-                    :
-                    <>
-                      <div className="flex items-center font-medium space-x-1 mt-2">
-                        <Link href={`/router/${generalTx.router.id}`}>
-                          <a className="text-blue-600 dark:text-white text-xs font-medium">
-                            {ellipseAddress(generalTx.router.id, 6)}
-                          </a>
-                        </Link>
-                        <Copy size={12} text={generalTx.router.id} />
-                      </div>
-                      <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs font-medium space-x-1 mt-0.5">
-                        <MdOutlineRouter size={16} className="mb-0.5" />
-                        <span>Router</span>
-                      </div>
-                    </>
-                )}
+                {transaction ?
+                  generalTx?.router?.id && (
+                    ens_data?.[generalTx.router.id.toLowerCase()]?.name ?
+                      <>
+                        <div className="flex items-center justify-start sm:justify-center text-gray-400 dark:text-gray-600 text-xs font-medium space-x-1 mt-1.5">
+                          <MdOutlineRouter size={16} className="mb-0.5" />
+                          <Link href={`/router/${generalTx.router.id}`}>
+                            <a className="text-blue-600 dark:text-white font-semibold">
+                              {ens_data[generalTx.router.id.toLowerCase()].name}
+                            </a>
+                          </Link>
+                        </div>
+                        <div className="flex justify-center">
+                          <Copy
+                            text={generalTx.router.id}
+                            copyTitle={<span className="text-gray-400 dark:text-gray-600 text-xs font-normal">
+                              {ellipseAddress(generalTx.router.id, 6)}
+                            </span>}
+                          />
+                        </div>
+                      </>
+                      :
+                      <>
+                        <div className="flex items-center font-medium space-x-1 mt-2">
+                          <Link href={`/router/${generalTx.router.id}`}>
+                            <a className="text-blue-600 dark:text-white text-xs font-medium">
+                              {ellipseAddress(generalTx.router.id, 6)}
+                            </a>
+                          </Link>
+                          <Copy size={12} text={generalTx.router.id} />
+                        </div>
+                        <div className="flex items-center justify-center text-gray-400 dark:text-gray-600 text-xs font-medium space-x-1 mt-0.5">
+                          <MdOutlineRouter size={16} className="mb-0.5" />
+                          <span>Router</span>
+                        </div>
+                      </>
+                  )
+                  :
+                  <div className="flex flex-col items-center justify-center space-y-1.5 mt-2 mx-auto">
+                    <div className="skeleton w-28 h-4" />
+                    <div className="skeleton w-24 h-3.5" />
+                  </div>
+                }
               </div>
               <div className="flex flex-col items-center justify-center mx-auto">
                 {transaction ?
