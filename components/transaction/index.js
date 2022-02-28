@@ -1126,6 +1126,9 @@ export default function Transaction() {
                   </HeadShake>
                 )}
                 {actionButtons}
+                {web3_provider && !mustSwitchNetwork && transferResponse?.status !== 'pending' && (
+                  <Wallet />
+                )}
               </div>
               {tipsButton}
             </div>}
