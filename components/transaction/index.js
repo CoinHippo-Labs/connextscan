@@ -479,134 +479,134 @@ export default function Transaction() {
             )
           }
           else {
-            // hotfix hide cancel button.
             if (canCancelSendingTx)
-            actionButtons.push(
-              <ModalConfirm
-                key={actionButtons.length}
-                buttonTitle={<>
-                  {transfering === 'cancel' && (
-                    <Oval color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" className="mb-0.5" />
-                  )}
-                  <span>Cancel</span>
-                </>}
-                buttonClassName={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
-                title="Cancel Transaction"
-                body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                    <div className="flex items-center text-gray-400 dark:text-gray-600">
-                      Address
-                      <span className="hidden sm:block">:</span>
-                    </div>
-                    {generalTx && (
-                      <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
-                        {ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name && (
-                          <Img
-                            src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[generalTx.receivingAddress.toLowerCase()].name}`}
-                            alt=""
-                            className="w-6 h-6 rounded-full"
-                          />
-                        )}
-                        <Link href={`/address/${generalTx.receivingAddress}`}>
-                          <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
-                            {ellipseAddress(ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name || generalTx.receivingAddress?.toLowerCase(), 10)}
-                          </a>
-                        </Link>
-                        <Copy size={18} text={generalTx.receivingAddress} />
-                        {generalTx.receivingChain?.explorer?.url && (
-                          <a
-                            href={`${generalTx.receivingChain.explorer.url}${generalTx.receivingChain.explorer.address_path?.replace('{address}', generalTx.receivingAddress)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 dark:text-white"
-                          >
-                            {generalTx.receivingChain.explorer.icon ?
-                              <Img
-                                src={generalTx.receivingChain.explorer.icon}
-                                alt=""
-                                className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
-                              />
-                              :
-                              <TiArrowRight size={20} className="transform -rotate-45" />
-                            }
-                          </a>
-                        )}
-                      </div>
+              actionButtons.push(
+                <ModalConfirm
+                  key={actionButtons.length}
+                  buttonTitle={<>
+                    {transfering === 'cancel' && (
+                      <Oval color={theme === 'dark' ? 'white' : '#3B82F6'} width="16" height="16" className="mb-0.5" />
                     )}
-                  </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                    <div className="flex items-center text-gray-400 dark:text-gray-600">
-                      Amount Sent
-                      <span className="hidden sm:block">:</span>
+                    <span>Cancel</span>
+                  </>}
+                  buttonClassName={`bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 ${transfering ? 'pointer-events-none' : ''} rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3`}
+                  title="Cancel Transaction"
+                  body={<div className="flex flex-col space-y-2 sm:space-y-3 mt-2 -mb-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                      <div className="flex items-center text-gray-400 dark:text-gray-600">
+                        Address
+                        <span className="hidden sm:block">:</span>
+                      </div>
+                      {generalTx && (
+                        <div className="flex items-center space-x-1.5 sm:space-x-1 xl:space-x-1.5">
+                          {ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name && (
+                            <Img
+                              src={`${process.env.NEXT_PUBLIC_ENS_AVATAR_URL}/${ens_data?.[generalTx.receivingAddress.toLowerCase()].name}`}
+                              alt=""
+                              className="w-6 h-6 rounded-full"
+                            />
+                          )}
+                          <Link href={`/address/${generalTx.receivingAddress}`}>
+                            <a className="text-gray-400 dark:text-gray-200 text-base sm:text-xs xl:text-base font-medium">
+                              {ellipseAddress(ens_data?.[generalTx.receivingAddress?.toLowerCase()]?.name || generalTx.receivingAddress?.toLowerCase(), 10)}
+                            </a>
+                          </Link>
+                          <Copy size={18} text={generalTx.receivingAddress} />
+                          {generalTx.receivingChain?.explorer?.url && (
+                            <a
+                              href={`${generalTx.receivingChain.explorer.url}${generalTx.receivingChain.explorer.address_path?.replace('{address}', generalTx.receivingAddress)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 dark:text-white"
+                            >
+                              {generalTx.receivingChain.explorer.icon ?
+                                <Img
+                                  src={generalTx.receivingChain.explorer.icon}
+                                  alt=""
+                                  className="w-5 sm:w-4 xl:w-5 h-5 sm:h-4 xl:h-5 rounded-full opacity-60 hover:opacity-100"
+                                />
+                                :
+                                <TiArrowRight size={20} className="transform -rotate-45" />
+                              }
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    {sendingTx?.sending_amount && (
-                      <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg text-sm space-x-1 py-1 px-2">
-                        <span className="font-mono font-semibold">{numberFormat(sendingTx.sending_amount, '0,0.00000000', true)}</span>
-                        <span className="text-gray-600 dark:text-gray-400">{sendingTx.sendingAsset?.symbol || sendingTx.receivingAsset?.symbol}</span>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                      <div className="flex items-center text-gray-400 dark:text-gray-600">
+                        Amount Sent
+                        <span className="hidden sm:block">:</span>
                       </div>
+                      {sendingTx?.sending_amount && (
+                        <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg text-sm space-x-1 py-1 px-2">
+                          <span className="font-mono font-semibold">{numberFormat(sendingTx.sending_amount, '0,0.00000000', true)}</span>
+                          <span className="text-gray-600 dark:text-gray-400">{sendingTx.sendingAsset?.symbol || sendingTx.receivingAsset?.symbol}</span>
+                        </div>
+                      )}
+                    </div>
+                    {receivingTx && (
+                      <>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                          <div className="flex items-center text-gray-400 dark:text-gray-600">
+                            Amount Received
+                            <span className="hidden sm:block">:</span>
+                          </div>
+                          {receivingTx?.receiving_amount && (
+                            <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg text-sm space-x-1 py-1 px-2">
+                              <span className="font-mono font-semibold">{numberFormat(receivingTx.receiving_amount, '0,0.00000000', true)}</span>
+                              <span className="text-gray-600 dark:text-gray-400">{receivingTx.receivingAsset?.symbol || receivingTx.sendingAsset?.symbol}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
+                          <div className="flex items-center text-gray-400 dark:text-gray-600">
+                            Total Fees Paid
+                            <span className="hidden sm:block">:</span>
+                          </div>
+                          {receivingTx.receiving_amount && sendingTx?.sending_amount && (
+                            <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg text-sm space-x-1 py-1 px-2">
+                              <span className="font-mono font-semibold">{numberFormat(sendingTx.sending_amount - receivingTx.receiving_amount, '0,0.00000000', true)}</span>
+                              <span className="text-gray-600 dark:text-gray-400">{receivingTx.receivingAsset?.symbol || receivingTx.sendingAsset?.symbol}</span>
+                            </div>
+                          )}
+                        </div>
+                      </>
                     )}
-                  </div>
-                  {receivingTx && (
-                    <>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                        <div className="flex items-center text-gray-400 dark:text-gray-600">
-                          Amount Received
-                          <span className="hidden sm:block">:</span>
-                        </div>
-                        {receivingTx?.receiving_amount && (
-                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg text-sm space-x-1 py-1 px-2">
-                            <span className="font-mono font-semibold">{numberFormat(receivingTx.receiving_amount, '0,0.00000000', true)}</span>
-                            <span className="text-gray-600 dark:text-gray-400">{receivingTx.receivingAsset?.symbol || receivingTx.sendingAsset?.symbol}</span>
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-1 xl:space-x-2">
-                        <div className="flex items-center text-gray-400 dark:text-gray-600">
-                          Total Fees Paid
-                          <span className="hidden sm:block">:</span>
-                        </div>
-                        {receivingTx.receiving_amount && sendingTx?.sending_amount && (
-                          <div className="max-w-min bg-gray-100 dark:bg-gray-800 rounded-lg text-sm space-x-1 py-1 px-2">
-                            <span className="font-mono font-semibold">{numberFormat(sendingTx.sending_amount - receivingTx.receiving_amount, '0,0.00000000', true)}</span>
-                            <span className="text-gray-600 dark:text-gray-400">{receivingTx.receivingAsset?.symbol || receivingTx.sendingAsset?.symbol}</span>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                  <div className="flex items-center space-x-2 mx-auto py-2">
-                    {transaction ?
+                    <div className="flex items-center space-x-2 mx-auto py-2">
+                      {transaction ?
+                        <Img
+                          src={generalTx?.sendingChain?.image}
+                          alt=""
+                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        />
+                        :
+                        <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                      }
                       <Img
-                        src={generalTx?.sendingChain?.image}
+                        src="/logos/logo.png"
                         alt=""
-                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6"
                       />
-                      :
-                      <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
-                    }
-                    <Img
-                      src="/logos/logo.png"
-                      alt=""
-                      className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6"
-                    />
-                    {transaction ?
-                      <Img
-                        src={generalTx?.receivingChain?.image}
-                        alt=""
-                        className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
-                      />
-                      :
-                      <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
-                    }
-                  </div>
-                  <div>Do you want to cancel this transaction?</div>
-                </div>}
-                cancelButtonTitle="No"
-                confirmButtonTitle="Yes, cancel it"
-                onConfirm={() => cancel(canCancelSendingTx ? sendingTx : receivingTx, canCancelSendingTx ? generalTx?.sendingChainId : generalTx?.receivingChainId)}
-                modalClassName="max-w-sm"
-              />
-            )
+                      {transaction ?
+                        <Img
+                          src={generalTx?.receivingChain?.image}
+                          alt=""
+                          className="w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6 rounded-full"
+                        />
+                        :
+                        <div className="skeleton w-6 sm:w-4 xl:w-6 h-6 sm:h-4 xl:h-6" style={{ borderRadius: '100%' }} />
+                      }
+                    </div>
+                    <div>Do you want to cancel this transaction?</div>
+                  </div>}
+                  cancelButtonTitle="No"
+                  confirmButtonTitle="Yes, cancel it"
+                  onConfirm={() => cancel(canCancelSendingTx ? sendingTx : receivingTx, canCancelSendingTx ? generalTx?.sendingChainId : generalTx?.receivingChainId)}
+                  modalClassName="max-w-sm"
+                />
+              )
+            }
 
             if (canFulfill) {
               actionButtons.push(
