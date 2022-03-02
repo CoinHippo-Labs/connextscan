@@ -479,7 +479,7 @@ export default function Transaction() {
             )
           }
           else {
-            if (canCancelSendingTx)
+            if (canCancelSendingTx) {
               actionButtons.push(
                 <ModalConfirm
                   key={actionButtons.length}
