@@ -854,13 +854,15 @@ export default function Transaction() {
           {canCancelSendingTx ?
             <span><span className="font-semibold">Cancel Button for Sender:</span> The button can be processed when the sender transaction is prepared and expired.</span>
             :
-            <span><span className="font-semibold">Claim and Cancel Button for Receiver:</span> The fulfill action can be processed when the receiver transaction is prepared and has not expired yet. While the cancel action does not consider the expiry date, only prepared status is required.</span>
+            <span><span className="font-semibold">Claim Button for Receiver:</span> The fulfill action can be processed when the receiver transaction is prepared and has not expired yet.</span>
           }
         </div>
         <div className="flex items-center justify-center space-x-1.5 sm:space-x-2">
-          <button className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 pointer-events-none rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3">
-            <span>Cancel</span>
-          </button>
+          {canCancelSendingTx && (
+            <button className="bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 pointer-events-none rounded-2xl flex items-center font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3">
+              <span>Cancel</span>
+            </button>
+          )}
           {canFulfill && (
             <button className="bg-green-400 hover:bg-green-500 dark:bg-green-600 dark:hover:bg-green-500 pointer-events-none rounded-2xl flex items-center text-white font-semibold space-x-1.5 py-1 sm:py-1.5 px-2 sm:px-3">
               <span>Claim</span>
