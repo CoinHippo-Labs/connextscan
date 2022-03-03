@@ -109,7 +109,7 @@ export default function Transaction() {
   useEffect(() => {
     const controller = new AbortController()
 
-    const getData = async () => {
+    const getData = async is_interval => {
       if (tx && chains_data && sdk_data) {
         let data, tokenContracts = _.cloneDeep(tokens_data)
 
@@ -238,7 +238,7 @@ export default function Transaction() {
             })
           }
 
-          if (data) {
+          if (!is_interval && data) {
             const evmAddresses = _.uniq([data.sendingTx?.initiator, data.sendingTx?.user?.id, data.sendingTx?.receivingAddress, data.receivingTx?.initiator, data.receivingTx?.user?.id, data.receivingTx?.receivingAddress].filter(id => id))
             if (evmAddresses.length > 0) {
               let ensData
@@ -281,7 +281,7 @@ export default function Transaction() {
       getData()
     }
 
-    const interval = setInterval(() => getData(), 20 * 1000)
+    const interval = setInterval(() => getData(true), 20 * 1000)
     return () => {
       controller?.abort()
       clearInterval(interval)
