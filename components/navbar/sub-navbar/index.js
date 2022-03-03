@@ -58,7 +58,7 @@ export default function SubNavbar() {
           className="min-w-max flex items-center text-blue-600 dark:text-white font-semibold mr-4"
         >
           <Img
-            src="/logos/externals/xpollinate.png"
+            src="/logos/logo.png"
             alt=""
             className="w-4 h-4 mr-2"
           />
