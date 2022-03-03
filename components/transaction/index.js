@@ -1116,7 +1116,7 @@ export default function Transaction() {
             }
           </Widget>
           <Widget
-            title={<div className="uppercase text-gray-400 dark:text-gray-600 text-sm sm:text-base font-semibold mb-2">Token Transfers</div>}
+            title={<div className="leading-4 uppercase text-gray-400 dark:text-gray-600 text-sm sm:text-base font-semibold mb-2">Token Transfers</div>}
             right={<div className="flex items-center space-x-0.5 mb-2 lg:mb-0.5 -mr-1 sm:-mr-2">
               <div className="flex items-center space-x-1.5 sm:space-x-2">
                 {(canCancelSendingTx || canDoAction) && (
