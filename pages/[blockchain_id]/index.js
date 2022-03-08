@@ -383,7 +383,7 @@ export default function BlockchainIndex() {
           )}
         </div>
         <Assets assetBy={assetBy} addTokenToMetaMaskFunction={addTokenToMetaMask} />
-        <div className="max-w-6.5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="space-y-3">
             <div className="flex items-center justify-end">
               <TimeframeSelect
@@ -499,7 +499,7 @@ export default function BlockchainIndex() {
             </div>
           </div>
         </div>
-        <div className="max-w-6.5xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <Transactions addTokenToMetaMaskFunction={addTokenToMetaMask} className="no-border" />
         </div>
       </div>
