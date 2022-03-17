@@ -151,7 +151,7 @@ export default function Index() {
     }
 
     const getData = async () => {
-      if (chains_data && tokens_data && dayMetricsData && chains_data.filter(c => !c?.disabled).length <= Object.keys(_.groupBy(tokens_data, 'chain_id')).length) {
+      if (chains_data && tokens_data && dayMetricsData && chains_data.filter(c => !c?.disabled).length - chains_data.filter(c => c?.is_staging).length <= Object.keys(_.groupBy(tokens_data, 'chain_id')).length) {
         const today = moment().utc().startOf('day')
         chains_data.forEach(c => getDaily(c, dayMetricsData, today))
       }
