@@ -25,7 +25,7 @@ export default function Footer() {
             className="flex items-center space-x-1.5"
           >
             <Img
-              src="/logos/externals/connext/logo.png"
+              src="/logos/logo.png"
               alt=""
               className="w-4 h-4 rounded-full"
             />
