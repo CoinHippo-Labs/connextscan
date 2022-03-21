@@ -14,8 +14,8 @@ export default function Footer() {
 
   return (
     <div className={`footer flex flex-col md:flex-row items-center text-xs font-light space-y-2 sm:space-y-0 p-3 ${theme}`}>
-      <span className="w-full md:w-1/2 lg:w-1/3 flex items-center justify-center md:justify-start text-gray-400">
-        <div className="flex items-center text-gray-600 dark:text-white font-medium space-x-1.5">
+      <span className="w-full md:w-1/2 lg:w-1/4 flex items-center justify-center md:justify-start text-gray-400">
+        <div className="min-w-max flex items-center text-gray-600 dark:text-white font-medium space-x-1.5">
           <span>Built with</span>
           <a
             title="build cross chain apps"
@@ -36,7 +36,7 @@ export default function Footer() {
           )}
         </div>
       </span>
-      <span className="hidden lg:flex w-full lg:w-1/3 flex-wrap items-center justify-center">
+      <span className="hidden lg:flex w-full lg:w-2/4 flex-wrap items-center justify-center">
         <span className="leading-3 uppercase text-gray-400 dark:text-gray-600 text-2xs font-light mr-2 sm:mr-2.5">Supported</span>
         {chains_data?.map((c, i) => (
           <Link key={i} href={`/${c?.id}`}>
@@ -50,7 +50,7 @@ export default function Footer() {
           </Link>
         ))}
       </span>
-      <span className="w-full md:w-1/2 lg:w-1/3 flex items-center justify-center md:justify-end text-gray-400 space-x-1">
+      <span className="w-full md:w-1/2 lg:w-1/4 min-w-max flex items-center justify-center md:justify-end text-gray-400 space-x-1">
         <span>© {moment().format('YYYY')} made with</span>
         <FaHeart className="text-red-400 text-xl pr-0.5" />
         <span>
