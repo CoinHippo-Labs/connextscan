@@ -172,7 +172,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
         }
       })
 
-      const ready = Object.keys(transactions_data).filter(cid => !blockchain_id || chains_data?.find(c => c?.id === blockchain_id)?.chain_id === Number(cid)).length >= (blockchain_id ? chains_data?.findIndex(c => c?.chain_id === Number(cid) && c.is_staging) > -1 ? 0 : 1 : chains_data?.filter(c => !c?.disabled).length - chains_data?.filter(c => c?.is_staging).length) &&
+      const ready = Object.keys(transactions_data).filter(cid => !blockchain_id || chains_data?.find(c => c?.id === blockchain_id)?.chain_id === Number(cid)).length >= (blockchain_id ? chains_data?.findIndex(c => c?.id === blockchain_id && c.is_staging) > -1 ? 0 : 1 : chains_data?.filter(c => !c?.disabled).length - chains_data?.filter(c => c?.is_staging).length) &&
         chains_data?.filter(c => !c?.disabled).length <= Object.keys(_.groupBy(tokens_data, 'chain_id')).length
 
       if ((data.length > 0 || address || blockchain_id) && ready) {
