@@ -132,7 +132,7 @@ export default function Datatable({ columns, data, rowSelectEnable = false, noPa
               ))}
             </select>
           )}
-          {pageCount <= 4 && (
+          {pageCount > 1 && pageCount <= 4 && (
             <span className="my-2 sm:my-0 mx-4">
               Page <span className="font-bold">{pageIndex + 1}</span> of <span className="font-bold">{pageOptions.length}</span>
             </span>
