@@ -79,7 +79,7 @@ export default function Navbar() {
   useEffect(async () => {
     if (chains_data) {
       const chainConfig = ['testnet'].includes(process.env.NEXT_PUBLIC_NETWORK) ?
-        { 1: { providers: ['https://api.mycryptoapi.com/eth', 'https://cloudflare-eth.com'] } }
+        { 1: { providers: ['https://rpc.ankr.com/eth', 'https://cloudflare-eth.com'] } }
         :
         {}
 
