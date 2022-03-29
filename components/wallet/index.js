@@ -120,7 +120,7 @@ export default function Wallet({ chainIdToConnect, main, hidden, disabled = fals
         providerOptions['custom-clover'] = {
           display: {
             name: 'Clover',
-            logo: '/logos/wallets/clover.svg',
+            logo: '/logos/wallets/clover.png',
           },
           package: async () => {
             let provider = null
