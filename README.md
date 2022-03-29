@@ -1,5 +1,5 @@
 # Connextscan - Connext Network
-This is the frontend part of the [Connext Network Explorer](https://connextscan.io). The project is implemented based on [Next.js](https://nextjs.org/) platform and connect to the [Connext Network Explorer - Lambda functions](https://github.com/CoinHippo-Labs/connext-network-explorer-lambda).
+This is the frontend part of the [Connext Network Explorer](https://connextscan.io). The project is implemented based on [Next.js](https://nextjs.org/) platform and connect to the [Connext Network Explorer - Lambda functions](https://github.com/CoinHippo-Labs/connextscan-lambda).
 
 <br>
 
@@ -20,7 +20,7 @@ This is the frontend part of the [Connext Network Explorer](https://connextscan.
 <br>
 
 ## Data provider / APIs
-- [Connextscan API](https://github.com/CoinHippo-Labs/connext-network-explorer-lambda)
+- [Connextscan API](https://github.com/CoinHippo-Labs/connextscan-lambda)
 
 ## Technology stacks
 - [Next.js](https://nextjs.org/)
