@@ -254,7 +254,7 @@ export default function Index() {
   return (
     <>
       <div className="max-w-8xl space-y-4 sm:space-y-8 xl:space-y-12 my-6 xl:mb-8 mx-auto">
-        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
+        <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 xl:gap-6">
           <Widget
             title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">TVL</span>}
             right={<span className="whitespace-nowrap font-mono text-gray-500 dark:text-gray-500 text-2xs md:text-3xs xl:text-xs font-light">
@@ -272,7 +272,7 @@ export default function Index() {
                 <span>Chains</span>
               </span>
             )}
-            className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+            className="col-span-1 sm:col-span-3 border-0 shadow-md rounded-2xl py-4 px-5"
           >
             <TVLByChain selectChainId={chain_id => setTvlChainSelect(chain_id)} />
           </Widget>
@@ -284,7 +284,7 @@ export default function Index() {
               onClick={t => setTimeframeSelect(t)}
             />
           </div>
-          <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
+          <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 xl:gap-6">
             <Widget
               title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">Volume</span>}
               right={timesData && (
@@ -330,7 +330,7 @@ export default function Index() {
                 </div>
               )}
               contentClassName="items-start"
-              className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+              className="col-span-1 sm:col-span-3 border-0 shadow-md rounded-2xl py-4 px-5"
             >
               <VolumeByTime
                 data={timesData}
@@ -382,7 +382,7 @@ export default function Index() {
                 </div>
               )}
               contentClassName="items-start"
-              className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+              className="col-span-1 sm:col-span-3 border-0 shadow-md rounded-2xl py-4 px-5"
             >
               <TransactionByTime
                 data={timesData}

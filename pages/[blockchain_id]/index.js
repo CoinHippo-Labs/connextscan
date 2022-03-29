@@ -391,7 +391,7 @@ export default function BlockchainIndex() {
                 onClick={t => setTimeframeSelect(t)}
               />
             </div>
-            <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-3 gap-4 xl:gap-6">
+            <div className="grid grid-flow-row grid-cols-1 sm:grid-cols-4 gap-4 xl:gap-6">
               <Widget
                 title={<span className="uppercase text-black dark:text-white text-base sm:text-lg font-semibold">Volume</span>}
                 right={timesData && (
@@ -437,7 +437,7 @@ export default function BlockchainIndex() {
                   </div>
                 )}
                 contentClassName="items-start"
-                className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+                className="col-span-1 sm:col-span-3 border-0 shadow-md rounded-2xl py-4 px-5"
               >
                 <VolumeByTime
                   data={timesData}
@@ -489,7 +489,7 @@ export default function BlockchainIndex() {
                   </div>
                 )}
                 contentClassName="items-start"
-                className="col-span-1 sm:col-span-2 border-0 shadow-md rounded-2xl py-4 px-5"
+                className="col-span-1 sm:col-span-3 border-0 shadow-md rounded-2xl py-4 px-5"
               >
                 <TransactionByTime
                   data={timesData}
