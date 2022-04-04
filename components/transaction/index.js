@@ -328,6 +328,10 @@ export default function Transaction() {
         chainConfig[chain?.chain_id] = {
           providers: chain?.provider_params?.[0]?.rpcUrls?.filter(rpc => rpc && !rpc.startsWith('wss://') && !rpc.startsWith('ws://')) || [],
         }
+
+        if ([42161].includes(chain?.chain_id)) {
+          chainConfig[chain?.chain_id].gelatoOracle = false;
+        }
       }
 
       sdk = await NxtpSdk.create({ chainConfig, signer, skipPolling: true })
