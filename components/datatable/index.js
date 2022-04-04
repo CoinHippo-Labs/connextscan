@@ -137,7 +137,7 @@ export default function Datatable({ columns, data, rowSelectEnable = false, noPa
               Page <span className="font-bold">{pageIndex + 1}</span> of <span className="font-bold">{pageOptions.length}</span>
             </span>
           )}
-          <div className="pagination flex flex-wrap items-center justify-end">
+          <div className="pagination flex flex-wrap items-center justify-end space-x-2">
             {pageCount > 4 ?
               <div className="flex flex-col sm:flex-row items-center justify-center mt-2 sm:mt-0">
                 <Pagination

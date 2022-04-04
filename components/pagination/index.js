@@ -3,7 +3,7 @@ import { BsThreeDots } from 'react-icons/bs'
 
 export const PageWithText = ({
   activeClassNames = 'btn btn-default bg-gray-700 hover:bg-gray-800 rounded-lg text-white',
-  inactiveClassNames = 'btn btn-default bg-trasparent hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-100',
+  inactiveClassNames = 'btn btn-default bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 rounded-lg text-gray-500 hover:text-gray-700 dark:hover:text-gray-100',
   disabled = false,
   active,
   onClick,
@@ -16,7 +16,7 @@ export const PageWithText = ({
 
 export const Page = ({
   activeClassNames = 'btn btn-circle bg-gray-700 hover:bg-gray-800 text-white',
-  inactiveClassNames = 'btn btn-circle bg-trasparent hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-700 dark:hover:text-gray-100',
+  inactiveClassNames = 'btn btn-circle bg-gray-100 hover:bg-gray-200 dark:bg-gray-900 dark:hover:bg-gray-800 text-gray-500 hover:text-gray-700 dark:hover:text-gray-100',
   disabled = false,
   active,
   onClick,
@@ -34,7 +34,6 @@ export const Pages = ({
   onClick,
 }) => {
   const hide = i => items.length > 10 && [0, items.length - 1, active - 1].findIndex((_i, index) => Math.floor(Math.abs(i - _i)) < (index < 2 ? 3 : items.length < 20 ? 2 : 3)) < 0
-
   return (
     <>
       {items.map(i => hide(i) ?
