@@ -9,7 +9,7 @@ export default function Navigations({ handleDropdownClick }) {
 
   return (
     <div className="flex flex-wrap">
-      {navigations.map((item, i) => (
+      {navigations.filter(item => item?.path).map((item, i) => (
         <Link key={i} href={item.path}>
           <a
             onClick={handleDropdownClick}
