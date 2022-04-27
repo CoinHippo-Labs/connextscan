@@ -36,7 +36,7 @@ import { tokens as getTokens } from '../../lib/api/tokens'
 import { domains, getENS } from '../../lib/api/ens'
 import { chainTitle } from '../../lib/object/chain'
 import { currency_symbol } from '../../lib/object/currency'
-import { numberFormat, ellipseAddress, convertToJson } from '../../lib/utils'
+import { numberFormat, ellipseAddress, convertToJson, paramsToObject } from '../../lib/utils'
 
 import { TOKENS_DATA, ENS_DATA, WALLET_DATA } from '../../reducers/types'
 
@@ -55,7 +55,7 @@ export default function Transaction() {
   const { provider, web3_provider, signer, chain_id, address, default_chain_id } = { ...wallet_data }
 
   const router = useRouter()
-  const { query } = { ...router }
+  const { asPath, query } = { ...router }
   const { tx, source } = { ...query }
 
   const [transaction, setTransaction] = useState(null)
@@ -108,10 +108,11 @@ export default function Transaction() {
 
   useEffect(() => {
     const controller = new AbortController()
-
+    const query = paramsToObject(asPath?.indexOf('?') > -1 && asPath?.substring(asPath.indexOf('?') + 1))
+    const search = (['search'].includes(source) || ['search'].includes(query?.source))
     const getData = async is_interval => {
-      if (tx && chains_data && sdk_data) {
-        let data, tokenContracts = _.cloneDeep(tokens_data)
+      if (asPath && tx && chains_data && sdk_data) {
+        let data, tokenContracts = _.cloneDeep(tokens_data), transactionId
 
         for (let i = 0; i < chains_data.length; i++) {
           if (!controller.signal.aborted) {
@@ -124,7 +125,7 @@ export default function Transaction() {
                 if (!controller.signal.aborted) {
                   response = await getTransactions(sdk_data, chain.chain_id, tx, null, chains_data, tokenContracts)
 
-                  if (!(response?.data?.[0]) && ['search'].includes(source)) {
+                  if (!(response?.data?.[0]) && search) {
                     const txHashFields = ['prepareTransactionHash', 'fulfillTransactionHash', 'cancelTransactionHash']
 
                     for (let j = 0; j < txHashFields.length; j++) {
@@ -134,6 +135,7 @@ export default function Transaction() {
                         const _data = _response.data[0]
 
                         if (txHashFields.map(f => _data[f]).includes(tx.toLowerCase()) && _data.transactionId) {
+                          transactionId = _data.transactionId.toLowerCase()
                           router.push(`/tx/${_data.transactionId.toLowerCase()}`)
                           break
                         }
@@ -225,8 +227,8 @@ export default function Transaction() {
         }
 
         if (!controller.signal.aborted) {
-          if (['search'].includes(source)) {
-            router.push(`/tx/${tx}`)
+          if (search) {
+            router.push(`/tx/${transactionId || tx}`)
           }
 
           setTransaction({ data, tx })
@@ -274,7 +276,7 @@ export default function Transaction() {
     }
 
     if (transaction?.tx !== tx) {
-      if (['search'].includes(source)) {
+      if (search) {
         setTransaction(null)
       }
 
