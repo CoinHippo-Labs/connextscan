@@ -765,7 +765,7 @@ export default function Transaction() {
       body={<div className="space-y-3">
         <div className="flex text-sm sm:text-base text-left space-x-2 my-1">
           <span>1.</span>
-          <span>Connect your Wallet with the sender address and the {canCancelSendingTx ? 'sender' : 'receiver'} network.</span>
+          <span>Connect your wallet with the sender address and the {canCancelSendingTx ? 'sender' : 'receiver'} network.</span>
         </div>
         <button
           className="bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 pointer-events-none rounded-lg text-white font-medium py-1 px-2"
