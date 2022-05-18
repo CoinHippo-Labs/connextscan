@@ -100,7 +100,7 @@ export default function Transactions({ addTokenToMetaMaskFunction, className = '
 
           if (address) {
             if (['/router/[address]'].includes(pathname)) {
-              params = { where: `{ router: "${address.toLowerCase()}" }`, max_size: 500 }
+              params = { where: `{ router: "${address.toLowerCase()}" }`, max_size: 1000 }
             }
             else if (['/address/[address]'].includes(pathname)) {
               params = { where: `{ user: "${address.toLowerCase()}" }`, max_size: 500 }
