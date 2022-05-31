@@ -867,7 +867,7 @@ export default function Assets({ assetBy = 'assets', addTokenToMetaMaskFunction 
                             <Popover
                               placement="left"
                               title={<span className="text-xs">Transfer Routes</span>}
-                              content={<div className="w-40 flex-col space-y-1.5">
+                              content={<div className="w-48 flex-col space-y-1.5">
                                 {Object.entries(ab.assets_from_chains).length > 0 ?
                                   _.orderBy(Object.entries(ab.assets_from_chains).map(([key, value]) => { return { key, value } }), ['value.amount'], ['desc']).map(({ key, value }) => (
                                     <div key={key} className="flex items-center justify-between space-x-1">
