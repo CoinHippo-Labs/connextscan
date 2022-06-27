@@ -16,7 +16,7 @@ import Network from './network'
 import SubNavbar from './sub-navbar'
 import PageTitle from './page-title'
 
-import { chains as getChains, assets } from '../../lib/api/crosschain_config'
+import { chains as getChains, assets as getAssets } from '../../lib/api/crosschain_config'
 import { tokens as getTokens } from '../../lib/api/tokens'
 import { domains, getENS } from '../../lib/api/ens'
 import { coin } from '../../lib/api/coingecko'
@@ -29,9 +29,10 @@ BigNumber.config({ DECIMAL_PLACES: Number(process.env.NEXT_PUBLIC_MAX_BIGNUMBER_
 
 export default function Navbar() {
   const dispatch = useDispatch()
-  const { preferences, chains, tokens, ens, routers_status, asset_balances, sdk, rpcs } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, tokens: state.tokens, ens: state.ens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs }), shallowEqual)
+  const { preferences, chains, assets, tokens, ens, routers_status, asset_balances, sdk, rpcs } = useSelector(state => ({ preferences: state.preferences, chains: state.chains, assets: state.assets, tokens: state.tokens, ens: state.ens, routers_status: state.routers_status, asset_balances: state.asset_balances, sdk: state.sdk, rpcs: state.rpcs }), shallowEqual)
   const { theme } = { ...preferences }
   const { chains_data } = { ...chains }
+  const { assets_data } = { ...assets }
   const { tokens_data } = { ...tokens }
   const { ens_data } = { ...ens }
   const { routers_status_trigger } = { ...routers_status }
@@ -62,7 +63,7 @@ export default function Navbar() {
   // assets
   useEffect(() => {
     const getData = async () => {
-      const response = await assets()
+      const response = await getAssets()
 
       if (response) {
         dispatch({
@@ -231,7 +232,15 @@ export default function Navbar() {
 
         if (contractAddresses.length > 0) {
           const responseTokens = await getTokens({ chain_id: chain.chain_id, addresses: contractAddresses.join(',') })
-          tokenContracts = responseTokens?.data?.map(t => { return { ...t, id: `${chain.chain_id}_${t.contract_address}` } })
+          tokenContracts = responseTokens?.data?.map(t => {
+            const asset_data = assets_data?.find(a => a?.contracts?.findIndex(c => c?.chain_id === chain.chain_id && c.contract_address.toLowerCase() === t.contract_address.toLowerCase()) > -1)
+            return {
+              ...t,
+              ...asset_data,
+              ...asset_data?.contracts?.find(c => c?.chain_id === chain.chain_id && c.contract_address.toLowerCase() === t.contract_address?.toLowerCase()),
+              id: `${chain.chain_id}_${t.contract_address}`,
+            }
+          })
         }
 
         dispatch({
@@ -242,7 +251,7 @@ export default function Navbar() {
     }
 
     const getData = async is_interval => {
-      if (chains_data) {
+      if (chains_data && assets_data) {
         if (['/', '/routers', '/leaderboard/routers', '/transactions', '/status', '/router/[address]', '/address/[address]', '/[blockchain_id]'].includes(pathname)) {
           if (['/router/[address]', '/[blockchain_id]'].includes(pathname) || !asset_balances_data || !tokens_data || is_interval) {
             chains_data.forEach(c => getAssetBalances(c))
@@ -257,7 +266,7 @@ export default function Navbar() {
     return () => {
       clearInterval(interval)
     }
-  }, [chains_data, pathname])
+  }, [chains_data, assets_data, pathname])
 
   // ens
   useEffect(async () => {
